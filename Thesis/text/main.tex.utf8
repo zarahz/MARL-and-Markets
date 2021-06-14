@@ -1,0 +1,162 @@
+% -------------------------------------------------------------------------------------------------
+%      MDSG Latex Framework
+%      ============================================================================================
+%      File:                  main.tex
+%      Author(s):             Michael Duerr
+%      Version:               1
+%      Creation Date:         30. Mai 2010
+%      Creation Date:         30. Mai 2010
+%
+%      Notes:                 - This represents the document root of this template
+%                             - Binding correction is 12mm. In case you change this value, you
+%                               may also need to adapt the value of \bcorlength in mdsg.sty
+%                             - Switch `babel' package options `english' and `ngerman' in case
+%                               your thesis is in English
+%                             - if you prefer to use utf8 encoding, uncomment the corresponding
+%                               line `\usepackage[utf8]{inputenc}' and comment the line
+%                               `\usepackage[latin1]{inputenc}'. To compile this example you also
+%                               need to include the corresponding introduction example file i.e.
+%                               `introduction-UTF8.tex' or `introduction-ISO8859-1.tex'
+% -------------------------------------------------------------------------------------------------
+%
+\documentclass[bibliography=totoc,listof=totoc,index=totoc,twoside=true,BCOR=12mm,DIV=12]{scrbook}
+%\KOMAoptions{draft=true}                         % uncomment if you want to visualise overful hbox
+%\KOMAoptions{chapterprefix=true}                 % uncomment if you like "Chapter" in front of
+                                                  % chapter number
+%\KOMAoptions{appendixprefix=true}                % uncomment if you like "Appendix" in front of
+                                                  % appendix number
+%\KOMAoptions{...}                                % feel free to add additional KOMA options
+%
+% =================================================================================================
+% set encoding
+% -------------------------------------------------------------------------------------------------
+%
+\usepackage[utf8]{inputenc}                       % uncomment if you prefer utf8 encoding
+%\usepackage[latin1]{inputenc}                    % uncomment if you prefer latin1 encoding
+%
+% =================================================================================================
+% load mdsg style
+% -------------------------------------------------------------------------------------------------
+%
+%\usepackage[diplom]{mdsg}                        % uncomment the corresponding option
+\usepackage[fopra]{mdsg}
+%\usepackage[bachelor]{mdsg}
+%\usepackage[master]{mdsg}
+%
+% =================================================================================================
+% initialize macros
+% -------------------------------------------------------------------------------------------------
+%
+\lmutitle{Titel der Arbeit Ä}                       % title: you can force a new line by
+%\lmutitle{Titel \\ der \\ Arbeit}                % inserting `\\'. However, this will cause
+                                                  % a hyperref warning!
+\lmustudentone{Max Mustermann}                    % first author's name
+%\lmustudenttwo{Max2 Mustermann2}                 % second author's name
+%\lmustudentthree{Max3 Mustermann3}               % third author's name
+%\lmustudentfour{Max4 Mustermann4}                % fourth author's name
+
+\lmuprofone{Prof. Dr. Claudia Linnhoff-Popien}    % first supervisor's name
+\lmuproftwo{Prof. Dr. Max Mustermann}             % second supervisor's name
+                                                  % (uncomment if not needed)
+\lmuprofthree{Prof. Dr. Max2 Mustermann2}         % third supervisor's name
+                                                  % (uncomment if not needed)
+\lmuadvisorone{Betreuer Name1}                    % first advisor's name
+\lmuadvisortwo{Betreuer Name2}                    % second advisor's name
+                                                  % (uncomment if not needed)
+\lmuadvisorthree{Betreuer Name3}                  % third advisor's name
+                                                  % (uncomment if not needed)
+\lmudraftdate{\today}                             % only for versioning during work!
+                                                  % (uncomment for final version!)
+\lmudeadline{1. Januar 2099}                      % deadline (day of submission)
+%
+% =================================================================================================
+% package selection (add additional packages if needed)
+% -------------------------------------------------------------------------------------------------
+%
+%\usepackage{layout}                              % see documentation of this package
+\usepackage{cmap}                                 % to produce searchable PDF
+\usepackage[T1]{fontenc}                          % split german words with umlaut
+\usepackage{lmodern}
+\usepackage[english,ngerman]{babel}               % for german toc, ...
+\usepackage{bibgerm}                              % for german bibliography index
+\usepackage{tabularx}                             % more flexible table environment
+\usepackage{booktabs}                             % high quality tables
+\usepackage{rotating}                             % for generation of landscape tables
+\usepackage{multirow}                             % for multirow cells inside tables
+\usepackage{amssymb,amsmath}                      % powerful math package
+\usepackage{hyperref}                             % for hyperlinks
+\lmuhypersetup                                    % write some pdf properties
+\usepackage{flafter}                              % force floats to appear after their reference
+\usepackage{subfig}                               % to allow for side by side graphics (subfloats)
+\usepackage{pdflscape}                            % enable rotation of landscape pages
+\usepackage{hyphenat}                             % proper hyphenation for bla_bla to bla_-bla
+\usepackage[all]{hypcap}                          % correct captions
+\usepackage{url}                                  % nicer url style
+\usepackage{enumitem}                             % for tight lists
+%\usepackage{...}                                 % add additional packages here
+
+\setcounter{tocdepth}{3}                          % sectioning depth in toc
+\setcounter{secnumdepth}{3}                       % sectioning depth in text
+
+\graphicspath{{./pictures/}}                      % put all graphics here
+\input{hyphenation}                               % this file holds words latex cannot split
+%
+% =================================================================================================
+% start of document
+% -------------------------------------------------------------------------------------------------
+%
+\begin{document}
+    \setlist{noitemsep}                           % for tight lists
+    \lmufront                                     % title pages
+    \newpage
+    \cleardoublepage
+    \lmuaffirmation                               % affirmation (work is my own work)
+    \newpage
+    \cleardoubleemptypage
+    \thispagestyle{empty}
+    \include{text/abstract}                       % abstract
+    \thispagestyle{empty}
+    \frontmatter                                  % start roman numbering
+    \tableofcontents                              % toc
+    \mainmatter                                   % start alpha numbering
+%
+% =================================================================================================
+% place your document text here (take care of encoding)
+% -------------------------------------------------------------------------------------------------
+%
+    \input{text/introduction-UTF8}
+    %\input{text/introduction-ISO8859-1}
+    % further chapters
+%
+% =================================================================================================
+% place your appendix here
+% -------------------------------------------------------------------------------------------------
+%
+    \appendix
+    \input{text/appendix}
+    % further appendix
+%
+% =================================================================================================
+% comment \listoffigures and/or \listoftables if not wanted
+% -------------------------------------------------------------------------------------------------
+%
+    \backmatter
+    \listoffigures                                % list of figures (uncomment if wanted)
+    \listoftables                                 % list of tables (uncomment if wanted)
+    \lstlistoflistings                            % list of listings (uncomment if wanted)
+%
+% =================================================================================================
+% place your bibliography here
+% -------------------------------------------------------------------------------------------------
+%
+    \begin{spacing}{0.9}                          % save some space
+       \bibliographystyle{geralpha}               % for german thesis
+       %\bibliographystyle{alpha}                 % for english thesis
+       \bibliography{bibliography}                % the location of bib file
+    \end{spacing}
+\end{document}
+%
+% =================================================================================================
+% end of document
+% -------------------------------------------------------------------------------------------------
+%

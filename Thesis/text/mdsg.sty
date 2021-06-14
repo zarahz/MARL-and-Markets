@@ -1,0 +1,431 @@
+% -----------------------------------------------------------------------------
+%      MDSG Latex Framework
+%      =======================================================================
+%      File:                  mdsg.sty
+%      Author(s):             Michael Duerr
+%      Version:               1
+%      Creation Date:         30. Mai 2010
+%      Creation Date:         30. Mai 2010
+%
+%      Notes:                 - The BCOR value for title pages is currently hard
+%                               coded! Adjust the length \bcorlength to change 
+%                               this value
+%                             - Only pdflatex is supported
+% -----------------------------------------------------------------------------
+%
+% =============================================================================
+% This style is only supported by LaTeX2e!
+% =============================================================================
+%
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{mdsg}[2010/05/24 v1]
+%
+% =============================================================================
+% Package selection
+% -----------------------------------------------------------------------------
+%
+\RequirePackage{ifthen}                    % conditional processing
+\RequirePackage{calc}                      % convenient calculations
+\RequirePackage{setspace}                  % fine-grained control over line spacing
+\RequirePackage{graphicx}                  % for inclusion of graphics (pdf, png, jpeg)
+\RequirePackage{listings}                  % for inclusion of code listings
+\RequirePackage[usenames]{color}           % for coloring
+%
+% =============================================================================
+% bcorlength
+% -----------------------------------------------------------------------------
+%
+\newlength{\bcorlength}
+\setlength{\bcorlength}{12mm}              % binding correction
+\newlength{\lmuprintspace}
+\setlength{\lmuprintspace}{5mm}            % additional margin for title pages
+%
+% =============================================================================
+% Define and set some booleans
+% -----------------------------------------------------------------------------
+%
+\newboolean{isDiplom}%
+\setboolean{isDiplom}{false}%
+\newboolean{isFopra}%
+\setboolean{isFopra}{false}%
+\newboolean{isBachelor}%
+\setboolean{isBachelor}{false}%
+\newboolean{isMaster}%
+\setboolean{isMaster}{false}%
+%
+% =============================================================================
+% Some useful MAKROS 
+% -----------------------------------------------------------------------------
+%
+% makro for test of empty arguments
+%
+%\@ifemptyarg{#1} {empty argument}{non-empty argument}
+\providecommand\@ifemptyarg[1]{%
+  \ifx\@empty#1\@empty
+  \expandafter\@firstoftwo\else\expandafter\@secondoftwo\fi%
+}
+%
+% =============================================================================
+% Declare package options
+% -----------------------------------------------------------------------------
+%
+% in case `diplomarbeit' option in place  -> boolean \diplomarbeit <- true
+\DeclareOption{diplom}{\isDiplomtrue}
+\DeclareOption{fopra}{\isFopratrue}
+\DeclareOption{bachelor}{\isBachelortrue}
+\DeclareOption{master}{\isMastertrue}
+%
+% =============================================================================
+% Package options processing
+% -----------------------------------------------------------------------------
+%
+\ProcessOptions
+\ifthenelse{%
+\boolean{isDiplom}\OR\boolean{isFopra}\OR\boolean{isBachelor}\OR\boolean{isMaster}%
+}{%
+   \ifthenelse{%
+   \(
+      \boolean{isDiplom}\AND\NOT\(\boolean{isFopra}\OR\boolean{isBachelor}\OR\boolean{isMaster}\)
+   \)
+   \OR
+   \(
+      \boolean{isMaster}\AND\NOT\(\boolean{isFopra}\OR\boolean{isBachelor}\OR\boolean{isDiplom}\)
+   \)
+   \OR
+   \(
+      \boolean{isBachelor}\AND\NOT\(\boolean{isFopra}\OR\boolean{isMaster}\OR\boolean{isDiplom}\)
+   \)
+   \OR
+   \(
+      \boolean{isFopra}\AND\NOT\(\boolean{isBachelor}\OR\boolean{isMaster}\OR\boolean{isDiplom}\)
+   \)%
+   }{% everything is fine -> go ahead
+   }{% more than one of those package options -> error
+       \PackageWarning{mdsg}{You tried to use
+       \ifisDiplom
+          diplomarbeit,
+       \fi
+       \ifisFopra
+          fopra,
+       \fi
+       \ifisBachelor
+          bachelor,
+       \fi
+       \ifisMaster
+          master
+       \fi
+      at the same time}
+   }%
+}{%
+   \PackageWarning{mdsg}{You have to specifiy exactly one of the options `diplom', `fopra', `bachelor', or `master'}%
+}
+%
+%
+% =============================================================================
+% Macros
+% -----------------------------------------------------------------------------
+%
+\newcommand{\@lmustudentone}{}
+\newcommand{\lmustudentone}[1]{\renewcommand{\@lmustudentone}{#1}}
+
+\newcommand{\@lmustudenttwo}{}
+\newcommand{\lmustudenttwo}[1]{%
+   \@ifemptyarg{#1}{}{\renewcommand{\@lmustudenttwo}{#1}}
+}
+
+\newcommand{\@lmustudentthree}{}
+\newcommand{\lmustudentthree}[1]{%
+   \@ifemptyarg{#1}{}{\renewcommand{\@lmustudentthree}{#1}}
+}
+
+\newcommand{\@lmustudentfour}{}
+\newcommand{\lmustudentfour}[1]{%
+   \@ifemptyarg{#1}{}{\renewcommand{\@lmustudentfour}{#1}}
+}
+
+\newcommand{\@lmutitle}{}
+\newcommand{\lmutitle}[1]{\renewcommand{\@lmutitle}{#1}}
+
+\newcommand{\@lmuprofone}{}
+\newcommand{\lmuprofone}[1]{\renewcommand{\@lmuprofone}{\=#1}}
+
+\newcommand{\@lmuproftwo}{}
+\newcommand{\lmuproftwo}[1]{%
+   \@ifemptyarg{#1}{}{\renewcommand{\@lmuproftwo}{\\ \> #1}}
+}
+
+\newcommand{\@lmuprofthree}{}
+\newcommand{\lmuprofthree}[1]{%
+   \@ifemptyarg{#1}{}{\renewcommand{\@lmuprofthree}{\\ \> #1}}
+}
+
+\newcommand{\@lmuadvisorone}{}
+\newcommand{\lmuadvisorone}[1]{%
+   \@ifemptyarg{#1}{}{\renewcommand{\@lmuadvisorone}{\> #1}}
+}
+
+\newcommand{\@lmuadvisortwo}{}
+\newcommand{\lmuadvisortwo}[1]{%
+   \@ifemptyarg{#1}{}{\renewcommand{\@lmuadvisortwo}{\\ \> #1}}
+}
+
+\newcommand{\@lmuadvisorthree}{}
+\newcommand{\lmuadvisorthree}[1]{%
+   \@ifemptyarg{#1}{}{\renewcommand{\@lmuadvisorthree}{\\ \> #1}}
+}
+
+\newcommand{\@lmudraftdate}{}
+\newcommand{\lmudraftdate}[1]{%
+   \@ifemptyarg{#1}{}{\renewcommand{\@lmudraftdate}{Entwurf vom #1}}
+}
+
+\newcommand{\@lmudeadline}{}
+\newcommand{\lmudeadline}[1]{\renewcommand{\@lmudeadline}{#1}}
+
+\newcommand{\lmuhypersetup}{%
+   \hypersetup{
+       pdftitle={\@lmutitle},
+       pdfpagemode=UseOutlines,
+       %colorlinks=true,
+       pdfauthor={\textcopyright\ %
+          \@lmustudentone%
+          %\ifthenelse{\equal{\@lmustudenttwo}{}}{}{, \@lmustudenttwo}%
+          %\ifthenelse{\equal{\@lmustudenthree}{}}{}{, \@lmustudentthree}%
+          %\ifthenelse{\equal{\@lmustudentfour}{}}{}{, \@lmustudentfour}%
+       },
+       pdfpagetransition=Dissolve,
+       %bookmarks=true,
+       %pdftex=true,
+       pdfdisplaydoctitle,
+       bookmarksnumbered=true,
+       bookmarksopen=true,
+       breaklinks=true,
+       %citecolor=,
+       %linkcolor=,
+       %filecolor=,
+       %urlcolor=,
+       citebordercolor={0 1 0},
+       %filebordercolor=,
+       urlbordercolor={1 0 1},
+       linkbordercolor={1 0 1},
+       %runbordercolor=,
+       %pdfborder=,
+       %plainpages=false,
+       %pdfpagelabels,
+       plainpages=false,
+   }
+}
+\newcommand{\lmuemptypage}[1]{%
+   \begin{addmargin}[-\oddsidemargin-1in+\lmuprintspace+\bcorlength]{-\evensidemargin-1in+\lmuprintspace}
+      \vspace*{-\topmargin}\vspace{-1in}%
+      \vspace{-\headheight}\vspace{-\headsep}%
+      \vspace{-\topskip}%
+      \vspace{+\lmuprintspace}
+      \parbox[t][\textheight-\lmuprintspace][t]{\linewidth}{%
+         \parbox[t][\paperheight-2\baselineskip-2\parskip][t]{\linewidth}{%
+            \setlength{\parskip}{0pt}%
+            \setlength{\parindent}{0pt}%
+            \setlength{\parfillskip}{0pt plus 1fil}
+            #1
+          }%
+      }%
+   \end{addmargin}
+}
+\newcommand{\lmufront}{%
+   \newcommand{\lmutitlefont}{\sffamily\bfseries}
+      \begin{titlepage}
+      %
+      % title page
+      %
+      \pagenumbering{Roman} % this is hack to supress hyperref warnings for twice occuring page numbers
+      \lmuemptypage{%
+      \includegraphics[width=\linewidth]{./lmu_header}
+         \begin{center}
+            \vspace*{3cm}
+            \begin{Huge}
+               \textbf{% select the corresponding work
+                  \lmutitlefont
+                  \ifthenelse{\boolean{isDiplom}}{DIPLOMARBEIT}{}%
+                  \ifthenelse{\boolean{isFopra}}{PROJEKTARBEIT}{}%
+                  \ifthenelse{\boolean{isBachelor}}{BACHELORARBEIT}{}%
+                  \ifthenelse{\boolean{isMaster}}{MASTER THESIS}{}%
+               }
+            \end{Huge}\\
+            \vspace*{1.5cm}
+            \begin{Huge}
+            \begin{spacing}{.9}
+               % thesis title
+               \lmutitlefont\@lmutitle
+            \end{spacing}
+            \end{Huge}
+            \vspace{1.5cm}
+            \begin{Large}
+               \begin{spacing}{1}
+                  % name of authors
+                  \@lmustudentone%
+                  \ifthenelse{\equal{\@lmustudenttwo}{}}{}{,\\ \@lmustudenttwo}%
+                  \ifthenelse{\equal{\@lmustudentthree}{}}{}{,\\ \@lmustudentthree}%
+                  \ifthenelse{\equal{\@lmustudentfour}{}}{}{,\\ \@lmustudentfour}
+               \end{spacing}
+            \end{Large}
+            \vspace{1cm}
+            % only for versioning during work!
+            \@lmudraftdate
+         \end{center}
+         \vfill
+         \hfill
+         \includegraphics[scale=1.0]{./pictures/lmu_seal}
+   }
+   \cleardoubleemptypage
+   \end{titlepage}
+   \begin{titlepage}
+      \lmuemptypage{%
+      %
+      % second title page
+      %
+      \includegraphics[width=\linewidth]{./lmu_header}
+      \begin{center}
+         \vspace*{3cm}
+         \begin{Huge}
+            \lmutitlefont
+            \textbf{%select the corresponding work
+               \ifthenelse{\boolean{isDiplom}}{DIPLOMARBEIT}{}%
+               \ifthenelse{\boolean{isFopra}}{PROJEKTARBEIT}{}%
+               \ifthenelse{\boolean{isBachelor}}{BACHELORARBEIT}{}%
+               \ifthenelse{\boolean{isMaster}}{MASTER THESIS}{}%
+            }
+         \end{Huge}\\
+         \vspace*{1.5cm}
+         \begin{Huge}
+         \begin{spacing}{.9}
+            %thesis title
+            \lmutitlefont\@lmutitle
+         \end{spacing}
+         \end{Huge}
+         \vspace{1.5cm}
+            \begin{Large}
+               \begin{spacing}{1}
+                  % name of authors
+                  \@lmustudentone%
+                  \ifthenelse{\equal{\@lmustudenttwo}{}}{}{,\\ \@lmustudenttwo}%
+                  \ifthenelse{\equal{\@lmustudentthree}{}}{}{,\\ \@lmustudentthree}%
+                  \ifthenelse{\equal{\@lmustudentfour}{}}{}{,\\ \@lmustudentfour}
+               \end{spacing}
+            \end{Large}
+         \vspace{1cm}
+         
+         \parbox{1cm}{
+         \begin{large}
+         \begin{tabbing}
+         Professor: \hspace{1.5cm}%
+         \@lmuprofone
+         \@lmuproftwo
+         \@lmuprofthree
+         \\[2mm]
+         Supervisor:
+         \@lmuadvisorone
+         \@lmuadvisortwo
+         \@lmuadvisorthree
+         \\[5mm]
+         %deadline
+         Submission Date: \> \@lmudeadline\\
+         \end{tabbing}
+         \end{large}}\\
+         \vfill
+         \hfill
+         \includegraphics[scale=1.0]{./pictures/lmu_seal}
+      \end{center}
+      }
+
+      \cleardoubleemptypage
+      %\pagenumbering{arabic}
+   \end{titlepage}
+}
+\newcommand{\lmuaffirmation}{%
+   %
+   % affirmation text
+   %
+   \newpage
+   \begin{large}
+      \vspace*{2cm}
+      \noindent
+      \ifthenelse{%
+             \equal{\@lmustudenttwo}{}
+         \and\equal{\@lmustudentthree}{}
+         \and\equal{\@lmustudentfour}{}
+      }{%
+         I hereby affirm that I
+      }{%
+         Hiermit versichern wir, dass wir
+      }%
+      wrote this
+      \ifthenelse{\boolean{isDiplom}}{Diplomarbeit}{}%
+      \ifthenelse{\boolean{isFopra}}{Projektarbeit}{}%
+      \ifthenelse{\boolean{isBachelor}}{Bachelorarbeit}{}%
+      \ifthenelse{\boolean{isMaster}}{Master Thesis}{}%
+      ~on my own and I did not use any other sources and aids than those stated.
+      \ifthenelse{%
+             \equal{\@lmustudenttwo}{}
+         \and\equal{\@lmustudentthree}{}
+         \and\equal{\@lmustudentfour}{}
+      }{%
+         % habe.
+      }{%
+         % haben.
+      }%
+      \vspace{2cm}
+
+      \noindent
+      Munich, \@lmudeadline
+
+      \vspace{3cm}
+      \ifthenelse{%
+             \equal{\@lmustudenttwo}{}
+         \and\equal{\@lmustudentthree}{}
+         \and\equal{\@lmustudentfour}{}
+      }{%
+         \hspace*{7cm}%
+         \dotfill\\
+         \hspace*{10cm}%
+         \textit{Signature}
+      }{%
+         \newcounter{lmustudentcnt}
+         \setcounter{lmustudentcnt}{1}
+         \hspace*{7cm}%
+         \dotfill\\
+         \hspace*{8.5cm}%
+         \textit{(Unterschrift des \thelmustudentcnt. Kandidaten)}
+         \ifthenelse{\equal{\@lmustudenttwo}{}}{%
+         }{%
+            \addtocounter{lmustudentcnt}{1}
+
+            \vspace{2cm}
+            \hspace*{7cm}%
+            \dotfill\\
+            \hspace*{8.5cm}%
+            \textit{(Unterschrift des \thelmustudentcnt. Kandidaten)}
+         }
+         \ifthenelse{\equal{\@lmustudentthree}{}}{%
+         }{%
+            \addtocounter{lmustudentcnt}{1}
+
+            \vspace{2cm}
+            \hspace*{7cm}%
+            \dotfill\\
+            \hspace*{8.5cm}%
+            \textit{(Unterschrift des \thelmustudentcnt. Kandidaten)}
+         }
+         \ifthenelse{\equal{\@lmustudentfour}{}}{%
+         }{%
+            \addtocounter{lmustudentcnt}{1}
+
+            \vspace{2cm}
+            \hspace*{7cm}%
+            \dotfill\\
+            \hspace*{8.5cm}%
+            \textit{(Unterschrift des \thelmustudentcnt. Kandidaten)}
+         }
+      }
+      
+   \end{large}
+}

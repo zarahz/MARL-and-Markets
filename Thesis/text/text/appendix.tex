@@ -1,0 +1,53 @@
+% -------------------------------------------------------------------------------------------------
+%      MDSG Latex Framework
+%      ============================================================================================
+%      File:                  appendix.tex
+%      Author(s):             Michael Duerr
+%      Version:               1
+%      Creation Date:         30. Mai 2010
+%      Creation Date:         30. Mai 2010
+%
+%      Notes:                 - Place your appendix here
+%                             - Use the same commands (`chapter', `section', ...) as in main text
+% -------------------------------------------------------------------------------------------------
+%
+\chapter{Beispiel Anhang}
+\small{
+\begin{verbatim}
+/*
+* This code serves the initialization of an auxiliary probability array.
+* The array holds at each position a pre-calculated probability for the index
+* of that position. The probability reflects the Zipf-distribution for the
+* corresponding indexes
+*/
+Set zipfExponent to 1.4
+Set sum to 0
+Set maxInteger to 65535
+FOR i = 0 to maxInteger
+probArray[i] = 1/pow(i + 1, zipfExponent)
+Set sum = sum + probArray[i]
+END FOR
+FOR i = 0 to maxInteger
+Set probArray[i] = probArray[i]/sum
+END FOR
+FOR i = 1 to maxInteger
+Set probArray[i] = probArray[i] + probArray[i] = probArray[i-1]
+END FOR
+
+/*
+* This code gets called in case a Zipf-distributed number is required. It
+* iterates over the probability array until the chosen random number v
+* is less than the value stored at the current array position i. The value of
+* the array position will be returned as the calculated Zipf-distributed
+* number
+*/
+Set v to a random number between 0 and 1
+FOR i = 0 to maxInteger
+IF v < probArray[i] THEN
+RETURN i
+END IF
+END FOR
+RETURN 0
+
+\end{verbatim}
+}
