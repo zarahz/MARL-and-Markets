@@ -1,11 +1,16 @@
-My Python Path:
+# Installation
+First clone this repository and navigate into the domain Folder
 ```
-> c:/users/zarah/appdata/local/programs/python/python38/python.exe -m pip install ...
+git clone https://github.com/zarahz/CMARL-CAP-and-Markets.git
+cd CMARL-CAP-and-Markets/Coloring_with_CAP
+pip install -e .
 ```
 
-(WIP) How to run the project:
+# Execution
+Now you can run the domain with the following command
+(WIP!)
 ```
-> python .\Coloring_with_CAP\q_learning.py --env 'Empty-Grid-v0' --agents 2 --agent_view_size 5 --max_steps 100 --episodes 10 --size 5
+> python q_learning.py --env 'Empty-Grid-v0' --agents 2 --agent_view_size 5 --max_steps 100 --episodes 10 --size 5
 ```
 required arguments are `--env` and `--agents`
 

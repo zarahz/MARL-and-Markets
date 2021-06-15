@@ -30,15 +30,17 @@ class MultiagentFullyObsWrapper(gym.core.ObservationWrapper):
         observation = self.env.reset()
         return observation
 
-    def step(self, agent, action):
-        observation, reward, done, info = self.env.step(agent, action)
+    def step(self, actions):
+        observation, reward, done, info = self.env.step(actions)
+        if done:
+            reward = self.calculate_reward()
         # reward = calculateReward()
         return observation, reward, done, info
 
-    # def calculateReward(self):
-    #     if self.max_steps_reached(self.env.step_count+1):
-    #         print()
-        # here we executed the agents last step and check if the
+    def calculate_reward(self):
+        if self.env.whole_grid_colored():
+            return 10
+        return 0
 
     def print_coloring_data(self):
         floor_tiles = 0
@@ -57,7 +59,6 @@ class MultiagentFullyObsWrapper(gym.core.ObservationWrapper):
         print("walkable Floor tiles: ", floor_tiles)
         print("floor tiles that are colored: ", colored_tiles)
         print("agent contributions:", colored_by_agent)
-        print("-------------------------------------")
 
     def max_steps_reached(self, steps):
         if steps >= self.env.max_steps:

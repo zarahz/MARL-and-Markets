@@ -26,7 +26,6 @@ args = parser.parse_args()
 # --------- Hyperparams
 # settings
 # episodes = 10
-steps = 50
 epsilon = 0.2  # 0.01
 tau = 0.75
 
@@ -49,7 +48,6 @@ def interpret_action(action):
 def redraw():
     img = env.render('rgb_array', tile_size=32)
     window.show_img(img)
-    # container['window'].set_caption("current episode:" + str(current_episode))
 
 
 def reset():
@@ -57,7 +55,6 @@ def reset():
     env.reset()
     if hasattr(env, 'mission'):
         window.set_caption(env.mission)
-
     redraw()
 
 
@@ -95,15 +92,12 @@ def softmax():
 #######################
 # conduct experiment
 #######################
-print(args)
 env = gym.make(id=args.env, agents=args.agents,
-               agent_view_size=args.agent_view_size, size=args.size)
-env.max_steps = round(steps/2)  # 2 iterations = two random alignments
+               agent_view_size=args.agent_view_size, max_steps=args.max_steps, size=args.size)
 env = MultiagentFullyObsWrapper(env)  # Get pixel observations
 
 window = Window(args.env)
 
-reset()  # This now produces an RGB tensor only
 
 # count of number of times an action was pulled
 # aktion ist zB (U,-),(U,U),... U=up
@@ -113,19 +107,18 @@ action_count = np.zeros(env.action_space.n)
 # Q = np.loadtxt('q_learning.txt')  # np.zeros(len(action_count))
 # if Q.size == 0:
 Q = np.zeros(len(action_count))
-agents_done = np.zeros(agents, dtype=bool)
-for s in range(1, steps, 1):
-    joint_action = []
-    # market noch mit reinbringen um aktionen zu traden und rewards zu verteilen, siehe paper
-    for agent in range(agents):
-        if agents_done[agent]:
-            continue
-        # select the action using epsilon greedy
-        action = softmax()  # c
-        joint_action.append(action)
+for episode in range(args.episodes):
+    reset()  # This now produces an RGB tensor only
+    s = 0
+    for s in range(args.max_steps):
+        joint_actions = []
+        # market noch mit reinbringen um aktionen zu traden und rewards zu verteilen, siehe paper
+        for agent in range(agents):
+            # select the action using epsilon greedy
+            action = softmax()  # c
+            joint_actions.append(action)
         # get reward/observation/terminalInfo
-        observation, reward, done, info = env.step(agent, action)
-        agents_done[agent] = done
+        observation, reward, done, info = env.step(joint_actions)
         # plt.imshow(observation['image'])
         # update the count of that action
         action_count[action] += 1
@@ -133,15 +126,12 @@ for s in range(1, steps, 1):
         Q[action] = Q[action] + (1/action_count[action]) * \
             (reward-Q[action])
 
-    if env.update_step_count():
-        agents_done.fill(True)
-    step(all(agents_done))
-    if all(agents_done):
-        agents_done = np.zeros(agents, dtype=bool)  # reset
-        # np.savetxt('q_learning.txt', Q)
-        if reward > 0:
-            print('---- GOAL REACHED ----')
-        print('done! step=%s, reward=%.2f' %
-              (s, reward))
+        step(done)
+        if done:
+            # np.savetxt('q_learning.txt', Q)
+            if reward > 0:
+                print('---- GRID FULLY COLORED! ----')
+            print('done! step=%s, reward=%.2f' %
+                  (s, reward))
 
 window.close()

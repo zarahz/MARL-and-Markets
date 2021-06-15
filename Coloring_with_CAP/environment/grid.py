@@ -113,7 +113,7 @@ class Floor(WorldObj):
 
 class Wall(WorldObj):
     def __init__(self, color='black'):
-        super().__init__('wall', 'not_colored', color)
+        super().__init__('wall', 'colored', color)
 
     def see_behind(self):
         return False
@@ -487,7 +487,7 @@ class GridEnv(gym.Env):
         })
 
         # Range of possible rewards
-        self.reward_range = (-1, 20)  # (0, 1)
+        self.reward_range = (0, 10)  # (0, 1)
 
         # Window to use for human rendering mode
         self.window = None
@@ -785,42 +785,46 @@ class GridEnv(gym.Env):
         botY = topY + self.agent_view_size-1
         return (topX, topY, botX, botY)
 
-    def step(self, agent, action):
-        # self.step_count += 1  # TODO manage step count globally for all agents!
-
+    def step(self, actions):
+        self.step_count += 1  # TODO manage step count globally for all agents!
         reward = 0
         done = False
+        obs = {}
+        for agent in self.agents:
+            x = self.agents[agent]['pos'][0]
+            y = self.agents[agent]['pos'][1]
+            new_pos = None
+            action = actions[agent]
 
-        x = self.agents[agent]['pos'][0]
-        y = self.agents[agent]['pos'][1]
-        new_pos = None
+            # compute new position
+            if action == self.actions.left:
+                new_pos = np.array([x-1, y])
+            elif action == self.actions.right:
+                new_pos = np.array([x+1, y])
+            elif action == self.actions.up:
+                new_pos = np.array([x, y+1])
+            elif action == self.actions.down:
+                new_pos = np.array([x, y-1])
+            elif action != self.actions.wait:
+                assert False, "unknown action"
 
-        # compute new position
-        if action == self.actions.left:
-            new_pos = np.array([x-1, y])
-        elif action == self.actions.right:
-            new_pos = np.array([x+1, y])
-        elif action == self.actions.up:
-            new_pos = np.array([x, y+1])
-        elif action == self.actions.down:
-            new_pos = np.array([x, y-1])
-        elif action != self.actions.wait:
-            assert False, "unknown action"
+            # move to new position if possible
+            if new_pos is not None:
+                new_pos_cell = self.grid.get(*new_pos)
+                if new_pos_cell == None or new_pos_cell.can_overlap():
+                    self.agents[agent]['pos'] = new_pos
+                    self.color_Floor(
+                        new_pos_cell, IDX_TO_COLOR[self.agents[agent]['color']], new_pos)
 
-        # move to new position if possible
-        if new_pos is not None:
-            new_pos_cell = self.grid.get(*new_pos)
-            if new_pos_cell == None or new_pos_cell.can_overlap():
-                self.agents[agent]['pos'] = new_pos
-                self.color_Floor(
-                    new_pos_cell, IDX_TO_COLOR[self.agents[agent]['color']], new_pos)
+            obs[agent] = self.gen_obs(agent)
 
-        obs = self.gen_obs(agent)
+        if self.step_count >= self.max_steps:
+            done = True
 
         return obs, reward, done, {}
 
-    def is_grid_colored(self):
-        print(self.grid)
+    def whole_grid_colored(self):
+        return all(self.grid.encode()[:, :, 1].ravel())
 
     def color_Floor(self, floor, color, pos):
         if floor is not None and floor.status == 'colored':
@@ -878,9 +882,9 @@ class GridEnv(gym.Env):
 
         return obs
 
-    def get_obs_render(self, obs, agent, tile_size=TILE_PIXELS//2):
+    def get_obs_render(self, obs, tile_size=TILE_PIXELS//2):
         """
-        Render an agent observation for visualization
+        Render an global observation for visualization
         """
 
         grid, _ = Grid.decode(obs)
