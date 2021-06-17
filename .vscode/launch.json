@@ -1,0 +1,64 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Q-Learning",
+            "type": "python",
+            "request": "launch",
+            "program": "Coloring_with_CAP\\learning\\algos\\q_learning.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--env",
+                "Empty-Grid-v0",
+                "--agents",
+                "2",
+                "--agent_view_size",
+                "5",
+                "--max_steps",
+                "10",
+                "--episodes",
+                "5",
+                "--size",
+                "5"
+            ]
+        },
+        {
+            "name": "Python: PPO train",
+            "type": "python",
+            "request": "launch",
+            "module": "Coloring_with_CAP.scripts.train",
+            "console": "integratedTerminal",
+            "args": [
+                "--algo",
+                "ppo",
+                "--model",
+                "EmptyGrid",
+                "--save-interval",
+                "10",
+                "--frames",
+                "80000"
+            ]
+        },
+        {
+            "name": "Python: PPO visualize",
+            "type": "python",
+            "request": "launch",
+            "module": "Coloring_with_CAP.scripts.visualize",
+            "console": "integratedTerminal",
+            "args": [
+                "--model",
+                "EmptyGrid"
+            ]
+        },
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal"
+        }
+    ]
+}

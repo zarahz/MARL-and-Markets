@@ -5,7 +5,7 @@ from environment.colors import *
 import environment
 
 
-class MultiagentFullyObsWrapper(gym.core.ObservationWrapper):
+class CooperativeMultiagentWrapper(gym.core.ObservationWrapper):
     """
     Wrapper to use partially observable RGB image as the only observation output
     This can be used to have the agent to solve the gridworld in pixel space.
@@ -14,14 +14,6 @@ class MultiagentFullyObsWrapper(gym.core.ObservationWrapper):
     def __init__(self, env, tile_size=8):
         super().__init__(env)
         self.tile_size = tile_size
-
-        obs_shape = env.observation_space.spaces['image'].shape
-        self.observation_space.spaces['image'] = spaces.Box(
-            low=0,
-            high=255,
-            shape=(obs_shape[0] * tile_size, obs_shape[1] * tile_size, 3),
-            dtype='uint8'
-        )
 
     def reset(self):
         if hasattr(self, 'grid'):
@@ -34,11 +26,11 @@ class MultiagentFullyObsWrapper(gym.core.ObservationWrapper):
         observation, reward, done, info = self.env.step(actions)
         if done:
             reward = self.calculate_reward()
-        # reward = calculateReward()
         return observation, reward, done, info
 
     def calculate_reward(self):
         if self.env.whole_grid_colored():
+            print('---- GRID FULLY COLORED! ----')
             return 10
         return 0
 
@@ -59,12 +51,3 @@ class MultiagentFullyObsWrapper(gym.core.ObservationWrapper):
         print("walkable Floor tiles: ", floor_tiles)
         print("floor tiles that are colored: ", colored_tiles)
         print("agent contributions:", colored_by_agent)
-
-    def max_steps_reached(self, steps):
-        if steps >= self.env.max_steps:
-            return True
-        return False
-
-    def update_step_count(self):
-        self.env.step_count += 1
-        return self.max_steps_reached(self.env.step_count)

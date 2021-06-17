@@ -7,7 +7,6 @@ import numpy as np
 import math
 
 # --------- Settings
-# Parse arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("--env", required=True,
                     help="name of the environment(REQUIRED)")
@@ -24,25 +23,9 @@ parser.add_argument("--size", type=int, default=8,
                     help="size of the grid (default: 8)")
 args = parser.parse_args()
 # --------- Hyperparams
-# settings
-# episodes = 10
 epsilon = 0.2  # 0.01
 tau = 0.75
-
-# layout = 'Empty-Grid-8x8-v0'
-
 agents = args.agents
-
-
-def interpret_action(action):
-    action_string = {
-        0: "left",
-        1: "right",
-        2: "up",
-        3: "down",
-        4: "wait"
-    }
-    return action_string.get(action, "")
 
 
 def redraw():
@@ -51,27 +34,26 @@ def redraw():
 
 
 def reset():
-    # reset for each agent
     env.reset()
     if hasattr(env, 'mission'):
         window.set_caption(env.mission)
     redraw()
 
 
-def step(done):
+def visualize(done):
     if done:
         reset()
     else:
         redraw()
 
 
-def epsilon_greedy():
-    rand = np.random.random()
-    if rand < epsilon:
-        action = env.action_space.sample()
-    else:
-        action = np.argmax(Q)
-    return action
+# def epsilon_greedy():
+#     rand = np.random.random()
+#     if rand < epsilon:
+#         action = env.action_space.sample()
+#     else:
+#         action = np.argmax(Q)
+#     return action
 
 
 def softmax():
@@ -94,43 +76,35 @@ def softmax():
 #######################
 env = gym.make(id=args.env, agents=args.agents,
                agent_view_size=args.agent_view_size, max_steps=args.max_steps, size=args.size)
-env = MultiagentFullyObsWrapper(env)  # Get pixel observations
+env = CooperativeMultiagentWrapper(env)  # wrapper for environment adjustments
 
 window = Window(args.env)
 
-
-# count of number of times an action was pulled
-# aktion ist zB (U,-),(U,U),... U=up
-# trade abbilden dh erhöhen, um alle trades zu involvieren
+# variable to count the number of times an action was pulled
 action_count = np.zeros(env.action_space.n)
 # Q value => expected average reward
-# Q = np.loadtxt('q_learning.txt')  # np.zeros(len(action_count))
-# if Q.size == 0:
 Q = np.zeros(len(action_count))
+reset()
 for episode in range(args.episodes):
-    reset()  # This now produces an RGB tensor only
-    s = 0
+    # s = 0
     for s in range(args.max_steps):
         joint_actions = []
-        # market noch mit reinbringen um aktionen zu traden und rewards zu verteilen, siehe paper
         for agent in range(agents):
-            # select the action using epsilon greedy
-            action = softmax()  # c
+            # select the action
+            action = softmax()
+            # update the count of that action
+            action_count[action] += 1
             joint_actions.append(action)
+
         # get reward/observation/terminalInfo
         observation, reward, done, info = env.step(joint_actions)
-        # plt.imshow(observation['image'])
-        # update the count of that action
-        action_count[action] += 1
+
         # recalculate its Q value
         Q[action] = Q[action] + (1/action_count[action]) * \
             (reward-Q[action])
 
-        step(done)
+        visualize(done)
         if done:
-            # np.savetxt('q_learning.txt', Q)
-            if reward > 0:
-                print('---- GRID FULLY COLORED! ----')
             print('done! step=%s, reward=%.2f' %
                   (s, reward))
 

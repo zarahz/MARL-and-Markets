@@ -435,15 +435,6 @@ class GridEnv(gym.Env):
 
         wait = 0
 
-        # forward = 2
-
-        # Pick up an object
-        # pickup = 3
-        # Drop an object
-        # drop = 4
-        # Toggle/activate an object
-        # toggle = 4
-
     def __init__(
         self,
         grid_size=None,

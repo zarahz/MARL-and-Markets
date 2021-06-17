@@ -9,12 +9,11 @@ class EmptyEnv(GridEnv):
 
     def __init__(
         self,
-        agents=2,
-        agent_view_size=5,
-        max_steps=100,
-        size=8
+        agents=1,
+        agent_view_size=7,
+        max_steps=50,
+        size=5
     ):
-        print(agents)
         super().__init__(
             grid_size=size,
             agents=agents,
