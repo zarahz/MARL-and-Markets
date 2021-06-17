@@ -1,3 +1,8 @@
+TODO 
+- adjust structure (q learning integration into visualization script with algo as file in learning)
+- test ppo with multi agents
+- fine tuning to achieve colored grid with one agent
+
 # Installation
 First clone this repository and navigate into the domain Folder
 ```
@@ -7,12 +12,27 @@ pip install -e .
 ```
 
 # Execution
-Now you can run the domain with the following command
-(WIP!)
+Now you can run the domain with the following algorithms
+
+### Q Learning 
+For a very basic Q Learning algorithm you can execute
 ```
-> python q_learning.py --env 'Empty-Grid-v0' --agents 2 --agent_view_size 5 --max_steps 100 --episodes 10 --size 5
+> python .\Coloring_with_CAP\scripts\q_learning.py --env "Empty-Grid-v0" --agents 2 --agent_view_size 5 --max_steps 10 --episodes 5 --size 5
 ```
 required arguments are `--env` and `--agents`
+
+### PPO (Fine tuning of parameters is still in process, so learning is not optimal)
+To train the model first execute the corresponding script:
+```
+> python -m Coloring_with_CAP.scripts.train --algo ppo --model "EmptyGrid" --save-interval 10 --frames 80000
+```
+required argument is `--algo`.
+
+Visualization of the environment based on the trained model can be achieved with:
+```
+> python -m Coloring_with_CAP.scripts.train --model "EmptyGrid"
+```
+required argument is `--model`.
 
 # Untersuchung der Auswirkungen von Märkten auf das Belohnungs-Zuweisungsproblem in kooperativen Multiagenten-Umgebungen
 
