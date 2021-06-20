@@ -17,7 +17,7 @@ parser = argparse.ArgumentParser()
 # General parameters
 parser.add_argument("--algo", required=True,
                     help="algorithm to use: a2c | ppo (REQUIRED)")
-parser.add_argument("--agents", default=1,
+parser.add_argument("--agents", default=1, type=int,
                     help="amount of agents")
 parser.add_argument("--env", default='Empty-Grid-v0',
                     help="name of the environment to train on (default: empty grid size 5x5)")
@@ -35,6 +35,7 @@ parser.add_argument("--frames", type=int, default=10**7,
                     help="number of frames of training (default: 1e7)")
 
 # Parameters for main algorithm
+#
 parser.add_argument("--epochs", type=int, default=4,
                     help="number of epochs for PPO (default: 4)")
 parser.add_argument("--batch-size", type=int, default=256,
@@ -99,7 +100,6 @@ txt_logger.info(f"Device: {device}\n")
 
 envs = []
 for i in range(args.procs):
-    # TODO add number of agents
     envs.append(learning.utils.make_env(
         args.env, args.agents, args.seed + 10000 * i))
 txt_logger.info("Environments loaded\n")

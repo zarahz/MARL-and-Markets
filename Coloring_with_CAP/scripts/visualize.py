@@ -13,7 +13,7 @@ parser.add_argument("--model", required=True,
                     help="name of the trained model (REQUIRED)")
 parser.add_argument("--env", default='Empty-Grid-v0',
                     help="name of the environment to be run (REQUIRED)")
-parser.add_argument("--agents", default=1,
+parser.add_argument("--agents", default=1, type=int,
                     help="amount of agents")
 parser.add_argument("--seed", type=int, default=0,
                     help="random seed (default: 0)")

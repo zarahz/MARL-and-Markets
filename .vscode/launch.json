@@ -8,7 +8,7 @@
             "name": "Python: Q-Learning",
             "type": "python",
             "request": "launch",
-            "program": "Coloring_with_CAP\\learning\\algos\\q_learning.py",
+            "program": "Coloring_with_CAP\\scripts\\q_learning.py",
             "console": "integratedTerminal",
             "args": [
                 "--env",
@@ -43,6 +43,25 @@
             ]
         },
         {
+            "name": "Python: PPO train multi",
+            "type": "python",
+            "request": "launch",
+            "module": "Coloring_with_CAP.scripts.train",
+            "console": "integratedTerminal",
+            "args": [
+                "--algo",
+                "ppo",
+                "--agents",
+                "2",
+                "--model",
+                "EmptyGridMultiAgents",
+                "--save-interval",
+                "10",
+                "--frames",
+                "80000"
+            ]
+        },
+        {
             "name": "Python: PPO visualize",
             "type": "python",
             "request": "launch",
@@ -51,6 +70,49 @@
             "args": [
                 "--model",
                 "EmptyGrid"
+            ]
+        },
+        {
+            "name": "Python: PPO visualize multi",
+            "type": "python",
+            "request": "launch",
+            "module": "Coloring_with_CAP.scripts.visualize",
+            "console": "integratedTerminal",
+            "args": [
+                "--model",
+                "EmptyGridMultiAgents",
+                "--agents",
+                "2"
+            ]
+        },
+        {
+            "name": "Python: PPO eval",
+            "type": "python",
+            "request": "launch",
+            "module": "Coloring_with_CAP.scripts.evaluate",
+            "console": "integratedTerminal",
+            "args": [
+                "--env",
+                "Empty-Grid-v0",
+                "--model",
+                "EmptyGrid",
+                "--agents",
+                "1"
+            ]
+        },
+        {
+            "name": "Python: PPO eval multi",
+            "type": "python",
+            "request": "launch",
+            "module": "Coloring_with_CAP.scripts.evaluate",
+            "console": "integratedTerminal",
+            "args": [
+                "--env",
+                "Empty-Grid-v0",
+                "--model",
+                "EmptyGridMultiAgents",
+                "--agents",
+                "2"
             ]
         },
         {

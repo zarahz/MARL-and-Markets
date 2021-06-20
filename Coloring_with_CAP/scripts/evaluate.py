@@ -13,6 +13,8 @@ parser.add_argument("--env", required=True,
                     help="name of the environment (REQUIRED)")
 parser.add_argument("--model", required=True,
                     help="name of the trained model (REQUIRED)")
+parser.add_argument("--agents", default=1, type=int,
+                    help="amount of agents")
 parser.add_argument("--episodes", type=int, default=100,
                     help="number of episodes of evaluation (default: 100)")
 parser.add_argument("--seed", type=int, default=0,
@@ -43,7 +45,8 @@ print("NAME:________________________  ", __name__)
 if __name__ == '__main__':
     envs = []
     for i in range(args.procs):
-        env = learning.utils.make_env(args.env, args.seed + 10000 * i)
+        env = learning.utils.make_env(
+            args.env, args.agents, args.seed + 10000 * i)
         envs.append(env)
     env = ParallelEnv(envs)
     print("Environments loaded\n")
@@ -51,9 +54,11 @@ if __name__ == '__main__':
     # Load agent
 
     model_dir = learning.utils.get_model_dir(args.model)
-    agent = learning.utils.Agent(env.observation_space, env.action_space, model_dir,
-                                 device=device, argmax=args.argmax, num_envs=args.procs,
-                                 use_memory=args.memory, use_text=args.text)
+    agents = []
+    for agent in range(args.agents):
+        agents.append(learning.utils.Agent(env.observation_space, env.action_space, model_dir,
+                                           device=device, argmax=args.argmax, num_envs=args.procs,
+                                           use_memory=args.memory, use_text=args.text))
     print("Agent loaded\n")
 
     # Initialize logs
@@ -71,9 +76,14 @@ if __name__ == '__main__':
     log_episode_num_frames = torch.zeros(args.procs, device=device)
 
     while log_done_counter < args.episodes:
-        actions = agent.get_actions(obss)
-        obss, rewards, dones, _ = env.step(actions)
-        agent.analyze_feedbacks(rewards, dones)
+        joint_actions = []
+        for agent in agents:
+            actions = agent.get_actions(obss)
+            joint_actions.append(actions)
+        obss, rewards, dones, _ = env.step(joint_actions)
+
+        for agent in agents:
+            agent.analyze_feedbacks(rewards, dones)
 
         log_episode_return += torch.tensor(rewards,
                                            device=device, dtype=torch.float)

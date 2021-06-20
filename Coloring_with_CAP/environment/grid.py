@@ -504,6 +504,9 @@ class GridEnv(gym.Env):
             # Current position of the agent
             self.agents[agent] = {**self.agents[agent], 'pos': None}
 
+        if not IDX_TO_COLOR:
+            # ensure colors are generated
+            generate_colors(len(self.agents))
         # Generate a new random grid at the start of each episode
         # To keep the same grid for each episode, call env.seed() with
         # the same seed before calling env.reset()
