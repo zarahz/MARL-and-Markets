@@ -11,9 +11,16 @@ class EmptyEnv(GridEnv):
         self,
         agents=1,
         agent_view_size=7,
-        max_steps=50,
+        max_steps=None,
         size=5
     ):
+        if not max_steps and agents <= 1:
+            # since walls are not walkable agent has some additional steps
+            max_steps = size * size
+        elif not max_steps:
+            # calculate the walkable floor (by substracting the surrounding walls)
+            walkable_floor_size = (size*size) - (((size-2)*4)+4)
+            max_steps = walkable_floor_size - agents
         super().__init__(
             grid_size=size,
             agents=agents,

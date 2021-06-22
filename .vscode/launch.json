@@ -14,15 +14,15 @@
                 "--env",
                 "Empty-Grid-v0",
                 "--agents",
-                "2",
+                "5",
                 "--agent_view_size",
                 "5",
-                "--max_steps",
-                "10",
+                // "--max_steps",
+                // "10",
                 "--episodes",
                 "5",
                 "--size",
-                "5"
+                "15"
             ]
         },
         {
@@ -39,7 +39,7 @@
                 "--save-interval",
                 "10",
                 "--frames",
-                "80000"
+                "10000000"
             ]
         },
         {
