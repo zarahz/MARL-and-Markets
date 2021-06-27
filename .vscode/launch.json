@@ -14,7 +14,7 @@
                 "--env",
                 "Empty-Grid-v0",
                 "--agents",
-                "5",
+                "2",
                 "--agent_view_size",
                 "5",
                 // "--max_steps",
@@ -22,7 +22,7 @@
                 "--episodes",
                 "5",
                 "--size",
-                "15"
+                "5"
             ]
         },
         {
@@ -39,7 +39,15 @@
                 "--save-interval",
                 "10",
                 "--frames",
-                "10000000"
+                "80000"
+                // "--save-interval",
+                // "2",
+                // "--frames",
+                // "16",
+                // "--batch-size",
+                // "16",
+                // "--frames-per-proc",
+                // "16"
             ]
         },
         {

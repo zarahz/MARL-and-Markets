@@ -22,6 +22,7 @@ class PPOAlgo(BaseAlgo):
         self.epochs = epochs
         self.batch_size = batch_size
 
+        # to create minibatches?
         assert self.batch_size % self.recurrence == 0
 
         self.optimizer = torch.optim.Adam(

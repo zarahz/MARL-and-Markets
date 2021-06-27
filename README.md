@@ -1,7 +1,8 @@
 TODO 
-- adjust structure (q learning integration into visualization script with algo as file in learning)
-- test ppo with multi agents
 - fine tuning to achieve colored grid with one agent
+- implement another learning algorithm? I.e. DQN/Team-DQN? Or start with MCAC/DR,... 
+- add run parameter market to enable actions as touples and implement reward distribution with shares
+- adjust structure (q learning integration into visualization script with algo as file in learning)
 
 # Installation
 First clone this repository and navigate into the domain Folder

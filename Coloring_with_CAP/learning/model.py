@@ -34,9 +34,14 @@ class RecurrentACModel(ACModel):
 def init_params(m):
     classname = m.__class__.__name__
     if classname.find("Linear") != -1:
+        # generate 2d weights by choosing random numbers out of the
+        # standard deviation given mean = 0 and std = 1
         m.weight.data.normal_(0, 1)
+        # m.weight.data.shape = tensor(64,64)
+        # für jedes gewicht x wird berechnet x/(sqrt(sum x^2))
         m.weight.data *= 1 / \
             torch.sqrt(m.weight.data.pow(2).sum(1, keepdim=True))
+        # torch.sqrt ergibt shape (64,1), dh jede weight zeile wird durch ein torch.sqrt Value geteilt, siehe x oben
         if m.bias is not None:
             m.bias.data.fill_(0)
 
@@ -52,10 +57,11 @@ class ACModel(nn.Module, RecurrentACModel):
         # Define image embedding
         self.image_conv = nn.Sequential(
             # image passed to conv2d(in_channels, out_channels, kernel_size,...)
-            # in_channels is 3 for colors (or 1 for bw-images)
+            # in_channels is 3 here for encoding (obj, stat, col) normally its rgb (or 1 for bw-images)
             nn.Conv2d(3, 16, (2, 2)),
-            nn.ReLU(),  # output of conv2d is input of ReLU
-            nn.MaxPool2d((2, 2)),  # output of ReLU is used here and so on
+            nn.ReLU(),  # output of conv2d is input of ReLU - ReLu neutralizes negative values?
+            # output of ReLU is used here and so on - MaxPooling takes highest values of 2x2 grid and reduces size
+            nn.MaxPool2d((2, 2)),
             nn.Conv2d(16, 32, (2, 2)),
             nn.ReLU(),
             nn.Conv2d(32, 64, (2, 2)),
@@ -85,6 +91,8 @@ class ACModel(nn.Module, RecurrentACModel):
             self.embedding_size += self.text_embedding_size
 
         # Define actor's model
+        # centralized critic decentralized actors = multiple actors with one critic so here
+        # the layer needs to be a conv1d?
         self.actor = nn.Sequential(
             nn.Linear(self.embedding_size, 64),
             nn.Tanh(),
@@ -110,7 +118,9 @@ class ACModel(nn.Module, RecurrentACModel):
         return self.image_embedding_size
 
     def forward(self, obs, memory):
+        # image is encoded but has 3 attributes (obj, is_colored, color)
         x = obs.image.transpose(1, 3).transpose(2, 3)
+        # x.shape = [16,3,7,7] => [batch_size, channels, height, width]
         x = self.image_conv(x)
         x = x.reshape(x.shape[0], -1)
 
@@ -128,8 +138,9 @@ class ACModel(nn.Module, RecurrentACModel):
             embedding = torch.cat((embedding, embed_text), dim=1)
 
         x = self.actor(embedding)
+        # calculates the probalbilities of all actions in each parallel env? (shape [16,5])
         dist = Categorical(logits=F.log_softmax(x, dim=1))
-
+        # calculates all values in all envs? (shape [16,1] or [16] after squeeze)
         x = self.critic(embedding)
         value = x.squeeze(1)
 

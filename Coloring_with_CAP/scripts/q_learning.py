@@ -14,7 +14,7 @@ parser.add_argument("--agents", required=True, type=int,
                     help="number of agents (REQUIRED)")
 # optional
 parser.add_argument("--agent_view_size", type=int, default=5,
-                    help="partial view size of the agents (default: 5)")
+                    help="partial view size of the agents, needs to be an odd number! (default: 5)")
 parser.add_argument("--max_steps", type=int, default=100,
                     help="max. steps of the agents per episode (default: 100)")
 parser.add_argument("--episodes", type=int, default=100,
@@ -47,13 +47,13 @@ def visualize(done):
         redraw()
 
 
-# def epsilon_greedy():
-#     rand = np.random.random()
-#     if rand < epsilon:
-#         action = env.action_space.sample()
-#     else:
-#         action = np.argmax(Q)
-#     return action
+def epsilon_greedy():
+    rand = np.random.random()
+    if rand < epsilon:
+        action = env.action_space.sample()
+    else:
+        action = np.argmax(Q)
+    return action
 
 
 def softmax():
@@ -90,8 +90,8 @@ for episode in range(args.episodes):
     for s in range(args.max_steps):
         joint_actions = []
         for agent in range(agents):
-            # select the action
-            action = softmax()
+            # select the action (1,1,2)
+            action = epsilon_greedy()  # softmax()
             # update the count of that action
             action_count[action] += 1
             joint_actions.append(action)
@@ -102,7 +102,7 @@ for episode in range(args.episodes):
         # recalculate its Q value
         Q[action] = Q[action] + (1/action_count[action]) * \
             (reward-Q[action])
-
+        print(reward)
         visualize(done)
         if done:
             print('done! step=%s, reward=%.2f' %

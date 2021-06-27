@@ -26,6 +26,7 @@ def get_obss_preprocessor(obs_space):
         vocab = Vocabulary(obs_space["text"])
 
         def preprocess_obss(obss, device=None):
+            # TODO adapt to multi agents (remove [0] indexing!)
             return learning.DictList({
                 "image": preprocess_images([obs[0]["image"] for obs in obss], device=device),
                 "text": preprocess_texts([obs[0]["mission"] for obs in obss], vocab, device=device)

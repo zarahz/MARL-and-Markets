@@ -17,6 +17,7 @@ STATUS_TO_IDX = {
     'not_colored': 0,
     'colored': 1
 }
+IDX_TO_STATUS = dict(zip(STATUS_TO_IDX.values(), STATUS_TO_IDX.keys()))
 
 # Map of object type to integers
 OBJECT_TO_IDX = {
@@ -35,12 +36,12 @@ class WorldObj:
     Base class for grid world objects
     """
 
-    def __init__(self, type, status, color, opacity=1):
+    def __init__(self, type, is_colored, color, opacity=1):
         assert type in OBJECT_TO_IDX, type
-        assert color in COLOR_TO_IDX, color
+        assert color in IDX_TO_COLOR, color
         self.type = type
         self.color = color
-        self.status = status
+        self.is_colored = is_colored
         self.contains = None
 
         # Initial position of the object
@@ -67,10 +68,10 @@ class WorldObj:
 
     def encode(self):
         """Encode the a description of this object as a 3-tuple of integers"""
-        return (OBJECT_TO_IDX[self.type], STATUS_TO_IDX[self.status], COLOR_TO_IDX[self.color])
+        return (OBJECT_TO_IDX[self.type], self.is_colored, self.color)
 
     @staticmethod
-    def decode(type_idx, status, color_idx):
+    def decode(type_idx, is_colored, color_idx):
         """Create an object from a 3-tuple state description"""
 
         obj_type = IDX_TO_OBJECT[type_idx]
@@ -98,28 +99,56 @@ class Floor(WorldObj):
     Colored floor tile the agent can walk over
     """
 
-    def __init__(self, status='not_colored', color='white'):
-        super().__init__('floor', status, color)
+    def __init__(self, is_colored=0, color=1):
+        if is_colored == 0:
+            # if a floor is not colored always set it to white regardless of the incoming color!
+            color = 1
+        super().__init__('floor', is_colored, color)
 
     def can_overlap(self):
         return True
 
     def render(self, img):
         # Give the floor a pale color
-        color = COLORS[self.color]
+        color = list(COLORS.values())[self.color]
         fill_coords(img, point_in_rect(0.031, 1, 0.031, 1),
                     0.8 * np.array(color, dtype=np.uint8))
 
 
+class Agent(WorldObj):
+    """
+    Agent as Worldobject
+    """
+
+    def __init__(self, is_colored, color):
+        super().__init__('agent', is_colored, color)
+
+    def can_overlap(self):
+        # if isinstance(obj, Agent) or isinstance(obj, Floor):
+        return True
+        # return False
+
+    def render(self, img):
+        color = list(COLORS.values())[self.color]
+        if self.is_colored:
+            # rendered pale Floor (0.8 alpha)
+            fill_coords(img, point_in_rect(0.031, 1, 0.031, 1),
+                        0.8 * np.array(color, dtype=np.uint8))
+        # rendered Agent as circle
+        fill_coords(img, point_in_circle(0.5, 0.5, 0.31), color)
+
+
 class Wall(WorldObj):
-    def __init__(self, color='black'):
-        super().__init__('wall', 'colored', color)
+    def __init__(self, color=0):
+        # is_colored status 1 to make it easier to check if the whole grid is colored
+        super().__init__('wall', 1, color)
 
     def see_behind(self):
         return False
 
     def render(self, img):
-        fill_coords(img, point_in_rect(0, 1, 0, 1), COLORS[self.color])
+        fill_coords(img, point_in_rect(0, 1, 0, 1),
+                    list(COLORS.values())[self.color])
 
 
 class Grid:
@@ -155,8 +184,8 @@ class Grid:
         return False
 
     def __eq__(self, other):
-        grid1 = self.encode()
-        grid2 = other.encode()
+        grid1 = self.encode_grid_objects()
+        grid2 = other.encode_grid_objects()
         return np.array_equal(grid2, grid1)
 
     def __ne__(self, other):
@@ -249,7 +278,7 @@ class Grid:
             key = (agent['color'], agent['pos'][0],
                    agent['pos'][1], highlight, tile_size)
 
-        # (type, status, color) + key = (color, x, y, ?, highlight, size)
+        # (type, is_colored, color) + key = (color, x, y, ?, highlight, size)
         key = obj.encode() + key if obj else key
 
         if key in cls.tile_cache:  # what does that do?
@@ -307,7 +336,7 @@ class Grid:
         for j in range(0, self.height):
             for i in range(0, self.width):
                 cell = self.get(i, j)
-                for agent in agents:  # can agents be on top of each other? TODO!
+                for agent in agents:
                     agent_in_cell = np.array_equal(
                         agents[agent]['pos'], (i, j))
                     if agent_in_cell:
@@ -328,7 +357,7 @@ class Grid:
                 img[ymin:ymax, xmin:xmax, :] = tile_img
         return img
 
-    def encode(self, vis_mask=None):
+    def encode_grid_objects(self, vis_mask=None):
         """
         Produce a compact numpy encoding of the grid
         """
@@ -367,8 +396,8 @@ class Grid:
         grid = Grid(width, height)
         for i in range(width):
             for j in range(height):
-                type_idx, status, color_idx = array[i, j]
-                v = WorldObj.decode(type_idx, status, color_idx)
+                type_idx, is_colored, color_idx = array[i, j]
+                v = WorldObj.decode(type_idx, is_colored, color_idx)
                 grid.set(i, j, v)
                 vis_mask[i, j] = (type_idx != OBJECT_TO_IDX['unseen'])
 
@@ -540,7 +569,7 @@ class GridEnv(gym.Env):
         """
         sample_hash = hashlib.sha256()
 
-        to_encode = [self.grid.encode()]
+        to_encode = [self.grid.encode_grid_objects()]
         for agent in self.agents:
             to_encode.append(self.agents[agent]
                              ['pos'])
@@ -731,8 +760,8 @@ class GridEnv(gym.Env):
             break
 
         if obj is None:  # placing agent
-            self.color_Floor(
-                self.grid.get(*pos), IDX_TO_COLOR[self.agents[agent]['color']], pos)
+            self.toggle_is_colored(self.grid.get(
+                *pos), self.agents[agent]['color'], pos, None)
         else:
             self.grid.set(*pos, obj)
             obj.init_pos = pos
@@ -759,7 +788,6 @@ class GridEnv(gym.Env):
         """
         Set the agent's starting point at an empty position in the grid
         """
-        # if(not self.agents[agent]):
         self.agents[agent] = {**self.agents[agent], 'pos': None}
 
         pos = self.place_obj(None, top, size, max_tries=max_tries, agent=agent)
@@ -780,7 +808,7 @@ class GridEnv(gym.Env):
         return (topX, topY, botX, botY)
 
     def step(self, actions):
-        self.step_count += 1  # TODO manage step count globally for all agents!
+        self.step_count += 1
         reward = 0
         done = False
         obs = {}
@@ -788,8 +816,10 @@ class GridEnv(gym.Env):
             x = self.agents[agent]['pos'][0]
             y = self.agents[agent]['pos'][1]
             new_pos = None
+            old_pos = (x, y)
             action = actions[agent]
-
+            print("executing action ", action, " of agent ", agent,
+                  " (with joint actions being ", actions, ")")
             # compute new position
             if action == self.actions.left:
                 new_pos = np.array([x-1, y])
@@ -807,26 +837,60 @@ class GridEnv(gym.Env):
                 new_pos_cell = self.grid.get(*new_pos)
                 if new_pos_cell == None or new_pos_cell.can_overlap():
                     self.agents[agent]['pos'] = new_pos
-                    self.color_Floor(
-                        new_pos_cell, IDX_TO_COLOR[self.agents[agent]['color']], new_pos)
+                    self.toggle_is_colored(
+                        new_pos_cell, self.agents[agent]['color'], new_pos, old_pos)
 
             obs[agent] = self.gen_obs(agent)
 
-        if self.step_count >= self.max_steps:
+        if self.whole_grid_colored() or self.step_count >= self.max_steps:
             done = True
 
         return obs, reward, done, {}
 
     def whole_grid_colored(self):
-        return all(self.grid.encode()[:, :, 1].ravel())
+        return all(self.grid.encode_grid_objects()[:, :, 1].ravel())
 
-    def color_Floor(self, floor, color, pos):
-        if floor is not None and floor.status == 'colored':
-            self.put_obj(Floor(), *pos)
-        else:
+    def grid_colored_percentage(self):
+        # walkable_cells include agent and floor objects
+        walkable_cells = len(self.walkable_cells())
+        colored_cells = len(self.colored_cells())
+        return colored_cells/walkable_cells
+
+    def walkable_cells(self):
+        """ Returns 2d array of all cells containing floors or agents """
+        encoded_grid = self.grid.encode_grid_objects()
+        floor_cells = encoded_grid[encoded_grid[:, :, 0] == 3]
+        agent_cells = encoded_grid[encoded_grid[:, :, 0] == 4]
+        return np.concatenate((floor_cells, agent_cells))
+
+    def colored_cells(self):
+        """ Returns 2d array of all cells containing floor tiles or agents with status is colored """
+        encoded_grid = self.grid.encode_grid_objects()
+        colored_floor_cells = encoded_grid[(
+            (encoded_grid[:, :, 0] == 3) & (encoded_grid[:, :, 1] == 1))]
+        colored_agent_cells = encoded_grid[(
+            (encoded_grid[:, :, 0] == 4) & (encoded_grid[:, :, 1] == 1))]
+        return np.concatenate((colored_floor_cells, colored_agent_cells))
+
+    def toggle_is_colored(self, obj, color, new_pos, old_pos):
+        is_colored = 1
+        if obj is not None and obj.is_colored:
+            is_colored = 0
+
+        self.put_obj(Agent(is_colored, color), *new_pos)
+        if old_pos:
+            old_pos_attr = self.grid.get(*old_pos)
+            for agent in self.agents:
+                if (self.agents[agent]['pos'] == old_pos).all():
+                    self.put_obj(Agent(is_colored=old_pos_attr.is_colored,
+                                       color=old_pos_attr.color), *old_pos)
+                    return
+            self.put_obj(Floor(is_colored=old_pos_attr.is_colored,
+                         color=old_pos_attr.color), *old_pos)
+        # else:
             # alpha times color
             # lift_color = 0.2 * np.array(color, dtype=np.uint8)
-            self.put_obj(Floor(status='colored', color=color), *pos)
+            # self.put_obj(Floor(status='colored', color=color), *pos)
 
     def gen_obs_grid(self, agent):
         """
@@ -861,7 +925,7 @@ class GridEnv(gym.Env):
         grid, vis_mask = self.gen_obs_grid(agent)
 
         # Encode the partially observable view into a numpy array
-        image = grid.encode(vis_mask)
+        image = grid.encode_grid_objects(vis_mask)
 
         assert hasattr(
             self, 'mission'), "environments must define a textual mission string"

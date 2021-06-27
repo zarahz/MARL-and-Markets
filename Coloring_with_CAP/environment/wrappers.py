@@ -24,15 +24,16 @@ class CooperativeMultiagentWrapper(gym.core.ObservationWrapper):
 
     def step(self, actions):
         observation, reward, done, info = self.env.step(actions)
-        if done:
-            reward = self.calculate_reward()
+        # if done:
+        reward = self.calculate_reward()
         return observation, reward, done, info
 
     def calculate_reward(self):
-        if self.env.whole_grid_colored():
-            print('---- GRID FULLY COLORED! ----')
-            return 10
-        return 0
+        # if self.env.whole_grid_colored():
+        #     print('---- GRID FULLY COLORED! ----')
+        #     return 10
+        # return 0
+        return 10 * self.env.grid_colored_percentage()
 
     def print_coloring_data(self):
         floor_tiles = 0
@@ -41,7 +42,7 @@ class CooperativeMultiagentWrapper(gym.core.ObservationWrapper):
         for obj in self.env.grid.grid:
             if isinstance(obj, environment.grid.Floor):
                 floor_tiles += 1
-                if obj.status == 'colored':
+                if obj.is_colored:
                     colored_tiles += 1
                     if obj.color in colored_by_agent:
                         colored_by_agent[obj.color] += 1
