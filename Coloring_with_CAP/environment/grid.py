@@ -818,8 +818,6 @@ class GridEnv(gym.Env):
             new_pos = None
             old_pos = (x, y)
             action = actions[agent]
-            print("executing action ", action, " of agent ", agent,
-                  " (with joint actions being ", actions, ")")
             # compute new position
             if action == self.actions.left:
                 new_pos = np.array([x-1, y])

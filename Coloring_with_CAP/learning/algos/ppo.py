@@ -21,6 +21,7 @@ class PPOAlgo(BaseAlgo):
         self.clip_eps = clip_eps
         self.epochs = epochs
         self.batch_size = batch_size
+        self.agents = agents
 
         # to create minibatches?
         assert self.batch_size % self.recurrence == 0
@@ -57,30 +58,42 @@ class PPOAlgo(BaseAlgo):
 
                 for i in range(self.recurrence):
                     # Create a sub-batch of experience
+                    sb = dict()
+                    for attr in exps:
+                        if attr == 'action' or attr == 'log_prob':
+                            sb[attr] = torch.empty((self.agents, inds.size))
+                            for agent in range(self.agents):
+                                agent_attr = exps.get(attr)[agent][inds + i]
+                                sb[attr][agent] = torch.empty(
+                                    agent_attr.shape)
+                                sb[attr][agent] = agent_attr
+                            continue
+                        sb[attr] = exps.get(attr)[inds + i]
 
-                    sb = exps[inds + i]
+                    # sb = exps[inds + i]
 
                     # Compute loss
 
                     if self.acmodel.recurrent:
                         dist, value, memory = self.acmodel(
-                            sb.obs, memory * sb.mask)
+                            sb['obs'], memory * sb['mask'])
                     else:
-                        dist, value = self.acmodel(sb.obs)
+                        dist, value = self.acmodel(sb['obs'])
 
                     entropy = dist.entropy().mean()
-
-                    ratio = torch.exp(dist.log_prob(sb.action) - sb.log_prob)
-                    surr1 = ratio * sb.advantage
+                    # PPO Formulas are calculated here (clip and loss)
+                    ratio = torch.exp(dist.log_prob(
+                        sb['action']) - sb['log_prob'])
+                    surr1 = ratio * sb['advantage']
                     surr2 = torch.clamp(
-                        ratio, 1.0 - self.clip_eps, 1.0 + self.clip_eps) * sb.advantage
+                        ratio, 1.0 - self.clip_eps, 1.0 + self.clip_eps) * sb['advantage']
                     policy_loss = -torch.min(surr1, surr2).mean()
 
-                    value_clipped = sb.value + \
-                        torch.clamp(value - sb.value, -
+                    value_clipped = sb['value'] + \
+                        torch.clamp(value - sb['value'], -
                                     self.clip_eps, self.clip_eps)
-                    surr1 = (value - sb.returnn).pow(2)
-                    surr2 = (value_clipped - sb.returnn).pow(2)
+                    surr1 = (value - sb['returnn']).pow(2)
+                    surr2 = (value_clipped - sb['returnn']).pow(2)
                     value_loss = torch.max(surr1, surr2).mean()
 
                     loss = policy_loss - self.entropy_coef * \

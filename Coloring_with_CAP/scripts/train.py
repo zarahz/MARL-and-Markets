@@ -208,7 +208,7 @@ if __name__ == '__main__':
                      logs["value_loss"], logs["grad_norm"]]
 
             txt_logger.info(
-                "U {} | F {:06} | FPS {:04.0f} | D {} | rR:μσmM {:.2f} {:.2f} {:.2f} {:.2f} | F:μσmM {:.1f} {:.1f} {} {} | H {:.3f} | V {:.3f} | pL {:.3f} | vL {:.3f} | ∇ {:.3f}"
+                "U {} | F {:06} | FPS {:04.0f} | D {} | reshapedReward:σ μ min Max {:.2f} {:.2f} {:.2f} {:.2f} | F:μ σ m M {:.1f} {:.1f} {} {} | entropy {:.3f} | V {:.3f} | pLoss {:.3f} | vLoss {:.3f} | ∇ (grad_norm) {:.3f}"
                 .format(*data))
 
             header += ["return_" + key for key in return_per_episode.keys()]

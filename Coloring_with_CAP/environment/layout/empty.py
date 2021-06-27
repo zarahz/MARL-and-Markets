@@ -10,7 +10,7 @@ class EmptyEnv(GridEnv):
     def __init__(
         self,
         agents=1,
-        agent_view_size=7,
+        agent_view_size=7,  # currently training with view size smaller than 7 fails! TODO!
         max_steps=None,
         size=5
     ):

@@ -135,6 +135,8 @@ class BaseAlgo(ABC):
 
             preprocessed_obs = self.preprocess_obss(
                 self.obs, device=self.device)
+
+            # reduce memory consumption for computations
             with torch.no_grad():
                 if self.acmodel.recurrent:
                     dist, value, memory = self.acmodel(
@@ -152,8 +154,8 @@ class BaseAlgo(ABC):
 
             # Update experiences values
 
-            self.obss[i] = self.obs
-            self.obs = obs
+            self.obss[i] = self.obs  # old obs
+            self.obs = obs  # set old obs to new experience obs
             if self.acmodel.recurrent:
                 self.memories[i] = self.memory
                 self.memory = memory
@@ -213,6 +215,7 @@ class BaseAlgo(ABC):
 
             delta = self.rewards[i] + self.discount * \
                 next_value * next_mask - self.values[i]
+            # advantage function is calculated here!
             self.advantages[i] = delta + self.discount * \
                 self.gae_lambda * next_advantage * next_mask
 
@@ -225,6 +228,7 @@ class BaseAlgo(ABC):
         #   - D is the dimensionality.
 
         exps = DictList()
+        # obs length is 2048 = 16*128
         exps.obs = [self.obss[i][j]
                     for j in range(self.num_procs)
                     for i in range(self.num_frames_per_proc)]
@@ -235,12 +239,14 @@ class BaseAlgo(ABC):
             # T x P -> P x T -> (P * T) x 1
             exps.mask = self.masks.transpose(0, 1).reshape(-1).unsqueeze(1)
         # for all tensors below, T x P -> P x T -> P * T
-        exps.action = self.actions.transpose(0, 1).reshape(-1)
+        exps.action = self.actions.transpose(0, 1).reshape(
+            self.agents, self.num_frames_per_proc*self.num_procs)
         exps.value = self.values.transpose(0, 1).reshape(-1)
         exps.reward = self.rewards.transpose(0, 1).reshape(-1)
         exps.advantage = self.advantages.transpose(0, 1).reshape(-1)
         exps.returnn = exps.value + exps.advantage
-        exps.log_prob = self.log_probs.transpose(0, 1).reshape(-1)
+        exps.log_prob = self.log_probs.transpose(0, 1).reshape(
+            self.agents, self.num_frames_per_proc*self.num_procs)
 
         # Preprocess experiences
 
