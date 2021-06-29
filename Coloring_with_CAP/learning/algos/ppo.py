@@ -83,10 +83,11 @@ class PPOAlgo(BaseAlgo):
                     entropy = dist.entropy().mean()
                     # PPO Formulas are calculated here (clip and loss)
                     ratio = torch.exp(dist.log_prob(
-                        sb['action']) - sb['log_prob'])
+                        sb['action'][0]) - sb['log_prob'][0])
                     surr1 = ratio * sb['advantage']
                     surr2 = torch.clamp(
                         ratio, 1.0 - self.clip_eps, 1.0 + self.clip_eps) * sb['advantage']
+                    # ??? Warum negativ und warum im durchschnitt? durchschnitt als erwartungswert?
                     policy_loss = -torch.min(surr1, surr2).mean()
 
                     value_clipped = sb['value'] + \

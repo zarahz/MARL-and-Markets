@@ -35,11 +35,11 @@
                 "--algo",
                 "ppo",
                 "--model",
-                "EmptyGrid",
+                "EmptyGrid-Percentage-Reward",
                 "--save-interval",
                 "10",
                 "--frames",
-                "80000"
+                "100000"
                 // "--save-interval",
                 // "2",
                 // "--frames",

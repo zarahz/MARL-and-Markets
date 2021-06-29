@@ -507,7 +507,7 @@ class GridEnv(gym.Env):
         })
 
         # Range of possible rewards
-        self.reward_range = (0, 10)  # (0, 1)
+        self.reward_range = (0, 1)  # (0, 1)
 
         # Window to use for human rendering mode
         self.window = None
@@ -644,7 +644,7 @@ class GridEnv(gym.Env):
         Compute the reward to be given upon success
         """
 
-        return (1 - 0.9 * (self.step_count / self.max_steps))*10
+        return 1 - 0.9 * (self.step_count / self.max_steps)
 
     def _rand_int(self, low, high):
         """
@@ -842,6 +842,7 @@ class GridEnv(gym.Env):
 
         if self.whole_grid_colored() or self.step_count >= self.max_steps:
             done = True
+            reward = self._reward()
 
         return obs, reward, done, {}
 

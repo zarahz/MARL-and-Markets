@@ -3,7 +3,7 @@ import time
 import numpy
 import torch
 
-import learning.utils
+from learning.utils import *
 
 
 # Parse arguments
@@ -15,11 +15,11 @@ parser.add_argument("--env", default='Empty-Grid-v0',
                     help="name of the environment to be run (REQUIRED)")
 parser.add_argument("--agents", default=1, type=int,
                     help="amount of agents")
-parser.add_argument("--seed", type=int, default=0,
-                    help="random seed (default: 0)")
+parser.add_argument("--seed", type=int, default=1,
+                    help="random seed (default: 1)")
 parser.add_argument("--shift", type=int, default=0,
                     help="number of times the environment is reset at the beginning (default: 0)")
-parser.add_argument("--argmax", action="store_true", default=True,
+parser.add_argument("--argmax", action="store_true", default=False,
                     help="select the action with highest probability (default: False)")
 parser.add_argument("--pause", type=float, default=0.1,
                     help="pause duration between two consequent actions of the agent (default: 0.1)")

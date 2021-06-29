@@ -3,12 +3,15 @@ import time
 import datetime
 import torch
 import learning
+# cd into storage and call tensorboard --logdir ./ --host localhost --port 8888
 import tensorboardX
 import sys
 
 import learning.utils
 from learning.model import ACModel
 
+# to show large tensors without truncation uncomment the next line
+# torch.set_printoptions(threshold=10_000)
 
 # Parse arguments
 
@@ -197,7 +200,8 @@ if __name__ == '__main__':
 
             header = ["update", "frames", "FPS", "duration"]
             data = [update, num_frames, fps, duration]
-            header += ["rreturn_" + key for key in rreturn_per_episode.keys()]
+            header += ["reshaped_return_per_episode_" +
+                       key for key in rreturn_per_episode.keys()]
             data += rreturn_per_episode.values()
             header += ["num_frames_" +
                        key for key in num_frames_per_episode.keys()]
@@ -208,10 +212,11 @@ if __name__ == '__main__':
                      logs["value_loss"], logs["grad_norm"]]
 
             txt_logger.info(
-                "U {} | F {:06} | FPS {:04.0f} | D {} | reshapedReward:σ μ min Max {:.2f} {:.2f} {:.2f} {:.2f} | F:μ σ m M {:.1f} {:.1f} {} {} | entropy {:.3f} | V {:.3f} | pLoss {:.3f} | vLoss {:.3f} | ∇ (grad_norm) {:.3f}"
+                "U {} | F {:06} | FPS {:04.0f} | D {} | reshapedReturn:σ μ min Max {:.2f} {:.2f} {:.2f} {:.2f} | numFrames:μ σ m M {:.1f} {:.1f} {} {} | entropy {:.3f} | V {:.3f} | pLoss {:.3f} | vLoss {:.3f} | ∇ (grad_norm) {:.3f}"
                 .format(*data))
 
-            header += ["return_" + key for key in return_per_episode.keys()]
+            header += ["return_per_episode_" +
+                       key for key in return_per_episode.keys()]
             data += return_per_episode.values()
 
             if status["num_frames"] == 0:
