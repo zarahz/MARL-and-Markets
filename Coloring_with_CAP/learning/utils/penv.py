@@ -44,11 +44,12 @@ class ParallelEnv(gym.Env):
                                             for local in self.locals]
         return results
 
-    def step(self, joint_actions):
-        for local, actions in zip(self.locals, (np.array(joint_actions).T)[1:]):
-            local.send(("step", actions))
-        obs, reward, done, info = self.envs[0].step(
-            np.array(joint_actions)[:, 0])
+    def step(self, actions):
+        # (np.array(joint_actions).T)[1:]):
+        for local, action in zip(self.locals, (np.array(actions).T)[1:]):
+            local.send(("step", action))
+        obs, reward, done, info = self.envs[0].step(actions[0])
+        # np.array(joint_actions)[:, 0])
         if done:
             obs = self.envs[0].reset()
         results = zip(*[(obs, reward, done, info)] + [local.recv()

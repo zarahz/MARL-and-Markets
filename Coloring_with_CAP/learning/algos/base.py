@@ -79,7 +79,7 @@ class BaseAlgo(ABC):
         # Initialize experience values
 
         shape = (self.num_frames_per_proc, self.num_procs)
-        multi_shape = (self.num_frames_per_proc, agents, self.num_procs)
+        #multi_shape = (self.num_frames_per_proc, agents, self.num_procs)
         self.obs = self.env.reset()
         self.obss = [None]*(shape[0])
         if self.acmodel.recurrent:
@@ -90,12 +90,12 @@ class BaseAlgo(ABC):
         self.mask = torch.ones(shape[1], device=self.device)
         self.masks = torch.zeros(*shape, device=self.device)
         self.actions = torch.zeros(
-            multi_shape, device=self.device, dtype=torch.int)
+            *shape, device=self.device, dtype=torch.int)  # multi_shape, device=self.device, dtype=torch.int)
         self.values = torch.zeros(*shape, device=self.device)
         self.rewards = torch.zeros(*shape, device=self.device)
         self.advantages = torch.zeros(*shape, device=self.device)
         self.log_probs = torch.zeros(
-            multi_shape, device=self.device, dtype=torch.int)
+            *shape, device=self.device, dtype=torch.int)  # multi_shape, device=self.device, dtype=torch.int)
 
         # Initialize log values
 
@@ -145,13 +145,15 @@ class BaseAlgo(ABC):
                     dist, value = self.acmodel(preprocessed_obs)
 
             # create joint actions
-            joint_actions = [dist.sample() for _ in range(self.agents)]
+            # joint_actions = [dist.sample() for _ in range(self.agents)]
+            action = dist.sample()
             # convert agentList(actionTensor) into tensor of
             # shape (agents, 16): 16 consecutive actions of each agent
-            tensor_actions = torch.stack(joint_actions[:])
+            # tensor_actions = torch.stack(joint_actions[:])
+            # obs, reward, done, _ = self.env.step(
+            #     [action.cpu().numpy() for action in joint_actions])
             obs, reward, done, _ = self.env.step(
-                [action.cpu().numpy() for action in joint_actions])
-
+                action.cpu().numpy())
             # Update experiences values
 
             self.obss[i] = self.obs  # old obs
@@ -163,16 +165,17 @@ class BaseAlgo(ABC):
             self.mask = 1 - \
                 torch.tensor(done, device=self.device, dtype=torch.float)
 
-            self.actions[i] = tensor_actions
+            self.actions[i] = action  # tensor_actions
             self.values[i] = value
             if self.reshape_reward is not None:
                 self.rewards[i] = torch.tensor([
                     self.reshape_reward(obs_, action_, reward_, done_)
-                    for obs_, action_, reward_, done_ in zip(obs, joint_actions, reward, done)
+                    # (obs, joint_actions, reward, done)
+                    for obs_, action_, reward_, done_ in zip(obs, action, reward, done)
                 ], device=self.device)
             else:
                 self.rewards[i] = torch.tensor(reward, device=self.device)
-            self.log_probs[i] = dist.log_prob(tensor_actions)
+            self.log_probs[i] = dist.log_prob(action)  # (tensor_actions)
 
             # Update log values
 
@@ -239,14 +242,14 @@ class BaseAlgo(ABC):
             # T x P -> P x T -> (P * T) x 1
             exps.mask = self.masks.transpose(0, 1).reshape(-1).unsqueeze(1)
         # for all tensors below, T x P -> P x T -> P * T
-        exps.action = self.actions.transpose(0, 1).reshape(
-            self.agents, self.num_frames_per_proc*self.num_procs)
+        # self.agents, self.num_frames_per_proc*self.num_procs)
+        exps.action = self.actions.transpose(0, 1).reshape(-1)
         exps.value = self.values.transpose(0, 1).reshape(-1)
         exps.reward = self.rewards.transpose(0, 1).reshape(-1)
         exps.advantage = self.advantages.transpose(0, 1).reshape(-1)
         exps.returnn = exps.value + exps.advantage
-        exps.log_prob = self.log_probs.transpose(0, 1).reshape(
-            self.agents, self.num_frames_per_proc*self.num_procs)
+        # self.agents, self.num_frames_per_proc*self.num_procs)
+        exps.log_prob = self.log_probs.transpose(0, 1).reshape(-1)
 
         # Preprocess experiences
 

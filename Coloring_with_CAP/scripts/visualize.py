@@ -80,7 +80,7 @@ for episode in range(args.episodes):
             action = agent.get_action(obs)
             joint_actions.append(action)
 
-        obs, reward, done, _ = env.step(joint_actions)
+        obs, reward, done, _ = env.step(joint_actions[0])
 
         for agent in agents:
             agent.analyze_feedback(reward, done)

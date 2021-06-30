@@ -50,7 +50,7 @@ class Agent:
         return actions.cpu().numpy()
 
     def get_action(self, obs):
-        return self.get_actions([obs])[0]
+        return self.get_actions([obs])
 
     def analyze_feedbacks(self, rewards, dones):
         if self.acmodel.recurrent:

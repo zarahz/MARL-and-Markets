@@ -35,7 +35,7 @@
                 "--algo",
                 "ppo",
                 "--model",
-                "EmptyGrid-test",
+                "EmptyGrid-single",
                 "--save-interval",
                 "10",
                 "--frames",
@@ -77,7 +77,7 @@
             "console": "integratedTerminal",
             "args": [
                 "--model",
-                "EmptyGrid-Percentage-Reward"
+                "EmptyGrid-single"
             ]
         },
         {
