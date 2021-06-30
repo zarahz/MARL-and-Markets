@@ -41,7 +41,8 @@ parser.add_argument("--frames", type=int, default=10**7,
 # epochs range(3,30), wie oft anhand der experience gelernt wird?
 parser.add_argument("--epochs", type=int, default=4,
                     help="number of epochs for PPO (default: 4)")
-# batch range(4, 4096)
+# batch range(4, 4096) -> 256 insgesamt erhält man frames-per-proc*procs (128*16=2048) batch elemente und davon erhält man
+# 2048/256 = 8 mini batches
 parser.add_argument("--batch-size", type=int, default=256,
                     help="batch size for PPO (default: 256)")
 # a Number that defines how often a (random) action is chosen for the batch/experience

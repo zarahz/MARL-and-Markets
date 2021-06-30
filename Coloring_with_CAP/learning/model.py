@@ -136,11 +136,12 @@ class ACModel(nn.Module, RecurrentACModel):
         return self.image_embedding_size
 
     def forward(self, obs, memory):
-        # obs.image contains 16 (parallel envs) images of size agent-view
+        # obs.image shape is [3,16,7,7]
+        # contains 16 (parallel envs) images with 3 channels and a size of agent-view (7x7 per default)
         x = obs.image.transpose(1, 3).transpose(2, 3)
-        # x.shape = [16,3,7,7] => [batch_size, channels, height, width]
+        # here x.shape = [16,3,7,7] => [batch_size, channels, height, width]
         x = self.image_conv(x)
-        # x contains here for all 16 episodes the 64
+        # x has now for all 16 episodes the 64 out channels
         x = x.reshape(x.shape[0], -1)
 
         if self.use_memory:
