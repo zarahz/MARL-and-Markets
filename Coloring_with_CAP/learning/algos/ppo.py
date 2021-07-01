@@ -70,7 +70,7 @@ class PPOAlgo(BaseAlgo):
                     #         continue
                     #     sb[attr] = exps.get(attr)[inds + i]
 
-                    sb = exps[inds + i]
+                    sb = exps._getagentitem__(inds + i, self.agents)
 
                     # Compute loss
 
@@ -83,7 +83,7 @@ class PPOAlgo(BaseAlgo):
                     entropy = dist.entropy().mean()
                     # PPO Formulas are calculated here (clip and loss)
                     ratio = torch.exp(dist.log_prob(
-                        sb.action) - sb.log_prob)
+                        sb.actions[0].action) - sb.log_probs[0].log_prob)
                     surr1 = ratio * sb.advantage
                     surr2 = torch.clamp(
                         ratio, 1.0 - self.clip_eps, 1.0 + self.clip_eps) * sb.advantage
