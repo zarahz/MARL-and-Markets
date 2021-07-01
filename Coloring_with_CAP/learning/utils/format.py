@@ -28,7 +28,7 @@ def get_obss_preprocessor(obs_space):
         def preprocess_obss(obss, device=None):
             # TODO adapt to multi agents (remove [0] indexing!)
             return learning.DictList({
-                "image": preprocess_images([obs[0]["image"] for obs in obss], device=device),
+                "image": preprocess_images(obss, device=device),
                 "text": preprocess_texts([obs[0]["mission"] for obs in obss], vocab, device=device)
             })
         preprocess_obss.vocab = vocab
@@ -39,7 +39,11 @@ def get_obss_preprocessor(obs_space):
     return obs_space, preprocess_obss
 
 
-def preprocess_images(images, device=None):
+def preprocess_images(obss, device=None):
+    images = []
+    for obs in obss:
+        for agent_obs in obs:
+            images.append(obs[agent_obs]['image'])
     # Bug of Pytorch: very slow if not first converted to numpy array
     images = numpy.array(images)
     return torch.tensor(images, device=device, dtype=torch.float)

@@ -79,7 +79,7 @@ class BaseAlgo(ABC):
         # Initialize experience values
 
         shape = (self.num_frames_per_proc, self.num_procs)
-        #multi_shape = (self.num_frames_per_proc, agents, self.num_procs)
+        # multi_shape = (self.num_frames_per_proc, agents, self.num_procs)
         self.obs = self.env.reset()
         self.obss = [None]*(shape[0])
         if self.acmodel.recurrent:
@@ -145,15 +145,15 @@ class BaseAlgo(ABC):
                     dist, value = self.acmodel(preprocessed_obs)
 
             # create joint actions
-            # joint_actions = [dist.sample() for _ in range(self.agents)]
-            action = dist.sample()
+            action = dist.sample()  # shape torch.Size([16])
+            joint_actions = [action]
             # convert agentList(actionTensor) into tensor of
-            # shape (agents, 16): 16 consecutive actions of each agent
-            # tensor_actions = torch.stack(joint_actions[:])
-            # obs, reward, done, _ = self.env.step(
-            #     [action.cpu().numpy() for action in joint_actions])
+            # tensor_actions: torch.Size([1, 16]) (agents, 16): 16 consecutive actions of each agent
+            tensor_actions = torch.stack(joint_actions[:])
             obs, reward, done, _ = self.env.step(
-                [action.cpu().numpy()])
+                [action.cpu().numpy() for action in joint_actions])
+            # obs, reward, done, _ = self.env.step(
+            #     [action.cpu().numpy()])
             # Update experiences values
 
             self.obss[i] = self.obs  # old obs
