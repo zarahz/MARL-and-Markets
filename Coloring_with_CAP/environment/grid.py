@@ -552,8 +552,7 @@ class GridEnv(gym.Env):
             start_cell = self.grid.get(*self.agents[agent]['pos'])
             assert start_cell is None or start_cell.can_overlap()
 
-            # obs[agent] = self.gen_obs(agent)
-            obs = self.gen_obs(agent)
+            obs[agent] = self.gen_obs(agent)
         # Step count since episode start
         self.step_count = 0
 
@@ -818,7 +817,7 @@ class GridEnv(gym.Env):
             y = self.agents[agent]['pos'][1]
             new_pos = None
             old_pos = (x, y)
-            action = actions  # [agent]
+            action = actions[agent]
             # compute new position
             if action == self.actions.left:
                 new_pos = np.array([x-1, y])
@@ -839,7 +838,7 @@ class GridEnv(gym.Env):
                     self.toggle_is_colored(
                         new_pos_cell, self.agents[agent]['color'], new_pos, old_pos)
 
-            obs = self.gen_obs(agent)
+            obs[agent] = self.gen_obs(agent)
 
         if self.whole_grid_colored() or self.step_count >= self.max_steps:
             done = True

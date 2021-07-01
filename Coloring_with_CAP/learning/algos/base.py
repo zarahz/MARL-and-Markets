@@ -153,7 +153,7 @@ class BaseAlgo(ABC):
             # obs, reward, done, _ = self.env.step(
             #     [action.cpu().numpy() for action in joint_actions])
             obs, reward, done, _ = self.env.step(
-                action.cpu().numpy())
+                [action.cpu().numpy()])
             # Update experiences values
 
             self.obss[i] = self.obs  # old obs
