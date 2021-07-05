@@ -56,7 +56,7 @@ model_dir = learning.utils.get_model_dir(args.model)
 agents = []
 for agent in range(args.agents):
     agents.append(learning.utils.Agent(env.observation_space, env.action_space, model_dir,
-                                       device=device, argmax=args.argmax, use_memory=args.memory, use_text=args.text))
+                                       device=device, argmax=args.argmax, agent_index=agent))
 print("Agents loaded\n")
 
 # Run the agent
@@ -76,11 +76,11 @@ for episode in range(args.episodes):
         if args.gif:
             frames.append(numpy.moveaxis(env.render("rgb_array"), 2, 0))
         joint_actions = []
-        for agent in agents:
-            action = agent.get_action(obs)
+        for agent_index, agent in enumerate(agents):
+            action = agent.get_action(obs, agent_index)
             joint_actions.append(action)
 
-        obs, reward, done, _ = env.step(joint_actions[0])
+        obs, reward, done, _ = env.step(joint_actions)
 
         for agent in agents:
             agent.analyze_feedback(reward, done)

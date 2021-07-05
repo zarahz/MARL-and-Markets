@@ -12,11 +12,10 @@ class Agent:
     - to analyze the feedback (i.e. reward and done state) of its action."""
 
     def __init__(self, obs_space, action_space, model_dir,
-                 device=None, argmax=False, num_envs=1, use_memory=False, use_text=False):
+                 device=None, argmax=False, num_envs=1, agent_index=0):
         obs_space, self.preprocess_obss = learning.utils.get_obss_preprocessor(
             obs_space)
-        self.acmodel = ACModel(obs_space, action_space,
-                               use_memory=use_memory, use_text=use_text)
+        self.acmodel = ACModel(obs_space, action_space)
         self.device = device
         self.argmax = argmax
         self.num_envs = num_envs
@@ -25,20 +24,29 @@ class Agent:
             self.memories = torch.zeros(
                 self.num_envs, self.acmodel.memory_size, device=self.device)
 
-        self.acmodel.load_state_dict(learning.utils.get_model_state(model_dir))
+        try:
+            state = learning.utils.get_model_state(model_dir)[agent_index]
+        except IndexError:
+            state_len = len(learning.utils.get_model_state(model_dir))
+            state = learning.utils.get_model_state(
+                model_dir)[agent_index % state_len]
+        self.acmodel.load_state_dict(state)
         self.acmodel.to(self.device)
         self.acmodel.eval()
         if hasattr(self.preprocess_obss, "vocab"):
             self.preprocess_obss.vocab.load_vocab(
                 learning.utils.get_vocab(model_dir))
 
-    def get_actions(self, obss):
-        preprocessed_obss = self.preprocess_obss(obss, device=self.device)
+    def get_actions(self, obss, agent):
+        agent_obs = [None]*len(obss)
+        for index in range(len(obss)):
+            agent_obs[index] = obss[index][agent]
+        preprocessed_obss = self.preprocess_obss(agent_obs, device=self.device)
 
         with torch.no_grad():
             if self.acmodel.recurrent:
-                dist, _, self.memories = self.acmodel(
-                    preprocessed_obss, self.memories)
+                dist, _ = self.acmodel(
+                    preprocessed_obss)
             else:
                 dist, _ = self.acmodel(preprocessed_obss)
 
@@ -49,8 +57,8 @@ class Agent:
 
         return actions.cpu().numpy()
 
-    def get_action(self, obs):
-        return self.get_actions([obs])
+    def get_action(self, obs, agent):
+        return self.get_actions([obs], agent)
 
     def analyze_feedbacks(self, rewards, dones):
         if self.acmodel.recurrent:

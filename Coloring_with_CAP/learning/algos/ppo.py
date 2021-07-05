@@ -9,13 +9,13 @@ class PPOAlgo(BaseAlgo):
     """The Proximal Policy Optimization algorithm
     ([Schulman et al., 2015](https://arxiv.org/abs/1707.06347))."""
 
-    def __init__(self, envs, acmodel, device=None, num_frames_per_proc=None, discount=0.99, lr=0.001, gae_lambda=0.95,
+    def __init__(self, envs, models, device=None, num_frames_per_proc=None, discount=0.99, lr=0.001, gae_lambda=0.95,
                  entropy_coef=0.01, value_loss_coef=0.5, max_grad_norm=0.5, recurrence=4,
                  adam_eps=1e-8, clip_eps=0.2, epochs=4, batch_size=256, preprocess_obss=None,
                  reshape_reward=None, agents=1):
         num_frames_per_proc = num_frames_per_proc or 128
 
-        super().__init__(envs, acmodel, device, num_frames_per_proc, discount, lr, gae_lambda, entropy_coef,
+        super().__init__(envs, models, device, num_frames_per_proc, discount, lr, gae_lambda, entropy_coef,
                          value_loss_coef, max_grad_norm, recurrence, preprocess_obss, reshape_reward, agents)
 
         self.clip_eps = clip_eps
@@ -26,11 +26,13 @@ class PPOAlgo(BaseAlgo):
         # to create minibatches?
         assert self.batch_size % self.recurrence == 0
 
-        self.optimizer = torch.optim.Adam(
-            self.acmodel.parameters(), lr, eps=adam_eps)
+        self.optimizers = []
+        for agent in range(self.agents):
+            self.optimizers.append(torch.optim.Adam(
+                self.models[agent].parameters(), lr, eps=adam_eps))
         self.batch_num = 0
 
-    def update_parameters(self, exps):
+    def update_parameters(self, exps, agent, logs):
         # Collect experiences
 
         for _ in range(self.epochs):
@@ -53,7 +55,7 @@ class PPOAlgo(BaseAlgo):
 
                 # Initialize memory
 
-                if self.acmodel.recurrent:
+                if self.models[0].recurrent:
                     memory = exps.memory[inds]
 
                 for i in range(self.recurrence):
@@ -70,20 +72,19 @@ class PPOAlgo(BaseAlgo):
                     #         continue
                     #     sb[attr] = exps.get(attr)[inds + i]
 
-                    sb = exps._getagentitem__(inds + i, self.agents)
+                    sb = exps[inds + i]
 
                     # Compute loss
 
-                    if self.acmodel.recurrent:
-                        dist, value, memory = self.acmodel(
-                            sb.obs, memory * sb.mask)
+                    if self.models[0].recurrent:
+                        dist, value = self.models[agent](sb.obs)
                     else:
-                        dist, value = self.acmodel(sb.obs)
+                        dist, value = self.model(sb.obs)
 
                     entropy = dist.entropy().mean()
                     # PPO Formulas are calculated here (clip and loss)
                     ratio = torch.exp(dist.log_prob(
-                        sb.actions[0].action) - sb.log_probs[0].log_prob)
+                        sb.actions) - sb.log_probs)
                     surr1 = ratio * sb.advantage
                     surr2 = torch.clamp(
                         ratio, 1.0 - self.clip_eps, 1.0 + self.clip_eps) * sb.advantage
@@ -110,7 +111,7 @@ class PPOAlgo(BaseAlgo):
 
                     # Update memories for next epoch
 
-                    if self.acmodel.recurrent and i < self.recurrence - 1:
+                    if self.models[0].recurrent and i < self.recurrence - 1:
                         exps.memory[inds + i + 1] = memory.detach()
 
                 # Update batch values
@@ -123,13 +124,13 @@ class PPOAlgo(BaseAlgo):
 
                 # Update actor-critic
 
-                self.optimizer.zero_grad()
+                self.optimizers[agent].zero_grad()
                 batch_loss.backward()
                 grad_norm = sum(p.grad.data.norm(2).item() **
-                                2 for p in self.acmodel.parameters()) ** 0.5
+                                2 for p in self.models[agent].parameters()) ** 0.5
                 torch.nn.utils.clip_grad_norm_(
-                    self.acmodel.parameters(), self.max_grad_norm)
-                self.optimizer.step()
+                    self.models[agent].parameters(), self.max_grad_norm)
+                self.optimizers[agent].step()
 
                 # Update log values
 
@@ -141,13 +142,11 @@ class PPOAlgo(BaseAlgo):
 
         # Log some values
 
-        logs = {
-            "entropy": numpy.mean(log_entropies),
-            "value": numpy.mean(log_values),
-            "policy_loss": numpy.mean(log_policy_losses),
-            "value_loss": numpy.mean(log_value_losses),
-            "grad_norm": numpy.mean(log_grad_norms)
-        }
+        logs["entropy"].append(numpy.mean(log_entropies))
+        logs["value"].append(numpy.mean(log_values))
+        logs["policy_loss"].append(numpy.mean(log_policy_losses))
+        logs["value_loss"].append(numpy.mean(log_value_losses))
+        logs["grad_norm"].append(numpy.mean(grad_norm))
 
         return logs
 

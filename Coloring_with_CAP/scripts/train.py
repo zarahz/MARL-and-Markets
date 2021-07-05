@@ -3,7 +3,10 @@ import time
 import datetime
 import torch
 import learning
-# cd into storage and call tensorboard --logdir ./ --host localhost --port 8888
+# cd into storage and call either
+# tensorboard --logdir ./ --host localhost --port 8888
+# or
+# python -m tensorboard.main --logdir ./ --host localhost --port 8888
 import tensorboardX
 import sys
 
@@ -85,6 +88,7 @@ parser.add_argument("--text", action="store_true", default=False,
                     help="add a GRU to the model to handle text input")
 
 args = parser.parse_args()
+agents = args.agents
 args.mem = args.recurrence > 1
 
 # Set run dir
@@ -140,30 +144,38 @@ if "vocab" in status:
 txt_logger.info("Observations preprocessor loaded")
 
 # Load model
+models = []
+for agent in range(agents):
+    model = ACModel(obs_space, envs[0].action_space)
+    if "model_state" in status:
+        model.load_state_dict(status["model_state"][agent])
+    model.to(device)
+    models.append(model)
 
-acmodel = ACModel(obs_space, envs[0].action_space, args.mem, args.text)
-if "model_state" in status:
-    acmodel.load_state_dict(status["model_state"])
-acmodel.to(device)
 txt_logger.info("Model loaded\n")
-txt_logger.info("{}\n".format(acmodel))
+# txt_logger.info("{}\n".format(acmodel))
 
 # Load algo
 print("NAME:________________________  ", __name__)
 if __name__ == '__main__':
+
     if args.algo == "a2c":
         algo = learning.A2CAlgo(envs, acmodel, device, args.frames_per_proc, args.discount, args.lr, args.gae_lambda,
                                 args.entropy_coef, args.value_loss_coef, args.max_grad_norm, args.recurrence,
                                 args.optim_alpha, args.optim_eps, preprocess_obss)
     elif args.algo == "ppo":
-        algo = learning.PPOAlgo(envs, acmodel, device, args.frames_per_proc, args.discount, args.lr, args.gae_lambda,
-                                args.entropy_coef, args.value_loss_coef, args.max_grad_norm, args.recurrence,
-                                args.optim_eps, args.clip_eps, args.epochs, args.batch_size, preprocess_obss, None, args.agents)
+        algo = learning.PPOAlgo(envs, models, device, args.frames_per_proc,
+                                args.discount, args.lr, args.gae_lambda, args.entropy_coef, args.value_loss_coef,
+                                args.max_grad_norm, args.recurrence, args.optim_eps, args.clip_eps, args.epochs,
+                                args.batch_size, preprocess_obss, None, args.agents)
     else:
         raise ValueError("Incorrect algorithm name: {}".format(args.algo))
 
-    if "optimizer_state" in status:
-        algo.optimizer.load_state_dict(status["optimizer_state"])
+    if "optimizer_state" in status:  # TODO
+        for agent in range(agents):
+            algo.optimizers[agent].load_state_dict(
+                status["optimizer_state"][agent])
+
     txt_logger.info("Optimizer loaded\n")
 
     # Train model
@@ -178,9 +190,22 @@ if __name__ == '__main__':
     while num_frames < args.frames:
         # Update model parameters
 
+        # Log some values
+
+        logs2 = {
+            "entropy": [],
+            "value": [],
+            "policy_loss": [],
+            "value_loss": [],
+            "grad_norm": []
+        }
+
         update_start_time = time.time()
-        exps, logs1 = algo.collect_experiences()
-        logs2 = algo.update_parameters(exps)
+        algo.prepare_experiences()
+        for agent in range(agents):
+
+            exps, logs1 = algo.collect_experience(agent)
+            logs2 = algo.update_parameters(exps, agent, logs2)
         logs = {**logs1, **logs2}
         update_end_time = time.time()
 
@@ -207,14 +232,29 @@ if __name__ == '__main__':
             header += ["num_frames_" +
                        key for key in num_frames_per_episode.keys()]
             data += num_frames_per_episode.values()
-            header += ["entropy", "value",
-                       "policy_loss", "value_loss", "grad_norm"]
-            data += [logs["entropy"], logs["value"], logs["policy_loss"],
-                     logs["value_loss"], logs["grad_norm"]]
+
+            header += ["entropy_of_agent_" + str(agent)
+                       for agent in range(agents)]
+            data += [logs["entropy"][agent] for agent in range(agents)]
+            header += ["value_of_agent_" + str(agent)
+                       for agent in range(agents)]
+            data += [logs["value"][agent] for agent in range(agents)]
+            header += ["policy_loss_of_agent_" +
+                       str(agent) for agent in range(agents)]
+            data += [logs["policy_loss"][agent] for agent in range(agents)]
+            header += ["grad_norm_of_agent_" +
+                       str(agent) for agent in range(agents)]
+            data += [logs["grad_norm"][agent] for agent in range(agents)]
 
             txt_logger.info(
-                "U {} | F {:06} | FPS {:04.0f} | D {} | reshapedReturn:σ μ min Max {:.2f} {:.2f} {:.2f} {:.2f} | numFrames:μ σ m M {:.1f} {:.1f} {} {} | entropy {:.3f} | V {:.3f} | pLoss {:.3f} | vLoss {:.3f} | ∇ (grad_norm) {:.3f}"
+                "U {} | F {:06} | FPS {:04.0f} | D {} | Return/Episode:σ μ min Max {:.2f} {:.2f} {:.2f} {:.2f} | numFrames:μ σ m M {:.1f} {:.1f} {} {}"
                 .format(*data))
+
+            txt_logger.info(str(("entropy per agent: ", logs["entropy"])))
+            txt_logger.info(str(("value per agent: ", logs["value"])))
+            txt_logger.info(
+                str(("value loss per agent: ", logs["value_loss"])))
+            txt_logger.info(str(("grad norm per agent: ", logs["grad_norm"])))
 
             header += ["return_per_episode_" +
                        key for key in return_per_episode.keys()]
@@ -232,7 +272,8 @@ if __name__ == '__main__':
 
         if args.save_interval > 0 and update % args.save_interval == 0:
             status = {"num_frames": num_frames, "update": update,
-                      "model_state": acmodel.state_dict(), "optimizer_state": algo.optimizer.state_dict()}
+                      "model_state": [models[agent].state_dict() for agent in range(agents)],
+                      "optimizer_state": [algo.optimizers[agent].state_dict() for agent in range(agents)]}
             if hasattr(preprocess_obss, "vocab"):
                 status["vocab"] = preprocess_obss.vocab.vocab
             learning.utils.save_status(status, model_dir)

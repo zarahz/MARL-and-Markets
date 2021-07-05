@@ -9,7 +9,7 @@ from learning.utils import DictList, ParallelEnv
 class BaseAlgo(ABC):
     """The base class for RL algorithms."""
 
-    def __init__(self, envs, acmodel, device, num_frames_per_proc, discount, lr, gae_lambda, entropy_coef,
+    def __init__(self, envs, models, device, num_frames_per_proc, discount, lr, gae_lambda, entropy_coef,
                  value_loss_coef, max_grad_norm, recurrence, preprocess_obss, reshape_reward, agents):
         """
         Initializes a `BaseAlgo` instance.
@@ -48,7 +48,7 @@ class BaseAlgo(ABC):
 
         self.env = ParallelEnv(envs)
         self.agents = agents
-        self.acmodel = acmodel
+        self.models = models
         self.device = device
         self.num_frames_per_proc = num_frames_per_proc
         self.discount = discount
@@ -63,13 +63,13 @@ class BaseAlgo(ABC):
 
         # Control parameters
 
-        assert self.acmodel.recurrent or self.recurrence == 1
+        assert self.models[0].recurrent or self.recurrence == 1
         assert self.num_frames_per_proc % self.recurrence == 0
 
-        # Configure acmodel
-
-        self.acmodel.to(self.device)
-        self.acmodel.train()
+        # Configure all models
+        for agent in range(agents):
+            self.models[agent].to(self.device)
+            self.models[agent].train()
 
         # Store helpers values
 
@@ -82,18 +82,18 @@ class BaseAlgo(ABC):
         multi_shape = (self.num_frames_per_proc, agents, self.num_procs)
         self.obs = self.env.reset()
         self.obss = [None]*(shape[0])
-        if self.acmodel.recurrent:
+        if self.models[0].recurrent:
             self.memory = torch.zeros(
-                shape[1], self.acmodel.memory_size, device=self.device)
+                shape[1], self.models[0].memory_size, device=self.device)
             self.memories = torch.zeros(
-                *shape, self.acmodel.memory_size, device=self.device)
+                *shape, self.models[0].memory_size, device=self.device)
         self.mask = torch.ones(shape[1], device=self.device)
         self.masks = torch.zeros(*shape, device=self.device)
         self.actions = torch.zeros(
             *multi_shape, device=self.device, dtype=torch.int)  # multi_shape, device=self.device, dtype=torch.int)
-        self.values = torch.zeros(*shape, device=self.device)
+        self.values = torch.zeros(*multi_shape, device=self.device)
         self.rewards = torch.zeros(*shape, device=self.device)
-        self.advantages = torch.zeros(*shape, device=self.device)
+        self.advantages = torch.zeros(*multi_shape, device=self.device)
         self.log_probs = torch.zeros(
             *multi_shape, device=self.device, dtype=torch.int)  # multi_shape, device=self.device, dtype=torch.int)
 
@@ -111,7 +111,7 @@ class BaseAlgo(ABC):
         self.log_reshaped_return = [0] * self.num_procs
         self.log_num_frames = [0] * self.num_procs
 
-    def collect_experiences(self):
+    def prepare_experiences(self):
         """Collects rollouts and computes advantages.
         Runs several environments concurrently. The next actions are computed
         in a batch mode for all environments at the same time. The rollouts
@@ -131,22 +131,30 @@ class BaseAlgo(ABC):
         """
 
         for i in range(self.num_frames_per_proc):
-            # Do one agent-environment interaction
 
-            preprocessed_obs = self.preprocess_obss(
-                self.obs, device=self.device)
+            # agent variables
+            dists = []
+            values = []
+            joint_actions = []
+            for agent in range(self.agents):
+                agent_obs = [None]*len(self.obs)
+                # Do one agent-environment interaction
+                for index in range(len(self.obs)):
+                    agent_obs[index] = self.obs[index][agent]
 
-            # reduce memory consumption for computations
-            with torch.no_grad():
-                if self.acmodel.recurrent:
-                    dist, value, memory = self.acmodel(
-                        preprocessed_obs, self.memory * self.mask.unsqueeze(1))
-                else:
-                    dist, value = self.acmodel(preprocessed_obs)
+                preprocessed_obs = self.preprocess_obss(
+                    agent_obs, device=self.device)
 
-            # create joint actions
-            action = dist.sample()  # shape torch.Size([16])
-            joint_actions = [action]
+                # reduce memory consumption for computations
+                with torch.no_grad():
+                    dist, value = self.models[agent](preprocessed_obs)
+                    dists.append(dist)
+                    values.append(value)
+
+                # create joint actions
+                action = dist.sample()  # shape torch.Size([16])
+                joint_actions.append(action)
+
             # convert agentList(actionTensor) into tensor of
             # tensor_actions: torch.Size([1, 16]) (agents, 16): 16 consecutive actions of each agent
             tensor_actions = torch.stack(joint_actions[:])
@@ -158,15 +166,15 @@ class BaseAlgo(ABC):
 
             self.obss[i] = self.obs  # old obs
             self.obs = obs  # set old obs to new experience obs
-            if self.acmodel.recurrent:
+            if self.models[0].recurrent:
                 self.memories[i] = self.memory
-                self.memory = memory
+                # self.memory = memorys
             self.masks[i] = self.mask
             self.mask = 1 - \
                 torch.tensor(done, device=self.device, dtype=torch.float)
 
             self.actions[i] = tensor_actions
-            self.values[i] = value
+            self.values[i] = torch.stack(values)
             if self.reshape_reward is not None:
                 self.rewards[i] = torch.tensor([
                     self.reshape_reward(obs_, action_, reward_, done_)
@@ -175,7 +183,8 @@ class BaseAlgo(ABC):
                 ], device=self.device)
             else:
                 self.rewards[i] = torch.tensor(reward, device=self.device)
-            self.log_probs[i] = dist.log_prob(tensor_actions)
+            self.log_probs[i] = torch.stack([dists[agent].log_prob(
+                tensor_actions[agent]) for agent in range(self.agents)])
 
             # Update log values
 
@@ -198,31 +207,32 @@ class BaseAlgo(ABC):
             self.log_episode_reshaped_return *= self.mask
             self.log_episode_num_frames *= self.mask
 
-        # Add advantage and return to experiences
+        # --- all environment actions are now done -> Add advantage and return to experiences
+        for agent in range(self.agents):
+            agent_obs = [None]*len(self.obs)
+            for index in range(len(self.obs)):
+                agent_obs[index] = self.obs[index][agent]
+            preprocessed_obs = self.preprocess_obss(
+                agent_obs, device=self.device)
+            with torch.no_grad():
+                _, next_value = self.models[agent](preprocessed_obs)
 
-        preprocessed_obs = self.preprocess_obss(self.obs, device=self.device)
-        with torch.no_grad():
-            if self.acmodel.recurrent:
-                _, next_value, _ = self.acmodel(
-                    preprocessed_obs, self.memory * self.mask.unsqueeze(1))
-            else:
-                _, next_value = self.acmodel(preprocessed_obs)
+            for i in reversed(range(self.num_frames_per_proc)):
+                next_mask = self.masks[i +
+                                       1] if i < self.num_frames_per_proc - 1 else self.mask
+                next_value = self.values[i +
+                                         1][agent] if i < self.num_frames_per_proc - 1 else next_value
+                next_advantage = self.advantages[i +
+                                                 1][agent] if i < self.num_frames_per_proc - 1 else 0
 
-        for i in reversed(range(self.num_frames_per_proc)):
-            next_mask = self.masks[i +
-                                   1] if i < self.num_frames_per_proc - 1 else self.mask
-            next_value = self.values[i +
-                                     1] if i < self.num_frames_per_proc - 1 else next_value
-            next_advantage = self.advantages[i +
-                                             1] if i < self.num_frames_per_proc - 1 else 0
+                delta = self.rewards[i] + self.discount * \
+                    next_value * next_mask - self.values[i][agent]
+                # advantage function is calculated here!
+                self.advantages[i][agent] = delta + self.discount * \
+                    self.gae_lambda * next_advantage * next_mask
 
-            delta = self.rewards[i] + self.discount * \
-                next_value * next_mask - self.values[i]
-            # advantage function is calculated here!
-            self.advantages[i] = delta + self.discount * \
-                self.gae_lambda * next_advantage * next_mask
-
-        # Define experiences:
+    def collect_experience(self, agent):
+        # Define experience:
         #   the whole experience is the concatenation of the experience
         #   of each process.
         # In comments below:
@@ -232,10 +242,10 @@ class BaseAlgo(ABC):
 
         exps = DictList()
         # obs length is 2048 = 16*128
-        exps.obs = [self.obss[i][j]
+        exps.obs = [self.obss[i][j][agent]
                     for j in range(self.num_procs)
                     for i in range(self.num_frames_per_proc)]
-        if self.acmodel.recurrent:
+        if self.models[0].recurrent:
             # T x P x D -> P x T x D -> (P * T) x D
             exps.memory = self.memories.transpose(
                 0, 1).reshape(-1, *self.memories.shape[2:])
@@ -243,15 +253,15 @@ class BaseAlgo(ABC):
             exps.mask = self.masks.transpose(0, 1).reshape(-1).unsqueeze(1)
         # for all tensors below, T x P -> P x T -> P * T
         # self.agents, self.num_frames_per_proc*self.num_procs)
-        exps.actions = self.actions.transpose(0, 1).transpose(
-            1, 2).reshape(self.agents, self.num_frames_per_proc*self.num_procs)
-        exps.value = self.values.transpose(0, 1).reshape(-1)
+        exps.actions = self.actions[:, agent, :].transpose(0, 1).reshape(-1)
+        exps.value = self.values[:, agent, :].transpose(0, 1).reshape(-1)
         exps.reward = self.rewards.transpose(0, 1).reshape(-1)
-        exps.advantage = self.advantages.transpose(0, 1).reshape(-1)
+        exps.advantage = self.advantages[:,
+                                         agent, :].transpose(0, 1).reshape(-1)
         exps.returnn = exps.value + exps.advantage
         # self.agents, self.num_frames_per_proc*self.num_procs)
-        exps.log_probs = self.log_probs.transpose(0, 1).transpose(
-            1, 2).reshape(self.agents, self.num_frames_per_proc*self.num_procs)
+        exps.log_probs = self.log_probs[:,
+                                        agent, :].transpose(0, 1).reshape(-1)
 
         # Preprocess experiences
 

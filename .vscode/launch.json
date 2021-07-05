@@ -62,7 +62,7 @@
                 "--agents",
                 "2",
                 "--model",
-                "EmptyGridMultiAgents",
+                "EmptyGrid-multi",
                 "--save-interval",
                 "10",
                 "--frames",
@@ -88,7 +88,7 @@
             "console": "integratedTerminal",
             "args": [
                 "--model",
-                "EmptyGridMultiAgents",
+                "EmptyGrid-multi",
                 "--agents",
                 "2"
             ]
