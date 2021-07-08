@@ -2,7 +2,7 @@ import argparse
 import time
 import datetime
 import torch
-import learning
+# import learning
 # cd into storage and call either
 # tensorboard --logdir ./ --host localhost --port 8888
 # or
@@ -21,7 +21,7 @@ from learning.model import ACModel
 parser = argparse.ArgumentParser()
 
 # General parameters
-parser.add_argument("--algo", required=True,
+parser.add_argument("--algo", default="ppo",
                     help="algorithm to use: a2c | ppo (REQUIRED)")
 parser.add_argument("--agents", default=1, type=int,
                     help="amount of agents")
@@ -44,8 +44,8 @@ parser.add_argument("--frames", type=int, default=10**7,
 # epochs range(3,30), wie oft anhand der experience gelernt wird?
 parser.add_argument("--epochs", type=int, default=4,
                     help="number of epochs for PPO (default: 4)")
-# batch range(4, 4096) -> 256 insgesamt erhält man frames-per-proc*procs (128*16=2048) batch elemente und davon erhält man
-# 2048/256 = 8 mini batches
+# batch range(4, 4096) -> 256 insgesamt erhält man frames-per-proc*procs (128*16=2048) batch elemente / Transitions
+# und davon erhält man 2048/256 = 8 mini batches
 parser.add_argument("--batch-size", type=int, default=256,
                     help="batch size for PPO (default: 256)")
 # a Number that defines how often a (random) action is chosen for the batch/experience
@@ -84,12 +84,9 @@ parser.add_argument("--clip-eps", type=float, default=0.2,
 # neural net training fine-tuning the weights of a neural net based on the error rate obtained in the previous epoch
 parser.add_argument("--recurrence", type=int, default=1,
                     help="number of time-steps gradient is backpropagated (default: 1). If > 1, a LSTM is added to the model to have memory.")
-parser.add_argument("--text", action="store_true", default=False,
-                    help="add a GRU to the model to handle text input")
 
 args = parser.parse_args()
 agents = args.agents
-args.mem = args.recurrence > 1
 
 # Set run dir
 
@@ -139,8 +136,6 @@ txt_logger.info("Training status loaded\n")
 
 obs_space, preprocess_obss = learning.utils.get_obss_preprocessor(
     envs[0].observation_space)
-if "vocab" in status:
-    preprocess_obss.vocab.load_vocab(status["vocab"])
 txt_logger.info("Observations preprocessor loaded")
 
 # Load model
@@ -158,18 +153,13 @@ txt_logger.info("Model loaded\n")
 # Load algo
 print("NAME:________________________  ", __name__)
 if __name__ == '__main__':
-
-    if args.algo == "a2c":
-        algo = learning.A2CAlgo(envs, acmodel, device, args.frames_per_proc, args.discount, args.lr, args.gae_lambda,
-                                args.entropy_coef, args.value_loss_coef, args.max_grad_norm, args.recurrence,
-                                args.optim_alpha, args.optim_eps, preprocess_obss)
-    elif args.algo == "ppo":
-        algo = learning.PPOAlgo(envs, models, device, args.frames_per_proc,
-                                args.discount, args.lr, args.gae_lambda, args.entropy_coef, args.value_loss_coef,
-                                args.max_grad_norm, args.recurrence, args.optim_eps, args.clip_eps, args.epochs,
-                                args.batch_size, preprocess_obss, None, args.agents)
-    else:
-        raise ValueError("Incorrect algorithm name: {}".format(args.algo))
+    # if args.algo == "ppo":
+    algo = learning.PPOAlgo(envs, agents, models, device, args.frames_per_proc,
+                            args.discount, args.lr, args.gae_lambda, args.entropy_coef, args.value_loss_coef,
+                            args.max_grad_norm, args.recurrence, args.optim_eps, args.clip_eps, args.epochs,
+                            args.batch_size, preprocess_obss)
+    # else:
+    #     raise ValueError("Incorrect algorithm name: {}".format(args.algo))
 
     if "optimizer_state" in status:  # TODO
         for agent in range(agents):
@@ -219,16 +209,14 @@ if __name__ == '__main__':
             duration = int(time.time() - start_time)
             return_per_episode = learning.utils.synthesize(
                 logs["return_per_episode"])
-            rreturn_per_episode = learning.utils.synthesize(
-                logs["reshaped_return_per_episode"])
             num_frames_per_episode = learning.utils.synthesize(
                 logs["num_frames_per_episode"])
 
             header = ["update", "frames", "FPS", "duration"]
             data = [update, num_frames, fps, duration]
-            header += ["reshaped_return_per_episode_" +
-                       key for key in rreturn_per_episode.keys()]
-            data += rreturn_per_episode.values()
+            header += ["return_per_episode_" +
+                       key for key in return_per_episode.keys()]
+            data += return_per_episode.values()
             header += ["num_frames_" +
                        key for key in num_frames_per_episode.keys()]
             data += num_frames_per_episode.values()
@@ -256,10 +244,6 @@ if __name__ == '__main__':
                 str(("value loss per agent: ", logs["value_loss"])))
             txt_logger.info(str(("grad norm per agent: ", logs["grad_norm"])))
 
-            header += ["return_per_episode_" +
-                       key for key in return_per_episode.keys()]
-            data += return_per_episode.values()
-
             if status["num_frames"] == 0:
                 csv_logger.writerow(header)
             csv_logger.writerow(data)
@@ -274,7 +258,5 @@ if __name__ == '__main__':
             status = {"num_frames": num_frames, "update": update,
                       "model_state": [models[agent].state_dict() for agent in range(agents)],
                       "optimizer_state": [algo.optimizers[agent].state_dict() for agent in range(agents)]}
-            if hasattr(preprocess_obss, "vocab"):
-                status["vocab"] = preprocess_obss.vocab.vocab
             learning.utils.save_status(status, model_dir)
             txt_logger.info("Status saved")

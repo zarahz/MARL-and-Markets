@@ -25,10 +25,6 @@ parser.add_argument("--argmax", action="store_true", default=False,
                     help="action with highest probability is selected")
 parser.add_argument("--worst-episodes-to-show", type=int, default=10,
                     help="how many worst episodes to show")
-parser.add_argument("--memory", action="store_true", default=False,
-                    help="add a LSTM to the model")
-parser.add_argument("--text", action="store_true", default=False,
-                    help="add a GRU to the model")
 args = parser.parse_args()
 
 # Set seed for all randomness sources
@@ -57,8 +53,7 @@ if __name__ == '__main__':
     agents = []
     for agent in range(args.agents):
         agents.append(learning.utils.Agent(env.observation_space, env.action_space, model_dir,
-                                           device=device, argmax=args.argmax, num_envs=args.procs,
-                                           use_memory=args.memory, use_text=args.text))
+                                           device=device, argmax=args.argmax, num_envs=args.procs))
     print("Agent loaded\n")
 
     # Initialize logs

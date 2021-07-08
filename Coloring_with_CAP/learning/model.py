@@ -21,12 +21,7 @@ class RecurrentACModel(ACModel):
     recurrent = True
 
     @abstractmethod
-    def forward(self, obs, memory):
-        pass
-
-    @property
-    @abstractmethod
-    def memory_size(self):
+    def forward(self, obs):
         pass
 
 # Function from https://github.com/ikostrikov/pytorch-a2c-ppo-acktr/blob/master/model.py
@@ -58,10 +53,7 @@ class ACModel(nn.Module, RecurrentACModel):
         )
         n = obs_space["image"][0]
         m = obs_space["image"][1]
-        self.image_embedding_size = ((n-1)//2-2)*((m-1)//2-2)*64
-
-        # Resize image embedding
-        self.embedding_size = self.semi_memory_size
+        self.embedding_size = ((n-1)//2-2)*((m-1)//2-2)*64
 
         # Define actor's model
         self.actor = nn.Sequential(
@@ -80,14 +72,6 @@ class ACModel(nn.Module, RecurrentACModel):
         # Initialize parameters correctly
         self.apply(init_params)
 
-    @property
-    def memory_size(self):
-        return 2*self.semi_memory_size
-
-    @property
-    def semi_memory_size(self):
-        return self.image_embedding_size
-
     def forward(self, obs):
         x = obs.image.transpose(1, 3).transpose(2, 3)
         x = self.image_conv(x)
@@ -100,7 +84,3 @@ class ACModel(nn.Module, RecurrentACModel):
         value = x.squeeze(1)
 
         return dist, value
-
-    def _get_embed_text(self, text):
-        _, hidden = self.text_rnn(self.word_embedding(text))
-        return hidden[-1]

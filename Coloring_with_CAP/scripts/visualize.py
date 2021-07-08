@@ -27,10 +27,6 @@ parser.add_argument("--gif", type=str, default=None,
                     help="store output as gif with the given filename")
 parser.add_argument("--episodes", type=int, default=1000000,
                     help="number of episodes to visualize")
-parser.add_argument("--memory", action="store_true", default=False,
-                    help="add a LSTM to the model")
-parser.add_argument("--text", action="store_true", default=False,
-                    help="add a GRU to the model")
 
 args = parser.parse_args()
 

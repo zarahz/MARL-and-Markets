@@ -9,20 +9,59 @@ class PPOAlgo(BaseAlgo):
     """The Proximal Policy Optimization algorithm
     ([Schulman et al., 2015](https://arxiv.org/abs/1707.06347))."""
 
-    def __init__(self, envs, models, device=None, num_frames_per_proc=None, discount=0.99, lr=0.001, gae_lambda=0.95,
+    def __init__(self, envs, agents, models, device=None, num_frames_per_proc=None, discount=0.99, lr=0.001, gae_lambda=0.95,
                  entropy_coef=0.01, value_loss_coef=0.5, max_grad_norm=0.5, recurrence=4,
-                 adam_eps=1e-8, clip_eps=0.2, epochs=4, batch_size=256, preprocess_obss=None,
-                 reshape_reward=None, agents=1):
+                 adam_eps=1e-8, clip_eps=0.2, epochs=4, batch_size=256, preprocess_obss=None):
+        """
+        Parameters:
+        ----------
+        envs : list
+            a list of environments that will be run in parallel
+        models : list 
+            model list of length agents, containing torch.Modules
+        num_frames_per_proc : int
+            the number of frames collected by every process for an update
+        discount : float
+            the discount for future rewards
+        lr : float
+            the learning rate for optimizers
+        gae_lambda : float
+            the lambda coefficient in the GAE formula
+            ([Schulman et al., 2015](https://arxiv.org/abs/1506.02438))
+        entropy_coef : float
+            the weight of the entropy cost in the final objective
+        value_loss_coef : float
+            the weight of the value loss in the final objective
+        max_grad_norm : float
+            gradient will be clipped to be at most this value
+        recurrence : int
+            the number of steps the gradient is propagated back in time
+        preprocess_obss : function
+            a function that takes observations returned by the environment
+            and converts them into the format that the model can handle
+        """
+
         num_frames_per_proc = num_frames_per_proc or 128
 
-        super().__init__(envs, models, device, num_frames_per_proc, discount, lr, gae_lambda, entropy_coef,
-                         value_loss_coef, max_grad_norm, recurrence, preprocess_obss, reshape_reward, agents)
+        # init Base algo
+        super().__init__(envs, agents, models, device,
+                         num_frames_per_proc, discount, gae_lambda, preprocess_obss)
 
         self.clip_eps = clip_eps
         self.epochs = epochs
         self.batch_size = batch_size
         self.agents = agents
 
+        self.entropy_coef = entropy_coef
+        self.lr = lr
+        self.value_loss_coef = value_loss_coef
+        self.max_grad_norm = max_grad_norm
+        self.recurrence = recurrence
+
+        # Control parameters
+
+        assert self.models[0].recurrent or self.recurrence == 1
+        assert self.num_frames_per_proc % self.recurrence == 0
         # to create minibatches?
         assert self.batch_size % self.recurrence == 0
 
@@ -53,25 +92,7 @@ class PPOAlgo(BaseAlgo):
                 batch_value_loss = 0
                 batch_loss = 0
 
-                # Initialize memory
-
-                if self.models[0].recurrent:
-                    memory = exps.memory[inds]
-
                 for i in range(self.recurrence):
-                    # Create a sub-batch of experience
-                    # sb = dict()
-                    # for attr in exps:
-                    #     if attr == 'action' or attr == 'log_prob':
-                    #         sb[attr] = torch.empty((self.agents, inds.size))
-                    #         for agent in range(self.agents):
-                    #             agent_attr = exps.get(attr)[agent][inds + i]
-                    #             sb[attr][agent] = torch.empty(
-                    #                 agent_attr.shape)
-                    #             sb[attr][agent] = agent_attr
-                    #         continue
-                    #     sb[attr] = exps.get(attr)[inds + i]
-
                     sb = exps[inds + i]
 
                     # Compute loss
@@ -108,11 +129,6 @@ class PPOAlgo(BaseAlgo):
                     batch_policy_loss += policy_loss.item()
                     batch_value_loss += value_loss.item()
                     batch_loss += loss
-
-                    # Update memories for next epoch
-
-                    if self.models[0].recurrent and i < self.recurrence - 1:
-                        exps.memory[inds + i + 1] = memory.detach()
 
                 # Update batch values
 

@@ -7,3 +7,11 @@ storage
 build/*
 dist/*
 .idea/
+
+# Distribution / packaging
+build/
+dist/
+eggs/
+.eggs/
+*.egg-info/
+*.egg

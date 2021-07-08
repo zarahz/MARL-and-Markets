@@ -20,10 +20,6 @@ class Agent:
         self.argmax = argmax
         self.num_envs = num_envs
 
-        if self.acmodel.recurrent:
-            self.memories = torch.zeros(
-                self.num_envs, self.acmodel.memory_size, device=self.device)
-
         try:
             state = learning.utils.get_model_state(model_dir)[agent_index]
         except IndexError:
@@ -33,9 +29,6 @@ class Agent:
         self.acmodel.load_state_dict(state)
         self.acmodel.to(self.device)
         self.acmodel.eval()
-        if hasattr(self.preprocess_obss, "vocab"):
-            self.preprocess_obss.vocab.load_vocab(
-                learning.utils.get_vocab(model_dir))
 
     def get_actions(self, obss, agent):
         agent_obs = [None]*len(obss)
@@ -64,7 +57,6 @@ class Agent:
         if self.acmodel.recurrent:
             masks = 1 - torch.tensor(dones, dtype=torch.float,
                                      device=self.device).unsqueeze(1)
-            self.memories *= masks
 
     def analyze_feedback(self, reward, done):
         return self.analyze_feedbacks([reward], [done])

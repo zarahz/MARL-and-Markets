@@ -1,4 +1,9 @@
 TODO 
+- plot that show the CAP
+    - mean reward/episode for a one agent environment training vs multi agent environments (i.e. 2 and 3 agents)
+    - amount of resettet fields per episode in a one agent environment training vs multi agent environments (i.e. 2 and 3 agents)
+- start implementation of shareholder market
+-------------
 - fine tuning to achieve colored grid with one agent
 - implement another learning algorithm? I.e. DQN/Team-DQN? Or start with MCAC/DR,... 
 - add run parameter market to enable actions as touples and implement reward distribution with shares
