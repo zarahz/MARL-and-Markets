@@ -9,6 +9,7 @@ coloring = {editable = true, path = "."}
 matplotlib = "*"
 tensorflow = "*"
 tensorboardx = "*"
+jupyter = "*"
 
 [dev-packages]
 

@@ -4,8 +4,66 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+        // ---------- - DO NOT CHANGE - ------------------
         {
-            "name": "Python: Q-Learning",
+            "name": "Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "PPO train one",
+            "type": "python",
+            "request": "launch",
+            "module": "Coloring_with_CAP.scripts.train",
+            "console": "integratedTerminal",
+            "args": [
+                "--model",
+                "emptyGrid-one-agents",
+                "--save-interval",
+                "10",
+                "--frames",
+                "80000"
+            ]
+        },
+        {
+            "name": "PPO train two",
+            "type": "python",
+            "request": "launch",
+            "module": "Coloring_with_CAP.scripts.train",
+            "console": "integratedTerminal",
+            "args": [
+                "--agents",
+                "2",
+                "--model",
+                "emptyGrid-two-agents",
+                "--save-interval",
+                "10",
+                "--frames",
+                "80000"
+            ]
+        },
+        {
+            "name": "PPO train three",
+            "type": "python",
+            "request": "launch",
+            "module": "Coloring_with_CAP.scripts.train",
+            "console": "integratedTerminal",
+            "args": [
+                "--agents",
+                "3",
+                "--model",
+                "emptyGrid-three-agents",
+                "--save-interval",
+                "10",
+                "--frames",
+                "80000"
+            ]
+        },
+        // ------------- END OF - DO NOT CHANGE - -------------
+        {
+            "name": "Q-Learning",
             "type": "python",
             "request": "launch",
             "program": "Coloring_with_CAP\\scripts\\q_learning.py",
@@ -26,22 +84,7 @@
             ]
         },
         {
-            "name": "Python: PPO train",
-            "type": "python",
-            "request": "launch",
-            "module": "Coloring_with_CAP.scripts.train",
-            "console": "integratedTerminal",
-            "args": [
-                "--model",
-                "EmptyGrid-test",
-                "--save-interval",
-                "10",
-                "--frames",
-                "80000"
-            ]
-        },
-        {
-            "name": "Python: PPO train multi",
+            "name": "PPO train",
             "type": "python",
             "request": "launch",
             "module": "Coloring_with_CAP.scripts.train",
@@ -49,8 +92,10 @@
             "args": [
                 "--agents",
                 "2",
+                "--percentage-reward",
+                "True",
                 "--model",
-                "EmptyGrid-multi",
+                "emptyGrid",
                 "--save-interval",
                 "10",
                 "--frames",
@@ -58,31 +103,22 @@
             ]
         },
         {
-            "name": "Python: PPO visualize",
+            "name": "PPO visualize",
             "type": "python",
             "request": "launch",
             "module": "Coloring_with_CAP.scripts.visualize",
             "console": "integratedTerminal",
             "args": [
-                "--model",
-                "EmptyGrid-test"
-            ]
-        },
-        {
-            "name": "Python: PPO visualize multi",
-            "type": "python",
-            "request": "launch",
-            "module": "Coloring_with_CAP.scripts.visualize",
-            "console": "integratedTerminal",
-            "args": [
-                "--model",
-                "EmptyGrid-multi",
                 "--agents",
-                "2"
+                "2",
+                "--percentage-reward",
+                "True",
+                "--model",
+                "emptyGrid"
             ]
         },
         {
-            "name": "Python: PPO eval",
+            "name": "PPO eval",
             "type": "python",
             "request": "launch",
             "module": "Coloring_with_CAP.scripts.evaluate",
@@ -91,16 +127,16 @@
                 "--env",
                 "Empty-Grid-v0",
                 "--model",
-                "EmptyGrid",
+                "emptyGrid",
                 "--agents",
                 "1"
             ]
         },
         {
-            "name": "Python: PPO eval multi",
+            "name": "plot",
             "type": "python",
             "request": "launch",
-            "module": "Coloring_with_CAP.scripts.evaluate",
+            "module": "Coloring_with_CAP.scripts.plot",
             "console": "integratedTerminal",
             "args": [
                 "--env",
@@ -108,15 +144,10 @@
                 "--model",
                 "EmptyGridMultiAgents",
                 "--agents",
-                "2"
+                "2",
+                "--max-steps",
+                "15"
             ]
-        },
-        {
-            "name": "Python: Current File",
-            "type": "python",
-            "request": "launch",
-            "program": "${file}",
-            "console": "integratedTerminal"
         }
     ]
 }

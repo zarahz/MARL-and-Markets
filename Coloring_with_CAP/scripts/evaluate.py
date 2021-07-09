@@ -52,8 +52,8 @@ if __name__ == '__main__':
     model_dir = learning.utils.get_model_dir(args.model)
     agents = []
     for agent in range(args.agents):
-        agents.append(learning.utils.Agent(env.observation_space, env.action_space, model_dir,
-                                           device=device, argmax=args.argmax, num_envs=args.procs))
+        agents.append(learning.utils.Agent(agent, env.observation_space, env.action_space, model_dir,
+                                           device=device))
     print("Agent loaded\n")
 
     # Initialize logs
@@ -67,18 +67,16 @@ if __name__ == '__main__':
     obss = env.reset()
 
     log_done_counter = 0
-    log_episode_return = torch.zeros(args.procs, device=device)
+    log_episode_return = torch.zeros((args.procs, args.agents), device=device)
     log_episode_num_frames = torch.zeros(args.procs, device=device)
 
     while log_done_counter < args.episodes:
         joint_actions = []
-        for agent in agents:
-            actions = agent.get_actions(obss)
+        for agent_index, agent in enumerate(agents):
+            actions = agent.get_actions(obss, agent_index)
             joint_actions.append(actions)
-        obss, rewards, dones, _ = env.step(joint_actions)
 
-        for agent in agents:
-            agent.analyze_feedbacks(rewards, dones)
+        obss, rewards, dones, _ = env.step(joint_actions)
 
         log_episode_return += torch.tensor(rewards,
                                            device=device, dtype=torch.float)
@@ -92,7 +90,9 @@ if __name__ == '__main__':
                     log_episode_num_frames[i].item())
 
         mask = 1 - torch.tensor(dones, device=device, dtype=torch.float)
-        log_episode_return *= mask
+        log_episode_return_transposed = log_episode_return.transpose(
+            0, 1) * mask
+        log_episode_return = log_episode_return_transposed.transpose(0, 1)
         log_episode_num_frames *= mask
 
     end_time = time.time()

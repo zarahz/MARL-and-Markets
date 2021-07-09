@@ -15,6 +15,10 @@ parser.add_argument("--env", default='Empty-Grid-v0',
                     help="name of the environment to be run (REQUIRED)")
 parser.add_argument("--agents", default=1, type=int,
                     help="amount of agents")
+parser.add_argument("--percentage-reward", default=False,
+                    help="reward agents based on percentage of coloration in the grid (default: False)")
+parser.add_argument("--mixed-motive", default=False,
+                    help="If set to true the reward is not shared which enables a mixed motive environment (one vs. all). Otherwise agents need to work in cooperation to gain more reward. (default: False = Cooperation)")
 parser.add_argument("--seed", type=int, default=1,
                     help="random seed (default: 1)")
 parser.add_argument("--shift", type=int, default=0,
@@ -41,7 +45,8 @@ print(f"Device: {device}\n")
 
 # Load environment
 
-env = learning.utils.make_env(args.env, args.agents, args.seed)
+env = learning.utils.make_env(
+    args.env, args.agents, args.seed, args.percentage_reward, args.mixed_motive)
 # for _ in range(args.shift):
 #     env.reset()
 print("Environment loaded\n")
@@ -51,8 +56,8 @@ print("Environment loaded\n")
 model_dir = learning.utils.get_model_dir(args.model)
 agents = []
 for agent in range(args.agents):
-    agents.append(learning.utils.Agent(env.observation_space, env.action_space, model_dir,
-                                       device=device, argmax=args.argmax, agent_index=agent))
+    agents.append(learning.utils.Agent(agent, env.observation_space, env.action_space, model_dir,
+                                       device=device, argmax=args.argmax))
 print("Agents loaded\n")
 
 # Run the agent
@@ -77,9 +82,6 @@ for episode in range(args.episodes):
             joint_actions.append(action)
 
         obs, reward, done, _ = env.step(joint_actions)
-
-        for agent in agents:
-            agent.analyze_feedback(reward, done)
 
         if done or env.window.closed:
             break

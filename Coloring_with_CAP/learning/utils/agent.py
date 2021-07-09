@@ -11,8 +11,8 @@ class Agent:
     - to choose an action given an observation,
     - to analyze the feedback (i.e. reward and done state) of its action."""
 
-    def __init__(self, obs_space, action_space, model_dir,
-                 device=None, argmax=False, num_envs=1, agent_index=0):
+    def __init__(self, agent_index, obs_space, action_space, model_dir,
+                 device=None, argmax=False, num_envs=1):
         obs_space, self.preprocess_obss = learning.utils.get_obss_preprocessor(
             obs_space)
         self.acmodel = ACModel(obs_space, action_space)
@@ -21,7 +21,8 @@ class Agent:
         self.num_envs = num_envs
 
         try:
-            state = learning.utils.get_model_state(model_dir)[agent_index]
+            all_states = learning.utils.get_model_state(model_dir)
+            state = all_states[agent_index]
         except IndexError:
             state_len = len(learning.utils.get_model_state(model_dir))
             state = learning.utils.get_model_state(

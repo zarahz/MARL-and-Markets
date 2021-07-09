@@ -43,7 +43,8 @@ class BaseAlgo(ABC):
         self.actions = torch.zeros(
             *multi_shape, device=self.device, dtype=torch.int)  # multi_shape, device=self.device, dtype=torch.int)
         self.values = torch.zeros(*multi_shape, device=self.device)
-        self.rewards = torch.zeros(*shape, device=self.device)
+        self.rewards = torch.zeros(
+            (self.num_frames_per_proc, self.num_procs, agents), device=self.device)
         self.advantages = torch.zeros(*multi_shape, device=self.device)
         self.log_probs = torch.zeros(
             *multi_shape, device=self.device, dtype=torch.int)  # multi_shape, device=self.device, dtype=torch.int)
@@ -51,7 +52,7 @@ class BaseAlgo(ABC):
         # Initialize log values
 
         self.log_episode_return = torch.zeros(
-            self.num_procs, device=self.device)
+            (self.num_procs, agents), device=self.device)
         self.log_episode_num_frames = torch.zeros(
             self.num_procs, device=self.device)
 
@@ -108,8 +109,7 @@ class BaseAlgo(ABC):
             tensor_actions = torch.stack(joint_actions[:])
             obs, reward, done, _ = self.env.step(
                 [action.cpu().numpy() for action in joint_actions])
-            # obs, reward, done, _ = self.env.step(
-            #     [action.cpu().numpy()])
+
             # Update experiences values
 
             self.obss[i] = self.obs  # old obs
@@ -134,11 +134,16 @@ class BaseAlgo(ABC):
             for i, done_ in enumerate(done):
                 if done_:
                     self.log_done_counter += 1
-                    self.log_return.append(self.log_episode_return[i].item())
+                    self.log_return.extend(self.log_episode_return[i].tolist())
                     self.log_num_frames.append(
                         self.log_episode_num_frames[i].item())
 
-            self.log_episode_return *= self.mask
+            # transpose rewards to [agent, processes] to multiplicate a mask of [processes] with it
+            log_episode_return_transposed = self.log_episode_return.transpose(
+                0, 1) * self.mask
+            # then transpose back to tensor shape (processes, reward_of_agent)
+            self.log_episode_return *= log_episode_return_transposed.transpose(
+                0, 1)
             self.log_episode_num_frames *= self.mask
 
         # --- all environment actions are now done -> Add advantage and return to experiences
@@ -159,7 +164,7 @@ class BaseAlgo(ABC):
                 next_advantage = self.advantages[i +
                                                  1][agent] if i < self.num_frames_per_proc - 1 else 0
 
-                delta = self.rewards[i] + self.discount * \
+                delta = self.rewards[i][:, 0] + self.discount * \
                     next_value * next_mask - self.values[i][agent]
                 # advantage function is calculated here!
                 self.advantages[i][agent] = delta + self.discount * \
@@ -186,7 +191,7 @@ class BaseAlgo(ABC):
         # self.agents, self.num_frames_per_proc*self.num_procs)
         exps.actions = self.actions[:, agent, :].transpose(0, 1).reshape(-1)
         exps.value = self.values[:, agent, :].transpose(0, 1).reshape(-1)
-        exps.reward = self.rewards.transpose(0, 1).reshape(-1)
+        exps.reward = self.rewards[:, :, agent].transpose(0, 1).reshape(-1)
         exps.advantage = self.advantages[:,
                                          agent, :].transpose(0, 1).reshape(-1)
         exps.returnn = exps.value + exps.advantage

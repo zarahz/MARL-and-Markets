@@ -11,14 +11,13 @@ class CooperativeMultiagentWrapper(gym.core.ObservationWrapper):
     This can be used to have the agent to solve the gridworld in pixel space.
     """
 
-    def __init__(self, env, tile_size=8):
+    def __init__(self, env, percentage_reward=False, mixed_motive=False, tile_size=8):
         super().__init__(env)
         self.tile_size = tile_size
+        self.percentage_reward = percentage_reward
+        self.mixed_motive = mixed_motive
 
     def reset(self):
-        if hasattr(self, 'grid'):
-            self.print_coloring_data()
-
         observation = self.env.reset()
         return observation
 
@@ -26,31 +25,35 @@ class CooperativeMultiagentWrapper(gym.core.ObservationWrapper):
         observation, reward, done, info = self.env.step(actions)
         if done:  # adjust reward to be calculated out of percentage
             reward = self.calculate_reward()
+        else:
+            reward = [0]*len(self.env.agents)
         return observation, reward, done, info
 
     def calculate_reward(self):
-        # reward based on completed coloring
-        if self.env.whole_grid_colored():
-            print('---- GRID FULLY COLORED! ----')
-            return 1
-        return 0
+        agents = self.env.agents
+        if self.mixed_motive:
+            reward = []  # reward of agent is its index
+            # self.env.colored_cells() returns all cell encodings that contain a one in the middle
+            # i.e. [3,1,2] -> 1 = cell is colored
+            # with the indexing a new array is created that only contains the last value of the encoding (the color)
+            cell_colors = self.env.colored_cells()[:, 2]
+            for agent in range(len(agents)):
+                agent_coloration = (
+                    cell_colors == self.env.agents[agent]['color']).sum()
+                color_percentage = agent_coloration / \
+                    len(self.env.walkable_cells())
+                reward.append(color_percentage)
+            print(reward)
+            return reward
+        else:
+            # coop reward based on coloring percentage
+            if self.percentage_reward:
+                return [1 * self.env.grid_colored_percentage()]*len(agents)
 
-        # reward based on coloring percentage
-        # return 1 * self.env.grid_colored_percentage()
+            # coop reward based on completed coloring
+            if self.env.whole_grid_colored():
+                print(self.env.whole_grid_colored(),
+                      '---- GRID FULLY COLORED! ----')
+                return [1]*len(agents)
 
-    def print_coloring_data(self):
-        floor_tiles = 0
-        colored_tiles = 0
-        colored_by_agent = {}
-        for obj in self.env.grid.grid:
-            if isinstance(obj, environment.grid.Floor):
-                floor_tiles += 1
-                if obj.is_colored:
-                    colored_tiles += 1
-                    if obj.color in colored_by_agent:
-                        colored_by_agent[obj.color] += 1
-                    else:
-                        colored_by_agent[obj.color] = 1
-
-        print("colored tiles: ", colored_tiles,
-              " agent contributions: ", colored_by_agent)
+            return [0]*len(agents)

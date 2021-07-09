@@ -12,10 +12,12 @@ parser.add_argument("--env", required=True,
                     help="name of the environment(REQUIRED)")
 parser.add_argument("--agents", required=True, type=int,
                     help="number of agents (REQUIRED)")
+parser.add_argument("--mixed-motive", default=False,
+                    help="If set to true the reward is not shared which enables a mixed motive environment (one vs. all). Otherwise agents need to work in cooperation to gain more reward. (default: False = Cooperation)")
 # optional
 parser.add_argument("--agent_view_size", type=int, default=5,
                     help="partial view size of the agents, needs to be an odd number! (default: 5)")
-parser.add_argument("--max_steps", type=int, default=100,
+parser.add_argument("--max_steps", type=int, default=10,
                     help="max. steps of the agents per episode (default: 100)")
 parser.add_argument("--episodes", type=int, default=100,
                     help="iterations of the game (default: 100)")
@@ -80,10 +82,15 @@ env = CooperativeMultiagentWrapper(env)  # wrapper for environment adjustments
 
 window = Window(args.env)
 
-# variable to count the number of times an action was pulled
-action_count = np.zeros(env.action_space.n)
-# Q value => expected average reward
-Q = np.zeros(len(action_count))
+
+if args.mixed_motive:
+    # variable to count the number of times an action was pulled
+    action_count = [np.zeros(env.action_space.n)]*agents
+    # Q value => expected average reward
+    Q = [np.zeros(len(action_count))]*agents
+else:
+    action_count = np.zeros(env.action_space.n)
+    Q = np.zeros(len(action_count))
 reset()
 for episode in range(args.episodes):
     # s = 0
@@ -93,19 +100,26 @@ for episode in range(args.episodes):
             # select the action (1,1,2)
             action = epsilon_greedy()  # softmax()
             # update the count of that action
-            action_count[action] += 1
+            if args.mixed_motive:
+                action_count[agent][action] += 1
+            else:
+                action_count[action] += 1
             joint_actions.append(action)
 
         # get reward/observation/terminalInfo
         observation, reward, done, info = env.step(joint_actions)
 
-        # recalculate its Q value
-        Q[action] = Q[action] + (1/action_count[action]) * \
-            (reward-Q[action])
+        if args.mixed_motive:
+            for agent in range(agents):
+                # recalculate its Q value
+                Q[agent][action] = Q[agent][action] + (1/action_count[agent][action]) * \
+                    (reward[agent]-Q[agent][action])
+        else:
+            Q[action] = Q[action] + (1/action_count[action]) * \
+                (reward[0]-Q[action])
         print(reward)
         visualize(done)
         if done:
-            print('done! step=%s, reward=%.2f' %
-                  (s, reward))
+            print('done! step=', s, ' reward=', reward)
 
 window.close()
