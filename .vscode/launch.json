@@ -20,7 +20,7 @@
             "console": "integratedTerminal",
             "args": [
                 "--model",
-                "emptyGrid-one-agents",
+                "emptyGrid-one-agent",
                 "--save-interval",
                 "10",
                 "--frames",
@@ -38,6 +38,44 @@
                 "2",
                 "--model",
                 "emptyGrid-two-agents",
+                "--save-interval",
+                "10",
+                "--frames",
+                "80000"
+            ]
+        },
+        {
+            "name": "PPO train two with percentage rewards",
+            "type": "python",
+            "request": "launch",
+            "module": "Coloring_with_CAP.scripts.train",
+            "console": "integratedTerminal",
+            "args": [
+                "--agents",
+                "2",
+                "--model",
+                "emptyGrid-two-agents-percentage",
+                "--percentage-reward",
+                "True",
+                "--save-interval",
+                "10",
+                "--frames",
+                "80000"
+            ]
+        },
+        {
+            "name": "PPO train two with mixed motive",
+            "type": "python",
+            "request": "launch",
+            "module": "Coloring_with_CAP.scripts.train",
+            "console": "integratedTerminal",
+            "args": [
+                "--agents",
+                "2",
+                "--model",
+                "emptyGrid-two-agents-mixed",
+                "--mixed-motive",
+                "True",
                 "--save-interval",
                 "10",
                 "--frames",
@@ -111,10 +149,14 @@
             "args": [
                 "--agents",
                 "2",
-                "--percentage-reward",
-                "True",
+                // "--percentage-reward",
+                // "True",
+                // "--mixed-motive",
+                // "True",
                 "--model",
-                "emptyGrid"
+                "emptyGrid-one-agent",
+                // "--grid-size",
+                // "10"
             ]
         },
         {

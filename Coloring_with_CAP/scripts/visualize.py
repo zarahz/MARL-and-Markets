@@ -15,6 +15,8 @@ parser.add_argument("--env", default='Empty-Grid-v0',
                     help="name of the environment to be run (REQUIRED)")
 parser.add_argument("--agents", default=1, type=int,
                     help="amount of agents")
+parser.add_argument("--grid-size", default=5, type=int,
+                    help="size of the playing area (default: 5)")
 parser.add_argument("--percentage-reward", default=False,
                     help="reward agents based on percentage of coloration in the grid (default: False)")
 parser.add_argument("--mixed-motive", default=False,
@@ -46,7 +48,7 @@ print(f"Device: {device}\n")
 # Load environment
 
 env = learning.utils.make_env(
-    args.env, args.agents, args.seed, args.percentage_reward, args.mixed_motive)
+    args.env, args.agents, args.grid_size, args.percentage_reward, args.mixed_motive, args.seed)
 # for _ in range(args.shift):
 #     env.reset()
 print("Environment loaded\n")

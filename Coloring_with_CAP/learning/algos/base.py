@@ -57,7 +57,7 @@ class BaseAlgo(ABC):
             self.num_procs, device=self.device)
 
         self.log_done_counter = 0
-        self.log_return = [0] * self.num_procs
+        self.log_return = [[0]*agents] * self.num_procs
         self.log_num_frames = [0] * self.num_procs
 
     def prepare_experiences(self):
@@ -134,7 +134,7 @@ class BaseAlgo(ABC):
             for i, done_ in enumerate(done):
                 if done_:
                     self.log_done_counter += 1
-                    self.log_return.extend(self.log_episode_return[i].tolist())
+                    self.log_return.append(self.log_episode_return[i].tolist())
                     self.log_num_frames.append(
                         self.log_episode_num_frames[i].item())
 
@@ -164,7 +164,7 @@ class BaseAlgo(ABC):
                 next_advantage = self.advantages[i +
                                                  1][agent] if i < self.num_frames_per_proc - 1 else 0
 
-                delta = self.rewards[i][:, 0] + self.discount * \
+                delta = self.rewards[i][:, agent] + self.discount * \
                     next_value * next_mask - self.values[i][agent]
                 # advantage function is calculated here!
                 self.advantages[i][agent] = delta + self.discount * \
@@ -206,13 +206,11 @@ class BaseAlgo(ABC):
         # Log some values
 
         keep = max(self.log_done_counter, self.num_procs)
-
         logs = {
-            "return_per_episode": self.log_return[-keep:],
-            "num_frames_per_episode": self.log_num_frames[-keep:],
+            "return_per_episode_agent_"+str(agent): [episode_log_return[agent] for episode_log_return in self.log_return[-keep:]],
+            "num_frames_per_episode": self.log_num_frames,
             "num_frames": self.num_frames
         }
-
         self.log_done_counter = 0
         self.log_return = self.log_return[-self.num_procs:]
         self.log_num_frames = self.log_num_frames[-self.num_procs:]

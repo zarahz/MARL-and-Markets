@@ -1,8 +1,5 @@
 import gym
-from gym import spaces
 from environment.colors import *
-
-import environment
 
 
 class CooperativeMultiagentWrapper(gym.core.ObservationWrapper):
@@ -43,17 +40,15 @@ class CooperativeMultiagentWrapper(gym.core.ObservationWrapper):
                 color_percentage = agent_coloration / \
                     len(self.env.walkable_cells())
                 reward.append(color_percentage)
-            print(reward)
             return reward
         else:
             # coop reward based on coloring percentage
             if self.percentage_reward:
-                return [1 * self.env.grid_colored_percentage()]*len(agents)
+                reward = [1 * self.env.grid_colored_percentage()]*len(agents)
+                return reward
 
             # coop reward based on completed coloring
             if self.env.whole_grid_colored():
-                print(self.env.whole_grid_colored(),
-                      '---- GRID FULLY COLORED! ----')
+                print('---- GRID FULLY COLORED! ----')
                 return [1]*len(agents)
-
             return [0]*len(agents)

@@ -27,6 +27,8 @@ parser.add_argument("--agents", default=1, type=int,
                     help="amount of agents")
 parser.add_argument("--env", default='Empty-Grid-v0',
                     help="name of the environment to train on (default: empty grid size 5x5)")
+parser.add_argument("--grid-size", default=5, type=int,
+                    help="size of the playing area (default: 5)")
 parser.add_argument("--model", default=None,
                     help="name of the model (default: {ENV}_{ALGO}_{TIME})")
 parser.add_argument("--percentage-reward", default=False,
@@ -125,7 +127,7 @@ txt_logger.info(f"Device: {device}\n")
 envs = []
 for i in range(args.procs):
     envs.append(learning.utils.make_env(
-        args.env, args.agents, args.seed + 10000 * i, args.percentage_reward, args.mixed_motive))
+        args.env, args.agents, args.grid_size, args.percentage_reward, args.mixed_motive, args.seed + 10000 * i))
 txt_logger.info("Environments loaded\n")
 
 # Load training status
@@ -199,12 +201,8 @@ if __name__ == '__main__':
         logs = {}
         for agent in range(agents):
             exps, logs1 = algo.collect_experience(agent)
-            logs["return_per_episode_agent_" +
-                 str(agent)] = logs1["return_per_episode"]
-            logs["num_frames_per_episode_agent_" +
-                 str(agent)] = logs1["num_frames_per_episode"]
+            logs.update(logs1)
             logs2 = algo.update_parameters(exps, agent, logs2)
-        logs["num_frames"] = logs1["num_frames"]
         logs.update(logs2)
         update_end_time = time.time()
 
@@ -223,47 +221,40 @@ if __name__ == '__main__':
                 if("return_per_episode_agent_" in key):
                     all_returns_per_episodes.append(
                         learning.utils.synthesize(value))
-                elif("num_frames_per_episode_agent_" in key):
-                    all_num_frames_per_episode.append(
-                        learning.utils.synthesize(value))
+
+            num_frames_per_episode = learning.utils.synthesize(
+                logs["num_frames_per_episode"])
 
             header = ["update", "frames", "FPS", "duration"]
             data = [update, num_frames, fps, duration]
+            header += ["num_frames_" +
+                       key for key in num_frames_per_episode.keys()]
+            data += num_frames_per_episode.values()
 
             txt_logger.info(
-                "U {} | F {:06} | FPS {:04.0f} | D {}"
+                "U {} | F {:06} | FPS {:04.0f} | D {} | Frames/Episode : [mean, std, min, Max] {:.1f} {:.1f} {} {} "
                 .format(*data))
             txt_logger.info(
-                str(("Return/Episode/Agent [σ, μ, min, Max]: ", all_returns_per_episodes)))
-            txt_logger.info(
-                str(("Frames/Episode/Agent [σ, μ, min, Max]: ", all_num_frames_per_episode)))
+                str(("Return/Episode/Agent [mean, std, min, Max]: ", all_returns_per_episodes)))
             txt_logger.info(str(("entropy per agent: ", logs["entropy"])))
             txt_logger.info(str(("value per agent: ", logs["value"])))
             txt_logger.info(
                 str(("value loss per agent: ", logs["value_loss"])))
             txt_logger.info(str(("grad norm per agent: ", logs["grad_norm"])))
 
-            for agent, return_per_episode in enumerate(all_returns_per_episodes):
+            # agent specific data
+            for agent in range(agents):
                 header += ["return_per_episode_agent_" + str(agent) + "_" +
-                           key for key in return_per_episode.keys()]
-                data += return_per_episode.values()
-            for agent, num_frames_per_episode in enumerate(all_num_frames_per_episode):
-                header += ["num_frames_agent_" + str(agent) + "_" +
-                           key for key in num_frames_per_episode.keys()]
-                data += num_frames_per_episode.values()
-
-            header += ["entropy_of_agent_" + str(agent)
-                       for agent in range(agents)]
-            data += [logs["entropy"][agent] for agent in range(agents)]
-            header += ["value_of_agent_" + str(agent)
-                       for agent in range(agents)]
-            data += [logs["value"][agent] for agent in range(agents)]
-            header += ["policy_loss_of_agent_" +
-                       str(agent) for agent in range(agents)]
-            data += [logs["policy_loss"][agent] for agent in range(agents)]
-            header += ["grad_norm_of_agent_" +
-                       str(agent) for agent in range(agents)]
-            data += [logs["grad_norm"][agent] for agent in range(agents)]
+                           key for key in all_returns_per_episodes[agent].keys()]
+                data += all_returns_per_episodes[agent].values()
+                header += ["entropy_of_agent_" + str(agent)]
+                data += [logs["entropy"][agent]]
+                header += ["value_of_agent_" + str(agent)]
+                data += [logs["value"][agent]]
+                header += ["policy_loss_of_agent_" + str(agent)]
+                data += [logs["policy_loss"][agent]]
+                header += ["grad_norm_of_agent_" + str(agent)]
+                data += [logs["grad_norm"][agent]]
 
             if status["num_frames"] == 0:
                 csv_logger.writerow(header)
