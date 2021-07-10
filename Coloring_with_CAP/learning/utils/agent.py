@@ -21,7 +21,8 @@ class Agent:
         self.num_envs = num_envs
 
         try:
-            state = learning.utils.get_model_state(model_dir)[agent_index]
+            all_states = learning.utils.get_model_state(model_dir)
+            state = all_states[agent_index]
         except IndexError:
             state_len = len(learning.utils.get_model_state(model_dir))
             state = learning.utils.get_model_state(

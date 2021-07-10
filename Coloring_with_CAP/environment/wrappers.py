@@ -16,9 +16,6 @@ class CooperativeMultiagentWrapper(gym.core.ObservationWrapper):
         self.tile_size = tile_size
 
     def reset(self):
-        if hasattr(self, 'grid'):
-            self.print_coloring_data()
-
         observation = self.env.reset()
         return observation
 
