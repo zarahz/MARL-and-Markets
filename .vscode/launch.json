@@ -17,6 +17,7 @@
             "type": "python",
             "request": "launch",
             "module": "Coloring_with_CAP.scripts.train",
+<<<<<<< HEAD
             "console": "integratedTerminal",
             "args": [
                 "--model",
@@ -38,6 +39,12 @@
                 "2",
                 "--model",
                 "emptyGrid-two-agents",
+=======
+            "console": "integratedTerminal",
+            "args": [
+                "--model",
+                "emptyGrid-one-agent",
+>>>>>>> master
                 "--save-interval",
                 "10",
                 "--frames",
@@ -45,7 +52,11 @@
             ]
         },
         {
+<<<<<<< HEAD
             "name": "PPO train two with percentage rewards",
+=======
+            "name": "PPO train two",
+>>>>>>> master
             "type": "python",
             "request": "launch",
             "module": "Coloring_with_CAP.scripts.train",
@@ -54,9 +65,13 @@
                 "--agents",
                 "2",
                 "--model",
+<<<<<<< HEAD
                 "emptyGrid-two-agents-percentage",
                 "--percentage-reward",
                 "True",
+=======
+                "emptyGrid-two-agents",
+>>>>>>> master
                 "--save-interval",
                 "10",
                 "--frames",
@@ -64,25 +79,35 @@
             ]
         },
         {
+<<<<<<< HEAD
             "name": "PPO train two with mixed motive",
+=======
+            "name": "PPO train three",
+>>>>>>> master
             "type": "python",
             "request": "launch",
             "module": "Coloring_with_CAP.scripts.train",
             "console": "integratedTerminal",
             "args": [
                 "--agents",
-                "2",
+                "3",
                 "--model",
+<<<<<<< HEAD
                 "emptyGrid-two-agents-mixed",
                 "--mixed-motive",
                 "True",
+=======
+                "emptyGrid-three-agents",
+>>>>>>> master
                 "--save-interval",
                 "10",
                 "--frames",
                 "80000"
             ]
         },
+        // ------------- END OF - DO NOT CHANGE - -------------
         {
+<<<<<<< HEAD
             "name": "PPO train three",
             "type": "python",
             "request": "launch",
@@ -93,6 +118,41 @@
                 "3",
                 "--model",
                 "emptyGrid-three-agents",
+=======
+            "name": "Q-Learning",
+            "type": "python",
+            "request": "launch",
+            "program": "Coloring_with_CAP\\scripts\\q_learning.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--env",
+                "Empty-Grid-v0",
+                "--agents",
+                "2",
+                "--agent_view_size",
+                "5",
+                // "--max_steps",
+                // "10",
+                "--episodes",
+                "5",
+                "--size",
+                "5"
+            ]
+        },
+        {
+            "name": "PPO train",
+            "type": "python",
+            "request": "launch",
+            "module": "Coloring_with_CAP.scripts.train",
+            "console": "integratedTerminal",
+            "args": [
+                "--agents",
+                "2",
+                "--percentage-reward",
+                "True",
+                "--model",
+                "emptyGrid",
+>>>>>>> master
                 "--save-interval",
                 "10",
                 "--frames",
@@ -101,12 +161,17 @@
         },
         // ------------- END OF - DO NOT CHANGE - -------------
         {
+<<<<<<< HEAD
             "name": "Q-Learning",
+=======
+            "name": "PPO visualize",
+>>>>>>> master
             "type": "python",
             "request": "launch",
             "program": "Coloring_with_CAP\\scripts\\q_learning.py",
             "console": "integratedTerminal",
             "args": [
+<<<<<<< HEAD
                 "--env",
                 "Empty-Grid-v0",
                 "--agents",
@@ -157,6 +222,14 @@
                 "emptyGrid-one-agent",
                 // "--grid-size",
                 // "10"
+=======
+                "--agents",
+                "2",
+                "--percentage-reward",
+                "True",
+                "--model",
+                "emptyGrid"
+>>>>>>> master
             ]
         },
         {
