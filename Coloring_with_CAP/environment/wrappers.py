@@ -2,7 +2,7 @@ import gym
 from environment.colors import *
 
 
-class CooperativeMultiagentWrapper(gym.core.ObservationWrapper):
+class MultiagentWrapper(gym.core.ObservationWrapper):
     """
     Wrapper to use partially observable RGB image as the only observation output
     This can be used to have the agent to solve the gridworld in pixel space.
@@ -20,10 +20,13 @@ class CooperativeMultiagentWrapper(gym.core.ObservationWrapper):
 
     def step(self, actions):
         observation, reward, done, info = self.env.step(actions)
-        if done:  # adjust reward to be calculated out of percentage
+
+        # reward is an array of length agents
+        # array formation, so that mixed motive rewards are easily adapted (each agent is rewarded seperately)
+        reward = [0]*len(self.env.agents)
+        if done:
             reward = self.calculate_reward()
-        else:
-            reward = [0]*len(self.env.agents)
+
         return observation, reward, done, info
 
     def calculate_reward(self):
@@ -35,6 +38,7 @@ class CooperativeMultiagentWrapper(gym.core.ObservationWrapper):
             # with the indexing a new array is created that only contains the last value of the encoding (the color)
             cell_colors = self.env.colored_cells()[:, 2]
             for agent in range(len(agents)):
+                # reward agent for the percentage of its coloration on the field
                 agent_coloration = (
                     cell_colors == self.env.agents[agent]['color']).sum()
                 color_percentage = agent_coloration / \
@@ -42,13 +46,13 @@ class CooperativeMultiagentWrapper(gym.core.ObservationWrapper):
                 reward.append(color_percentage)
             return reward
         else:
-            # coop reward based on coloring percentage
-            if self.percentage_reward:
-                reward = [1 * self.env.grid_colored_percentage()]*len(agents)
-                return reward
-
             # coop reward based on completed coloring
             if self.env.whole_grid_colored():
                 print('---- GRID FULLY COLORED! ----')
                 return [1]*len(agents)
-            return [0]*len(agents)
+
+            # coop reward based on coloring percentage
+            if self.percentage_reward:
+                return [1 * self.env.grid_colored_percentage()]*len(agents)
+
+        return [0]*len(self.env.agents)

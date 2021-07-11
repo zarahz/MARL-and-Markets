@@ -78,7 +78,7 @@ def softmax():
 #######################
 env = gym.make(id=args.env, agents=args.agents,
                agent_view_size=args.agent_view_size, max_steps=args.max_steps, size=args.size)
-env = CooperativeMultiagentWrapper(env)  # wrapper for environment adjustments
+env = MultiagentWrapper(env)  # wrapper for environment adjustments
 
 window = Window(args.env)
 

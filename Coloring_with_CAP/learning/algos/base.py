@@ -57,8 +57,8 @@ class BaseAlgo(ABC):
             self.num_procs, device=self.device)
 
         self.log_done_counter = 0
-        self.log_return = [[0]*agents] * self.num_procs
-        self.log_num_frames = [0] * self.num_procs
+        self.log_return = []  # [[0]*agents] * self.num_procs
+        self.log_num_frames = []  # [0] * self.num_procs
 
     def prepare_experiences(self):
         """Collects rollouts and computes advantages.
@@ -206,14 +206,17 @@ class BaseAlgo(ABC):
         # Log some values
 
         keep = max(self.log_done_counter, self.num_procs)
+
         logs = {
             "return_per_episode_agent_"+str(agent): [episode_log_return[agent] for episode_log_return in self.log_return[-keep:]],
             "num_frames_per_episode": self.log_num_frames,
             "num_frames": self.num_frames
         }
-        self.log_done_counter = 0
-        self.log_return = self.log_return[-self.num_procs:]
-        self.log_num_frames = self.log_num_frames[-self.num_procs:]
+        
+        if self.agents == agent+1:
+            self.log_done_counter = 0
+            self.log_return = self.log_return[-self.num_procs:]
+            self.log_num_frames = self.log_num_frames[-self.num_procs:]
 
         return exps, logs
 

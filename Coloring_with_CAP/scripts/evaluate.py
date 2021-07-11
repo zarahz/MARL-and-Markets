@@ -42,7 +42,7 @@ if __name__ == '__main__':
     envs = []
     for i in range(args.procs):
         env = learning.utils.make_env(
-            args.env, args.agents, args.seed + 10000 * i)
+            args.env, args.agents, seed=args.seed + 10000 * i)
         envs.append(env)
     env = ParallelEnv(envs)
     print("Environments loaded\n")

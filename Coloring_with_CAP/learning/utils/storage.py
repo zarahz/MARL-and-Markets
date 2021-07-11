@@ -14,11 +14,19 @@ def create_folders_if_necessary(path):
 
 
 def get_storage_dir():
-    return "Coloring_with_CAP\\storage"
+    return "Coloring_with_CAP\\" + get_storage_folder()
+
+
+def get_storage_folder():
+    return "storage"
 
 
 def get_model_dir(model_name):
     return os.path.join(get_storage_dir(), model_name)
+
+
+def get_short_model_dir(model_name):
+    return os.path.join(get_storage_folder(), model_name)
 
 
 def get_status_path(model_dir):
@@ -26,7 +34,9 @@ def get_status_path(model_dir):
 
 
 def get_status(model_dir):
+    # model_dir = 'storage\\one-agent'
     path = get_status_path(model_dir)
+    learning.utils.create_folders_if_necessary(path)
     return torch.load(path)
 
 

@@ -812,6 +812,7 @@ class GridEnv(gym.Env):
         reward = 0
         done = False
         obs = {}
+        resetted_fields = 0
         for agent in self.agents:
             x = self.agents[agent]['pos'][0]
             y = self.agents[agent]['pos'][1]
@@ -835,7 +836,7 @@ class GridEnv(gym.Env):
                 new_pos_cell = self.grid.get(*new_pos)
                 if new_pos_cell == None or new_pos_cell.can_overlap():
                     self.agents[agent]['pos'] = new_pos
-                    self.toggle_is_colored(
+                    resetted_fields += self.toggle_is_colored(
                         new_pos_cell, self.agents[agent]['color'], new_pos, old_pos)
 
             obs[agent] = self.gen_obs(agent)
@@ -843,8 +844,8 @@ class GridEnv(gym.Env):
         if self.whole_grid_colored() or self.step_count >= self.max_steps:
             done = True
             reward = self._reward()
-
-        return obs, reward, done, {}
+        info = {"resetted_fields": resetted_fields}
+        return obs, reward, done, info
 
     def whole_grid_colored(self):
         return all(self.grid.encode_grid_objects()[:, :, 1].ravel())
@@ -872,9 +873,11 @@ class GridEnv(gym.Env):
         return np.concatenate((colored_floor_cells, colored_agent_cells))
 
     def toggle_is_colored(self, obj, color, new_pos, old_pos):
+        field_resetted = False
         is_colored = 1
         if obj is not None and obj.is_colored:
             is_colored = 0
+            field_resetted = True
 
         self.put_obj(Agent(is_colored, color), *new_pos)
         if old_pos:
@@ -883,13 +886,11 @@ class GridEnv(gym.Env):
                 if (self.agents[agent]['pos'] == old_pos).all():
                     self.put_obj(Agent(is_colored=old_pos_attr.is_colored,
                                        color=old_pos_attr.color), *old_pos)
-                    return
+                    return field_resetted
             self.put_obj(Floor(is_colored=old_pos_attr.is_colored,
                          color=old_pos_attr.color), *old_pos)
-        # else:
-            # alpha times color
-            # lift_color = 0.2 * np.array(color, dtype=np.uint8)
-            # self.put_obj(Floor(status='colored', color=color), *pos)
+
+        return field_resetted
 
     def gen_obs_grid(self, agent):
         """
