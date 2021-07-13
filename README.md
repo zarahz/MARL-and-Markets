@@ -1,7 +1,7 @@
 TODO 
 - plot that show the CAP
     - mean reward/episode for a one agent environment training vs multi agent environments (i.e. 2 and 3 agents)
-    - amount of resettet fields per episode in a one agent environment training vs multi agent environments (i.e. 2 and 3 agents)
+    - amount of reset fields per episode in a one agent environment training vs multi agent environments (i.e. 2 and 3 agents)
 - start implementation of shareholder market
 -------------
 - fine tuning to achieve colored grid with one agent
@@ -39,6 +39,17 @@ Visualization of the environment based on the trained model can be achieved with
 > python -m Coloring_with_CAP.scripts.train --model "EmptyGrid"
 ```
 required argument is `--model`.
+
+
+# Current Observations
+For a run of 100 Episodes with max steps of 25 each, here are the current observations: 
+![plot](./Coloring_with_CAP/visualization/plots/Rewards_per_episode.png)
+
+Number of times the environment was solved, counted with reward=1 feedback.
+![plot](./Coloring_with_CAP/visualization/plots/Goal_achievements_per_setting.png)
+
+Number of times cells were reset.
+![plot](./Coloring_with_CAP/visualization/plots/Reset_fields_per_setting.png)
 
 # Untersuchung der Auswirkungen von Märkten auf das Belohnungs-Zuweisungsproblem in kooperativen Multiagenten-Umgebungen
 

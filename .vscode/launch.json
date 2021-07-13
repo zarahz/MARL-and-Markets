@@ -155,8 +155,8 @@
                 // "True",
                 "--model",
                 "one-agent",
-                // "--grid-size",
-                // "10"
+                "--grid-size",
+                "10"
             ]
         },
         {
