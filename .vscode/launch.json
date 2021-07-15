@@ -3,6 +3,7 @@
     // Hover to view descriptions of existing attributes.
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
+    "justMyCode": false,
     "configurations": [
         // ---------- - DO NOT CHANGE - ------------------
         {
@@ -110,7 +111,7 @@
                 "--env",
                 "Empty-Grid-v0",
                 "--agents",
-                "2",
+                "3",
                 "--agent_view_size",
                 "5",
                 // "--max_steps",
@@ -130,10 +131,10 @@
             "args": [
                 "--agents",
                 "2",
-                "--percentage-reward",
-                "True",
                 "--model",
                 "test",
+                "--market",
+                "sm",
                 "--save-interval",
                 "10",
                 "--frames",

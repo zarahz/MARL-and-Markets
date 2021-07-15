@@ -1,5 +1,5 @@
 import gym
-from environment.colors import *
+import environment.market as market
 
 
 class MultiagentWrapper(gym.core.ObservationWrapper):
@@ -13,26 +13,34 @@ class MultiagentWrapper(gym.core.ObservationWrapper):
         self.tile_size = tile_size
         self.percentage_reward = percentage_reward
         self.mixed_motive = mixed_motive
+        if self.env.market:
+            self.market = market.Market(self.env.market)
 
     def reset(self):
+        if self.market:
+            self.market.reset(len(self.env.agents))
         observation = self.env.reset()
         return observation
 
     def step(self, actions):
-        observation, reward, done, info = self.env.step(actions)
+        if self.market:
+            # always take the first action, since the following are only relevant for the market
+            market_actions = actions[:, 1:]
+            actions = actions[:, 0]
+            self.market.match_actions(actions, market_actions)
+        observation, reward, done, info = self.env.step(actions.tolist())
 
         # reward is an array of length agents
         # array formation, so that mixed motive rewards are easily adapted (each agent is rewarded seperately)
         reward = [0]*len(self.env.agents)
         if done:
-            reward = self.calculate_reward()
+            reward = self.calculate_reward(reward)
 
         return observation, reward, done, info
 
-    def calculate_reward(self):
+    def calculate_reward(self, reward):
         agents = self.env.agents
         if self.mixed_motive:
-            reward = []  # reward of agent is its index
             # self.env.colored_cells() returns all cell encodings that contain a one in the middle
             # i.e. [3,1,2] -> 1 = cell is colored
             # with the indexing a new array is created that only contains the last value of the encoding (the color)
@@ -43,16 +51,18 @@ class MultiagentWrapper(gym.core.ObservationWrapper):
                     cell_colors == self.env.agents[agent]['color']).sum()
                 color_percentage = agent_coloration / \
                     len(self.env.walkable_cells())
-                reward.append(color_percentage)
-            return reward
+                reward[agent] = color_percentage
         else:
             # coop reward based on completed coloring
             if self.env.whole_grid_colored():
                 print('---- GRID FULLY COLORED! ----')
-                return [1]*len(agents)
+                reward = [1]*len(agents)
 
             # coop reward based on coloring percentage
-            if self.percentage_reward:
-                return [1 * self.env.grid_colored_percentage()]*len(agents)
+            elif self.percentage_reward:
+                reward = [1 * self.env.grid_colored_percentage()]*len(agents)
 
-        return [0]*len(self.env.agents)
+        # execute market calculations too
+        if self.market:
+            reward = self.market.calculate_traded_reward(reward)
+        return reward

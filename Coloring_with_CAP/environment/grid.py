@@ -473,6 +473,7 @@ class GridEnv(gym.Env):
         see_through_walls=True,
         seed=1337,
         agent_view_size=5,
+        market="",
         agents=2
     ):
         generate_colors(agents)
@@ -485,9 +486,13 @@ class GridEnv(gym.Env):
 
         # Action enumeration for this environment
         self.actions = GridEnv.Actions
-
-        # Actions are discrete integer values
-        self.action_space = spaces.Discrete(len(self.actions))
+        self.market = market
+        if market:
+            # Actions are discrete integer values
+            self.action_space = gym.spaces.MultiDiscrete(
+                [len(self.actions), len(self.actions)])
+        else:
+            self.action_space = spaces.Discrete(len(self.actions))
 
         # Number of cells (width and height) in the agent view
         assert agent_view_size % 2 == 1
@@ -528,7 +533,6 @@ class GridEnv(gym.Env):
         self.reset()
 
     def reset(self):
-        #self.agents = {}
         for agent in self.agents:
             # Current position of the agent
             self.agents[agent] = {**self.agents[agent], 'pos': None}

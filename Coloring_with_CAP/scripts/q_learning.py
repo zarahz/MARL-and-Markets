@@ -36,6 +36,7 @@ def redraw():
 
 
 def reset():
+    print("resetted")
     env.reset()
     if hasattr(env, 'mission'):
         window.set_caption(env.mission)
@@ -44,17 +45,18 @@ def reset():
 
 def visualize(done):
     if done:
+        print("done")
         reset()
     else:
         redraw()
 
 
 def epsilon_greedy():
-    rand = np.random.random()
-    if rand < epsilon:
-        action = env.action_space.sample()
-    else:
-        action = np.argmax(Q)
+    # rand = np.random.random()
+    # if rand < epsilon:
+    action = env.action_space.sample()
+    # else:
+    #     action = np.argmax(Q)
     return action
 
 
@@ -76,24 +78,28 @@ def softmax():
 #######################
 # conduct experiment
 #######################
+market = "sm"
 env = gym.make(id=args.env, agents=args.agents,
-               agent_view_size=args.agent_view_size, max_steps=args.max_steps, size=args.size)
-env = MultiagentWrapper(env)  # wrapper for environment adjustments
+               agent_view_size=args.agent_view_size, max_steps=args.max_steps, market=market, size=args.size)
+# wrapper for environment adjustments
+env = MultiagentWrapper(env)
 
 window = Window(args.env)
 
 
+action_space = env.action_space.nvec[0] if market else env.action_space.n
 if args.mixed_motive:
     # variable to count the number of times an action was pulled
-    action_count = [np.zeros(env.action_space.n)]*agents
+    action_count = [np.zeros(action_space)]*agents
     # Q value => expected average reward
     Q = [np.zeros(len(action_count))]*agents
 else:
-    action_count = np.zeros(env.action_space.n)
+    action_count = np.zeros(action_space)
     Q = np.zeros(len(action_count))
+
 reset()
 for episode in range(args.episodes):
-    # s = 0
+    s = 0
     for s in range(args.max_steps):
         joint_actions = []
         for agent in range(agents):
@@ -107,7 +113,7 @@ for episode in range(args.episodes):
             joint_actions.append(action)
 
         # get reward/observation/terminalInfo
-        observation, reward, done, info = env.step(joint_actions)
+        observation, reward, done, info = env.step(np.array(joint_actions))
 
         if args.mixed_motive:
             for agent in range(agents):
@@ -117,7 +123,6 @@ for episode in range(args.episodes):
         else:
             Q[action] = Q[action] + (1/action_count[action]) * \
                 (reward[0]-Q[action])
-        print(reward)
         visualize(done)
         if done:
             print('done! step=', s, ' reward=', reward)
