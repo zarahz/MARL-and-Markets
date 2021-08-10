@@ -25,18 +25,26 @@ parser.add_argument("--algo", default="ppo",
                     help="algorithm to use: a2c | ppo (REQUIRED)")
 parser.add_argument("--agents", default=1, type=int,
                     help="amount of agents")
+parser.add_argument("--model", default=None,
+                    help="name of the model (default: {ENV}_{ALGO}_{TIME})")
+parser.add_argument("--seed", type=int, default=1,
+                    help="random seed (default: 1)")
+
+# Environment settings
 parser.add_argument("--env", default='Empty-Grid-v0',
                     help="name of the environment to train on (default: empty grid size 5x5)")
 parser.add_argument("--grid-size", default=5, type=int,
                     help="size of the playing area (default: 5)")
-parser.add_argument("--model", default=None,
-                    help="name of the model (default: {ENV}_{ALGO}_{TIME})")
 parser.add_argument("--percentage-reward", default=False,
                     help="reward agents based on percentage of coloration in the grid (default: False)")
 parser.add_argument("--mixed-motive", default=False,
                     help="If set to true the reward is not shared which enables a mixed motive environment (one vs. all). Otherwise agents need to work in cooperation to gain more reward. (default: False = Cooperation)")
-parser.add_argument("--seed", type=int, default=1,
-                    help="random seed (default: 1)")
+parser.add_argument("--market", default='',
+                    help="There are three options 'sm', 'am' and '' for none. SM = Shareholder Market where agents can auction actions similar to stocks. AM = Action Market where agents can buy specific actions from others. (Default = '')")
+parser.add_argument("--trading-fee", default=0.05, type=float,
+                    help="If a trade is executed, this value determens the price (market type am) / share (market type sm) the agents exchange (Default: 0.05)")
+
+
 parser.add_argument("--log-interval", type=int, default=1,
                     help="number of updates between two logs (default: 1)")
 parser.add_argument("--save-interval", type=int, default=10,
@@ -127,7 +135,13 @@ txt_logger.info(f"Device: {device}\n")
 envs = []
 for i in range(args.procs):
     envs.append(learning.utils.make_env(
-        args.env, args.agents, args.grid_size, args.percentage_reward, args.mixed_motive, args.seed + 10000 * i))
+        args.env, args.agents,
+        grid_size=args.grid_size,
+        percentage_reward=args.percentage_reward,
+        mixed_motive=args.mixed_motive,
+        market=args.market,
+        trading_fee=args.trading_fee,
+        seed=args.seed + 10000 * i))
 txt_logger.info("Environments loaded\n")
 
 # Load training status
@@ -147,6 +161,10 @@ txt_logger.info("Observations preprocessor loaded")
 # Load model
 models = []
 for agent in range(agents):
+    # if args.market:
+    #     action_space = envs[0].action_space.nvec.prod()
+    # else:
+    #     action_space = envs[0].action_space.n
     model = ACModel(obs_space, envs[0].action_space)
     if "model_state" in status:
         model.load_state_dict(status["model_state"][agent])
@@ -154,18 +172,14 @@ for agent in range(agents):
     models.append(model)
 
 txt_logger.info("Model loaded\n")
-# txt_logger.info("{}\n".format(acmodel))
 
 # Load algo
 print("NAME:________________________  ", __name__)
 if __name__ == '__main__':
-    # if args.algo == "ppo":
     algo = learning.PPOAlgo(envs, agents, models, device, args.frames_per_proc,
                             args.discount, args.lr, args.gae_lambda, args.entropy_coef, args.value_loss_coef,
                             args.max_grad_norm, args.recurrence, args.optim_eps, args.clip_eps, args.epochs,
                             args.batch_size, preprocess_obss)
-    # else:
-    #     raise ValueError("Incorrect algorithm name: {}".format(args.algo))
 
     if "optimizer_state" in status:  # TODO
         for agent in range(agents):
@@ -179,9 +193,6 @@ if __name__ == '__main__':
     num_frames = status["num_frames"]
     update = status["update"]
     start_time = time.time()
-
-    # while num_frames >= args.frames:
-    #     args.frames = args.frames*2  # add more frames
 
     while num_frames < args.frames:
         # Update model parameters

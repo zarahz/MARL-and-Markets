@@ -27,8 +27,9 @@ class MultiagentWrapper(gym.core.ObservationWrapper):
             # always take the first action, since the following are only relevant for the market
             market_actions = actions[:, 1:]
             actions = actions[:, 0]
-            self.market.match_actions(actions, market_actions)
-        observation, reward, done, info = self.env.step(actions.tolist())
+            self.market.calculate_balance(
+                actions, market_actions, self.env.trading_fee)
+        observation, reward, done, info = self.env.step(actions)
 
         # reward is an array of length agents
         # array formation, so that mixed motive rewards are easily adapted (each agent is rewarded seperately)

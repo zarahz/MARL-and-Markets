@@ -13,6 +13,7 @@ class EmptyEnv(GridEnv):
         agent_view_size=7,  # currently training with view size smaller than 7 fails! TODO!
         max_steps=None,
         market="",
+        trading_fee=0.05,
         size=5
     ):
         if not max_steps and agents <= 1:
@@ -27,7 +28,8 @@ class EmptyEnv(GridEnv):
             agents=agents,
             max_steps=max_steps,
             agent_view_size=agent_view_size,
-            market=market
+            market=market,
+            trading_fee=trading_fee
             # Set this to True for maximum speed
             # see_through_walls=True
         )

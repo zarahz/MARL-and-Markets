@@ -474,6 +474,7 @@ class GridEnv(gym.Env):
         seed=1337,
         agent_view_size=5,
         market="",
+        trading_fee=0.05,
         agents=2
     ):
         generate_colors(agents)
@@ -487,10 +488,15 @@ class GridEnv(gym.Env):
         # Action enumeration for this environment
         self.actions = GridEnv.Actions
         self.market = market
-        if market:
-            # Actions are discrete integer values
+        self.trading_fee = trading_fee
+        if market and market == "sm":
+            # market actions are unconditional (no recieving agent set)
             self.action_space = gym.spaces.MultiDiscrete(
                 [len(self.actions), len(self.actions)])
+        elif market and market == "am":
+            # market actions are conditional (a recieving agent set)
+            self.action_space = gym.spaces.MultiDiscrete(
+                [len(self.actions), agents, len(self.actions)])
         else:
             self.action_space = spaces.Discrete(len(self.actions))
 

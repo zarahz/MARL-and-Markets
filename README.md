@@ -1,14 +1,24 @@
 TODO 
-- plot that show the CAP
-    - mean reward/episode for a one agent environment training vs multi agent environments (i.e. 2 and 3 agents)
-    - amount of reset fields per episode in a one agent environment training vs multi agent environments (i.e. 2 and 3 agents)
 - start implementation of shareholder market
+    - TBD:
+        - "agents can only make either selling or buying offers at a time"? Not implemented yet, all agents can sell and buy 
+          sm: Agent 1: [1,2,1] - Agent 2: [2,1,1] Agent 1 would sell a share to 2 but 2 would sell a share back (implemented in market/action_match)
+          am: Agent 1: [1,2,2] - Agent 2: [2,1,1] Agent 1 buys action 2 from 2 but 2 also buys action 1 from 1
+          Is Buying or Selling regarded first?
+        - Currently every step includes action markets -> should there be a default to not buy market actions? Or should there be a bool to specify
+          if the agent wants to sell or buy (or do nothing)?
+        - How to define the action space? Problem is the current Linear NN which returns a number within the action_space
+            is an encoding sufficient? sm: action_space.n=5 NN returns a number of 5x5 i.e. 25 = [4,4] -> hotencoding
 -------------
 - fine tuning to achieve colored grid with one agent
 - implement another learning algorithm? I.e. DQN/Team-DQN? Or start with MCAC/DR,... 
 - add run parameter market to enable actions as touples and implement reward distribution with shares
 - adjust structure (q learning integration into visualization script with algo as file in learning)
 
+done:
+- plot that show the CAP
+    - mean reward/episode for a one agent environment training vs multi agent environments (i.e. 2 and 3 agents)
+    - amount of reset fields per episode in a one agent environment training vs multi agent environments (i.e. 2 and 3 agents)
 # Installation
 First clone this repository and navigate into the domain Folder
 ```
