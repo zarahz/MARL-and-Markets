@@ -1,4 +1,5 @@
 TODO 
+====== Unklarheiten
 - start implementation of shareholder market
     - TBD:
         - "agents can only make either selling or buying offers at a time"? Not implemented yet, all agents can sell and buy 
@@ -9,11 +10,33 @@ TODO
           if the agent wants to sell or buy (or do nothing)?
         - How to define the action space? Problem is the current Linear NN which returns a number within the action_space
             is an encoding sufficient? sm: action_space.n=5 NN returns a number of 5x5 i.e. 25 = [4,4] -> hotencoding
+=======
+- ANMERKUNG: two agents mixed resetted fields: agenten setzen gegnerische felder nicht gezielt zurück, da sie dadurch selbst keine direkten vorteil erzielen (feld ist dann nur resetted aber nicht ihnen zugehörig) (vermutlich würden sie eher diese taktik spielen, wenn die felder nicht zurückgesetzt werden, sondern direkt ihre farbe übernehmen)
+    - vielleicht noch neue settings: 
+        - competitive mixed, bei denen nur der agent mit höherem prozent den reward erhält?
+        - mixed without reset, bei denen felder direkt die farbe des agenten übernehmen ohne zurück gesetzt zu werden (kein bit switching mehr)
+- plot feedback:
+    - for all settings show coloration percentage
+    - one plot with overall percentage of mixed AND percentage setting of two agents
+    - plot during training w csv maybe (i.e. take last n episode)
+        - two criteria 1) how fast converge (zB bei der wievielten episode hat ein agent es gelernt?) and 2) how stable is it? (zB bei einem agent -> macht er trotzdem noch oft fehler?) 
+        - take training logged csv, convert to pandas and plot in jupyter
+- market adaptation:
+    - encoding of actions
+    - market matrix: agent can EITHER buy or sell in one step!
+        - sm: 
+            - (aktion, kaufen/verkaufen/nichtstun, kaufaktion) -> wenn verkaufen der fall ist und mehrere agenten kaufen möchten kriegt jeder eine aktie -> beim ende einer episode und der reward berechnung erhalten die aktionäre dann die dividenden in einer gewissen betragshöhe (kaufpreis hier gleich dividende zB 0.5)
+            - Fällt balance des agents beim trade unter null findet der trade nicht statt. möchten mehrere agents kaufen wird in ZUFÄLLIGER REIHENFOLGE verkauft
+        - am: 
+            - ????? zu fragen:
+            aktion sieht vermutlich so aus: (aktion, kaufen/verkaufen/nichtstun, agent)
+                - wenn nichtstun gewählt wurde führt man die aktion in der umgebung aus?
+                - wenn kaufen gewählt wurde kauft man vom gewähltem agent die aktion, aber was macht man wenn der gewählte agent nicht die aktion ausführt? In der Umgebung wird bei einem kauf nichts ausgeführt, ansonsten schon?
+                - wenn verkaufen gewählt wurde aber niemand kauft macht man nichts? Wenn gekauft wird, führt man die aktion aus?
+            - vermutung -> [aktion, agent/nichtstun, kaufaktion] beim Actionmarkt kauft man aktionen 
+            
 -------------
-- fine tuning to achieve colored grid with one agent
-- implement another learning algorithm? I.e. DQN/Team-DQN? Or start with MCAC/DR,... 
-- add run parameter market to enable actions as touples and implement reward distribution with shares
-- adjust structure (q learning integration into visualization script with algo as file in learning)
+- implement another learning algorithm? I.e. (single) DQN?
 
 done:
 - plot that show the CAP
