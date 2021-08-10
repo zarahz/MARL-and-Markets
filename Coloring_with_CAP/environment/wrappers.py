@@ -18,6 +18,16 @@ class MultiagentWrapper(gym.core.ObservationWrapper):
         observation = self.env.reset()
         return observation
 
+    def nn_step(self, encoding_key):
+        ''' 
+        When actions cointain multiple information, i.e. trading offers, the nn
+        only returns a number. That number can be mapped to the corresponding action
+        in this function. 
+        Example: key = 0 -> maps to (0,0,0) that means an agent executes action zero 
+        and offers to buy from agent 0 action 0
+        '''
+        pass
+
     def step(self, actions):
         observation, reward, done, info = self.env.step(actions)
 
