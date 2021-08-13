@@ -127,7 +127,7 @@ txt_logger.info(f"Device: {device}\n")
 envs = []
 for i in range(args.procs):
     envs.append(learning.utils.make_env(
-        args.env, args.agents, args.grid_size, args.percentage_reward, args.mixed_motive, args.seed + 10000 * i))
+        args.env, args.agents, grid_size=args.grid_size, percentage_reward=args.percentage_reward, mixed_motive=args.mixed_motive, seed=args.seed + 10000 * i))
 txt_logger.info("Environments loaded\n")
 
 # Load training status

@@ -41,7 +41,7 @@
                 "--save-interval",
                 "10",
                 "--frames",
-                "500000"
+                "300000"
             ]
         },
         {
@@ -60,7 +60,7 @@
                 "--save-interval",
                 "10",
                 "--frames",
-                "80000"
+                "200000"
             ]
         },
         {
@@ -71,7 +71,7 @@
             "console": "integratedTerminal",
             "args": [
                 "--agents",
-                "3",
+                "2",
                 "--model",
                 "two-agents-mixed",
                 "--mixed-motive",
@@ -79,7 +79,7 @@
                 "--save-interval",
                 "10",
                 "--frames",
-                "500000"
+                "200000"
             ]
         },
         {
@@ -148,15 +148,13 @@
             "console": "integratedTerminal",
             "args": [
                 "--agents",
-                "1",
+                "2",
                 // "--percentage-reward",
                 // "True",
                 // "--mixed-motive",
                 // "True",
                 "--model",
-                "one-agent",
-                "--grid-size",
-                "10"
+                "two-agents"
             ]
         },
         {
