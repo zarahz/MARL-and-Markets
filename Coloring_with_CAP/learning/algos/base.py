@@ -78,7 +78,9 @@ class BaseAlgo(ABC):
             Useful stats about the training process, including the average
             reward, policy loss, value loss, etc.
         """
-
+        # frames-per-proc = 128 that means 128 times the (16) parallel envs are played through and logged.
+        # If worst case and all environments are played until max_steps (25) are reached it can at least finish
+        # 5 times and log its rewards (that means there are at least 5*16=80 rewards in log_return)
         for i in range(self.num_frames_per_proc):
 
             # agent variables
@@ -109,8 +111,6 @@ class BaseAlgo(ABC):
             tensor_actions = torch.stack(joint_actions[:])
             obs, reward, done, _ = self.env.step(
                 [action.cpu().numpy() for action in joint_actions])
-
-            # Update experiences values
 
             self.obss[i] = self.obs  # old obs
             self.obs = obs  # set old obs to new experience obs
@@ -208,12 +208,13 @@ class BaseAlgo(ABC):
         keep = max(self.log_done_counter, self.num_procs)
 
         logs = {
-            "return_per_episode_agent_"+str(agent): [episode_log_return[agent] for episode_log_return in self.log_return[-keep:]],
+            "reward_agent_"+str(agent): [episode_log_return[agent] for episode_log_return in self.log_return[-keep:]],
             "num_frames_per_episode": self.log_num_frames,
             "num_frames": self.num_frames
         }
-        
+
         if self.agents == agent+1:
+            # reset values?
             self.log_done_counter = 0
             self.log_return = self.log_return[-self.num_procs:]
             self.log_num_frames = self.log_num_frames[-self.num_procs:]

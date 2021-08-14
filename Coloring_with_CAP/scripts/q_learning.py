@@ -120,6 +120,6 @@ for episode in range(args.episodes):
         print(reward)
         visualize(done)
         if done:
-            print('done! step=', s, ' reward=', reward)
+            print('done! step=', s, ' reward=', reward, ' info=', info)
 
 window.close()

@@ -12,6 +12,7 @@ import sys
 
 import learning.utils
 from learning.model import ACModel
+from learning.utils.storage import prepare_csv_data, update_csv_file
 
 # to show large tensors without truncation uncomment the next line
 # torch.set_printoptions(threshold=10_000)
@@ -55,6 +56,9 @@ parser.add_argument("--epochs", type=int, default=4,
 parser.add_argument("--batch-size", type=int, default=256,
                     help="batch size for PPO (default: 256)")
 # a Number that defines how often a (random) action is chosen for the batch/experience
+# i.e. frames-per-proc = 128 that means 128 times the (16) parallel envs are played through and logged (in func prepare_experiences).
+# If max_steps = 25 the environment can at least finish 5 times (done if max step is reached)
+# and save its rewards that means there are at least 5*16=80 rewards
 parser.add_argument("--frames-per-proc", type=int, default=None,
                     help="number of frames per process before update (default: 5 for A2C and 128 for PPO)")
 # gamma = discount range(0.88,0.99) most common is 0.99
@@ -105,7 +109,9 @@ model_dir = learning.utils.get_model_dir(model_name)
 # Load loggers and Tensorboard writer
 
 txt_logger = learning.utils.get_txt_logger(model_dir)
-csv_file, csv_logger = learning.utils.get_csv_logger(model_dir)
+csv_file, csv_logger = learning.utils.get_csv_logger(model_dir, "log")
+csv_rewards_file, csv_rewards_logger = learning.utils.get_csv_logger(
+    model_dir, "rewards")
 tb_writer = tensorboardX.SummaryWriter(model_dir)
 
 # Log command and all script arguments
@@ -187,8 +193,7 @@ if __name__ == '__main__':
         # Update model parameters
 
         # Log some values
-
-        logs2 = {
+        log_per_agent = {
             "entropy": [],
             "value": [],
             "policy_loss": [],
@@ -202,64 +207,23 @@ if __name__ == '__main__':
         for agent in range(agents):
             exps, logs1 = algo.collect_experience(agent)
             logs.update(logs1)
-            logs2 = algo.update_parameters(exps, agent, logs2)
-        logs.update(logs2)
-        update_end_time = time.time()
+            log_per_agent = algo.update_parameters(exps, agent, log_per_agent)
+        logs.update(log_per_agent)
+        # update_end_time = time.time()
 
         num_frames += logs["num_frames"]
         update += 1
 
         # Print logs
-
+        
         if update % args.log_interval == 0:
-            fps = logs["num_frames"]/(update_end_time - update_start_time)
-            duration = int(time.time() - start_time)
+            header, data, reward_data = prepare_csv_data(
+                agents, logs, update, num_frames, start_time=start_time, txt_logger=txt_logger)
 
-            all_returns_per_episodes = []
-            all_num_frames_per_episode = []
-            for key, value in logs.items():
-                if("return_per_episode_agent_" in key):
-                    all_returns_per_episodes.append(
-                        learning.utils.synthesize(value))
-
-            num_frames_per_episode = learning.utils.synthesize(
-                logs["num_frames_per_episode"])
-
-            header = ["update", "frames", "FPS", "duration"]
-            data = [update, num_frames, fps, duration]
-            header += ["num_frames_" +
-                       key for key in num_frames_per_episode.keys()]
-            data += num_frames_per_episode.values()
-
-            txt_logger.info(
-                "U {} | F {:06} | FPS {:04.0f} | D {} | Frames/Episode : [mean, std, min, Max] {:.1f} {:.1f} {} {} "
-                .format(*data))
-            txt_logger.info(
-                str(("Return/Episode/Agent [mean, std, min, Max]: ", all_returns_per_episodes)))
-            txt_logger.info(str(("entropy per agent: ", logs["entropy"])))
-            txt_logger.info(str(("value per agent: ", logs["value"])))
-            txt_logger.info(
-                str(("value loss per agent: ", logs["value_loss"])))
-            txt_logger.info(str(("grad norm per agent: ", logs["grad_norm"])))
-
-            # agent specific data
-            for agent in range(agents):
-                header += ["return_per_episode_agent_" + str(agent) + "_" +
-                           key for key in all_returns_per_episodes[agent].keys()]
-                data += all_returns_per_episodes[agent].values()
-                header += ["entropy_of_agent_" + str(agent)]
-                data += [logs["entropy"][agent]]
-                header += ["value_of_agent_" + str(agent)]
-                data += [logs["value"][agent]]
-                header += ["policy_loss_of_agent_" + str(agent)]
-                data += [logs["policy_loss"][agent]]
-                header += ["grad_norm_of_agent_" + str(agent)]
-                data += [logs["grad_norm"][agent]]
-
-            if status["num_frames"] == 0:
-                csv_logger.writerow(header)
-            csv_logger.writerow(data)
-            csv_file.flush()
+            update_csv_file(csv_file, csv_logger, update,
+                            dict(zip(header, data)))
+            update_csv_file(csv_rewards_file,
+                            csv_rewards_logger, update, reward_data)
 
             for field, value in zip(header, data):
                 tb_writer.add_scalar(field, value, num_frames)

@@ -129,9 +129,9 @@
             "console": "integratedTerminal",
             "args": [
                 "--agents",
-                "2",
-                "--percentage-reward",
-                "True",
+                "1",
+                // "--percentage-reward",
+                // "True",
                 "--model",
                 "test",
                 "--save-interval",
@@ -148,13 +148,13 @@
             "console": "integratedTerminal",
             "args": [
                 "--agents",
-                "2",
+                "1",
                 // "--percentage-reward",
                 // "True",
                 // "--mixed-motive",
                 // "True",
                 "--model",
-                "two-agents"
+                "test"
             ]
         },
         {
