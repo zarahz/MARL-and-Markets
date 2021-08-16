@@ -16,9 +16,9 @@ TODO
         - competitive mixed, bei denen nur der agent mit höherem prozent den reward erhält?
         - mixed without reset, bei denen felder direkt die farbe des agenten übernehmen ohne zurück gesetzt zu werden (kein bit switching mehr)
 - plot feedback:
-    - for all settings show coloration percentage
+    - for all settings show coloration percentage - done
     - one plot with overall percentage of mixed AND percentage setting of two agents
-    - plot during training w csv maybe (i.e. take last n episode)
+    - plot during training w csv maybe (i.e. take last n episodes)
         - two criteria 1) how fast converge (zB bei der wievielten episode hat ein agent es gelernt?) and 2) how stable is it? (zB bei einem agent -> macht er trotzdem noch oft fehler?) 
         - take training logged csv, convert to pandas and plot in jupyter
 - market adaptation:

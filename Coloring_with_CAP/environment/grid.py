@@ -854,7 +854,8 @@ class GridEnv(gym.Env):
         if self.whole_grid_colored() or self.step_count >= self.max_steps:
             done = True
             reward = self._reward()
-        info = {"reset_fields": reset_fields}
+        info = {"reset_fields": reset_fields,
+                "coloration_percentage": round(self.grid_colored_percentage(), 2)}
         return obs, reward, done, info
 
     def whole_grid_colored(self):

@@ -66,7 +66,7 @@ class MultiagentWrapper(gym.core.ObservationWrapper):
         else:
             # coop reward based on completed coloring
             if self.env.whole_grid_colored():
-                print('---- GRID FULLY COLORED! ----')
+                print('---- GRID FULLY COLORED! ---- steps', self.env.step_count)
                 reward = [1]*len(agents)
 
             # coop reward based on coloring percentage

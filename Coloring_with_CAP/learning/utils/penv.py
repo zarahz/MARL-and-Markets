@@ -45,12 +45,15 @@ class ParallelEnv(gym.Env):
         return results
 
     def step(self, joint_actions):
+        # send all actions and envs to the worker except the first
         for local, actions in zip(self.locals, (np.array(joint_actions).T)[1:]):
             local.send(("step", actions))
+        # execute the first action on the first env manually
         obs, reward, done, info = self.envs[0].step(
             np.array(joint_actions)[:, 0])
         if done:
             obs = self.envs[0].reset()
+        # combine parallel envs back into results
         results = zip(*[(obs, reward, done, info)] + [local.recv()
                       for local in self.locals])
         return results

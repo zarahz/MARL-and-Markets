@@ -51,6 +51,12 @@ class BaseAlgo(ABC):
 
         # Initialize log values
 
+        # variable to sum up all reset fields
+        self.log_num_reset_fields = torch.zeros(shape[0], dtype=torch.int)
+        # variable to save the reset fields for each episode
+        self.log_episode_reset_fields = torch.zeros(
+            shape, dtype=torch.int)
+
         self.log_episode_return = torch.zeros(
             (self.num_procs, agents), device=self.device)
         self.log_episode_num_frames = torch.zeros(
@@ -59,6 +65,7 @@ class BaseAlgo(ABC):
         self.log_done_counter = 0
         self.log_return = []  # [[0]*agents] * self.num_procs
         self.log_num_frames = []  # [0] * self.num_procs
+        self.log_coloration_percentage = []
 
     def prepare_experiences(self):
         """Collects rollouts and computes advantages.
@@ -79,8 +86,10 @@ class BaseAlgo(ABC):
             reward, policy loss, value loss, etc.
         """
 
+        # frames-per-proc = 128 that means 128 times the (16) parallel envs are played through and logged.
+        # If worst case and all environments are played until max_steps (25) are reached it can at least finish
+        # 5 times and log its rewards (that means there are at least 5*16=80 rewards in log_return)
         for i in range(self.num_frames_per_proc):
-
             # agent variables
             dists = []
             values = []
@@ -107,10 +116,8 @@ class BaseAlgo(ABC):
             # convert agentList(actionTensor) into tensor of
             # tensor_actions: torch.Size([1, 16]) (agents, 16): 16 consecutive actions of each agent
             tensor_actions = torch.stack(joint_actions[:])
-            obs, reward, done, _ = self.env.step(
+            obs, reward, done, info = self.env.step(
                 [action.cpu().numpy() for action in joint_actions])
-
-            # Update experiences values
 
             self.obss[i] = self.obs  # old obs
             self.obs = obs  # set old obs to new experience obs
@@ -125,18 +132,22 @@ class BaseAlgo(ABC):
                 tensor_actions[agent]) for agent in range(self.agents)])
 
             # Update log values
-
+            self.log_episode_reset_fields[i] = torch.tensor(
+                [env_info['reset_fields'] for env_info in info], device=self.device)
             self.log_episode_return += torch.tensor(
                 reward, device=self.device, dtype=torch.float)
             self.log_episode_num_frames += torch.ones(
                 self.num_procs, device=self.device)
 
-            for i, done_ in enumerate(done):
+            for done_index, done_ in enumerate(done):
                 if done_:
                     self.log_done_counter += 1
-                    self.log_return.append(self.log_episode_return[i].tolist())
+                    self.log_return.append(
+                        self.log_episode_return[done_index].tolist())
                     self.log_num_frames.append(
-                        self.log_episode_num_frames[i].item())
+                        self.log_episode_num_frames[done_index].item())
+                    self.log_coloration_percentage.extend(
+                        [env_info['coloration_percentage'] for env_info in info])
 
             # transpose rewards to [agent, processes] to multiplicate a mask of [processes] with it
             log_episode_return_transposed = self.log_episode_return.transpose(
@@ -170,13 +181,23 @@ class BaseAlgo(ABC):
                 self.advantages[i][agent] = delta + self.discount * \
                     self.gae_lambda * next_advantage * next_mask
 
+        # logs for all agents
+        self.log_num_reset_fields = torch.sum(
+            self.log_episode_reset_fields, dim=1)
+        keep = max(self.log_done_counter, self.num_procs)
+        logs = {
+            "num_reset_fields": self.log_num_reset_fields[-keep:].tolist(),
+            "grid_coloration_percentage": self.log_coloration_percentage
+        }
+        return logs
+
     def collect_experience(self, agent):
         # Define experience:
         #   the whole experience is the concatenation of the experience
         #   of each process.
         # In comments below:
-        #   - T is self.num_frames_per_proc,
-        #   - P is self.num_procs,
+        #   - T is self.num_frames_per_proc, 128
+        #   - P is self.num_procs, 16
         #   - D is the dimensionality.
 
         exps = DictList()
@@ -195,7 +216,6 @@ class BaseAlgo(ABC):
         exps.advantage = self.advantages[:,
                                          agent, :].transpose(0, 1).reshape(-1)
         exps.returnn = exps.value + exps.advantage
-        # self.agents, self.num_frames_per_proc*self.num_procs)
         exps.log_probs = self.log_probs[:,
                                         agent, :].transpose(0, 1).reshape(-1)
 
@@ -208,12 +228,13 @@ class BaseAlgo(ABC):
         keep = max(self.log_done_counter, self.num_procs)
 
         logs = {
-            "return_per_episode_agent_"+str(agent): [episode_log_return[agent] for episode_log_return in self.log_return[-keep:]],
+            "reward_agent_"+str(agent): [episode_log_return[agent] for episode_log_return in self.log_return[-keep:]],
             "num_frames_per_episode": self.log_num_frames,
             "num_frames": self.num_frames
         }
-        
+
         if self.agents == agent+1:
+            # reset values?
             self.log_done_counter = 0
             self.log_return = self.log_return[-self.num_procs:]
             self.log_num_frames = self.log_num_frames[-self.num_procs:]

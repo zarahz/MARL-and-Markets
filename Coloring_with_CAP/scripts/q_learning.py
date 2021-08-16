@@ -126,6 +126,6 @@ for episode in range(args.episodes):
                 (reward[0]-Q[action])
         visualize(done)
         if done:
-            print('done! step=', s, ' reward=', reward)
+            print('done! step=', s, ' reward=', reward, ' info=', info)
 
 window.close()

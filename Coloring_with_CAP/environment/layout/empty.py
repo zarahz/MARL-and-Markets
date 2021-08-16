@@ -22,7 +22,7 @@ class EmptyEnv(GridEnv):
         elif not max_steps:
             # calculate the walkable floor (by substracting the surrounding walls)
             walkable_floor_size = (size*size) - (((size-2)*4)+4)
-            max_steps = walkable_floor_size - agents
+            max_steps = walkable_floor_size  # - (agents-1)
         super().__init__(
             grid_size=size,
             agents=agents,
