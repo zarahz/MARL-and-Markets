@@ -74,6 +74,12 @@ def get_csv_logger(model_dir, name):
     return csv_file, csv.writer(csv_file)
 
 
+def log_stats(stats, descr, header, data):
+    header += [key + "_" + descr for key in stats.keys()]
+    data += stats.values()
+    return header, data
+
+
 def prepare_csv_data(agents, logs, update, num_frames, start_time=None, txt_logger=None):
     # fps = logs["num_frames"]/(update_end_time - update_start_time)
     start_time = start_time if start_time else time.time()
@@ -81,6 +87,18 @@ def prepare_csv_data(agents, logs, update, num_frames, start_time=None, txt_logg
 
     header = ["update_count", "frames", "duration_in_seconds"]  # "FPS"
     data = [update, num_frames, duration]  # fps
+
+    reset_fields_stats = learning.utils.synthesize(logs['num_reset_fields'])
+    header, data = log_stats(
+        reset_fields_stats, "num_reset_fields", header, data)
+
+    coloration_percentage_stats = learning.utils.synthesize(
+        logs['grid_coloration_percentage'])
+    header, data = log_stats(coloration_percentage_stats,
+                             "grid_coloration_percentage", header, data)
+    # header += [key + "_grid_coloration_percentage"
+    #            for key in coloration_percentage.keys()]
+    # data += coloration_percentage.values()
 
     reward_per_episode_stats = []  # contains mean,std,min,max
     all_rewards_per_episode = {}
@@ -99,9 +117,11 @@ def prepare_csv_data(agents, logs, update, num_frames, start_time=None, txt_logg
 
     # agent specific data
     for agent in range(agents):
-        header += [key + "_reward_agent_" + str(agent)
-                   for key in reward_per_episode_stats[agent].keys()]
-        data += reward_per_episode_stats[agent].values()
+        header, data = log_stats(reward_per_episode_stats[agent],
+                                 "reward_agent_" + str(agent), header, data)
+        # header += [key + "_reward_agent_" + str(agent)
+        #            for key in reward_per_episode_stats[agent].keys()]
+        # data += reward_per_episode_stats[agent].values()
         header += ["entropy_agent_" + str(agent)]
         data += [logs["entropy"][agent]]
         header += ["value_agent_" + str(agent)]

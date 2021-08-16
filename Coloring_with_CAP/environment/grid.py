@@ -845,7 +845,7 @@ class GridEnv(gym.Env):
             done = True
             reward = self._reward()
         info = {"reset_fields": reset_fields,
-                "coloration_percentage": self.grid_colored_percentage()}
+                "coloration_percentage": round(self.grid_colored_percentage(), 2)}
         return obs, reward, done, info
 
     def whole_grid_colored(self):

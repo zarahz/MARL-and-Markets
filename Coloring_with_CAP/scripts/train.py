@@ -202,8 +202,8 @@ if __name__ == '__main__':
         }
 
         update_start_time = time.time()
-        algo.prepare_experiences()
-        logs = {}
+        logs = algo.prepare_experiences()
+        # logs = {}
         for agent in range(agents):
             exps, logs1 = algo.collect_experience(agent)
             logs.update(logs1)
@@ -215,7 +215,7 @@ if __name__ == '__main__':
         update += 1
 
         # Print logs
-        
+
         if update % args.log_interval == 0:
             header, data, reward_data = prepare_csv_data(
                 agents, logs, update, num_frames, start_time=start_time, txt_logger=txt_logger)
