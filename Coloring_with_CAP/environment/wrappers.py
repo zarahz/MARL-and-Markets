@@ -1,4 +1,5 @@
 import gym
+import numpy as np
 import environment.market as market
 
 
@@ -22,23 +23,13 @@ class MultiagentWrapper(gym.core.ObservationWrapper):
         observation = self.env.reset()
         return observation
 
-    def nn_step(self, encoding_key):
-        ''' 
-        When actions cointain multiple information, i.e. trading offers, the nn
-        only returns a number. That number can be mapped to the corresponding action
-        in this function. 
-        Example: key = 0 -> maps to (0,0,0) that means an agent executes action zero 
-        and offers to buy from agent 0 action 0
-        '''
-        pass
-
     def step(self, actions):
         if self.market:
+            actions = self.env.decode_actions(actions)
             # always take the first action, since the following are only relevant for the market
             market_actions = actions[:, 1:]
             actions = actions[:, 0]
-            self.market.calculate_balance(
-                actions, market_actions, self.env.trading_fee)
+            self.market.calculate_balance(market_actions, self.env.trading_fee)
         observation, reward, done, info = self.env.step(actions)
 
         # reward is an array of length agents

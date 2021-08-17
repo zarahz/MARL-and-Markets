@@ -59,7 +59,7 @@ class ACModel(nn.Module, RecurrentACModel):
         self.actor = nn.Sequential(
             nn.Linear(self.embedding_size, 64),
             nn.Tanh(),
-            nn.Linear(64, action_space.n)
+            nn.Linear(64, action_space)
         )
 
         # Define critic's model

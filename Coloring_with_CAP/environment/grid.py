@@ -490,13 +490,15 @@ class GridEnv(gym.Env):
         self.market = market
         self.trading_fee = trading_fee
         if market and market == "sm":
-            # market actions are unconditional (no recieving agent set)
+            # market actions are unconditional (no recieving agent)
+            # action = [env_action, buying(0=buy from agent 0, num>agents=dont buy), selling(0=donothing, 1=sell)]
             self.action_space = gym.spaces.MultiDiscrete(
-                [len(self.actions), len(self.actions)])
+                [len(self.actions), agents+1, 2])
+            self.action_table = self.encode_actions()
         elif market and market == "am":
-            # market actions are conditional (a recieving agent set)
+            # market actions are conditional (a recieving agent is set)
             self.action_space = gym.spaces.MultiDiscrete(
-                [len(self.actions), agents, len(self.actions)])
+                [len(self.actions), len(self.actions), agents+1, agents+1])
         else:
             self.action_space = spaces.Discrete(len(self.actions))
 
@@ -648,6 +650,34 @@ class GridEnv(gym.Env):
 
     def _gen_grid(self, width, height):
         assert False, "_gen_grid needs to be implemented by each environment"
+
+    def encode_actions(self):
+        ''' 
+        When actions cointain multiple information, i.e. selling/buying info, the nn
+        only returns a number. That number can be mapped to the corresponding action.
+        In order to do that encode all actions with a number. 
+        Example: key = 0 -> maps to (0,0,0) that means an agent executes action zero 
+        and (in case of market=sm) buys share from agent 0, and (third 0) does not sell its shares 
+        '''
+        shape = self.action_space.nvec
+        # All points in a 3D grid within the given ranges
+        combinations = np.mgrid[0:shape[0], 0:shape[1], 0:shape[2]]
+        # Make the 0th axis into the last axis
+        combinations = np.rollaxis(combinations, 0, 4)
+        # Now you can safely reshape while preserving order
+        combinations = combinations.reshape((shape.prod(), 3))
+        # start with index 1: dict(enumerate(combinations, 1))
+        return dict(enumerate(combinations))
+
+    def decode_actions(self, keys):
+        ''' 
+        When actions cointain multiple information, i.e. selling/buying info, the nn
+        only returns a number. That number can be mapped to the corresponding action
+        here. 
+        Example: key = 0 -> maps to (0,0,0) that means an agent executes action zero 
+        and (in case of market=sm) buys share from agent 0, and (third 0) does not sell its shares 
+        '''
+        return np.array([self.action_table[key] for key in keys])  # self.action_table[key]
 
     def _reward(self):
         """

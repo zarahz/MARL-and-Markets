@@ -84,6 +84,67 @@
             ]
         },
         {
+            "name": "PPO train two with sm",
+            "type": "python",
+            "request": "launch",
+            "module": "Coloring_with_CAP.scripts.train",
+            "console": "integratedTerminal",
+            "args": [
+                "--agents",
+                "2",
+                "--market",
+                "sm",
+                "--model",
+                "two-agents-sm",
+                "--save-interval",
+                "10",
+                "--frames",
+                "300000"
+            ]
+        },
+        {
+            "name": "PPO train two with sm and percentage rewards",
+            "type": "python",
+            "request": "launch",
+            "module": "Coloring_with_CAP.scripts.train",
+            "console": "integratedTerminal",
+            "args": [
+                "--agents",
+                "2",
+                "--market",
+                "sm",
+                "--percentage-reward",
+                "True",
+                "--model",
+                "two-agents-sm-percentage",
+                "--save-interval",
+                "10",
+                "--frames",
+                "200000"
+            ]
+        },
+        {
+            "name": "PPO train two with sm and mixed motive",
+            "type": "python",
+            "request": "launch",
+            "module": "Coloring_with_CAP.scripts.train",
+            "console": "integratedTerminal",
+            "args": [
+                "--agents",
+                "2",
+                "--market",
+                "sm",
+                "--mixed-motive",
+                "True",
+                "--model",
+                "two-agents-sm-mixed",
+                "--save-interval",
+                "10",
+                "--frames",
+                "200000"
+            ]
+        },
+        {
             "name": "PPO train three",
             "type": "python",
             "request": "launch",
@@ -123,18 +184,18 @@
             ]
         },
         {
-            "name": "PPO train",
+            "name": "no market PPO train",
             "type": "python",
             "request": "launch",
             "module": "Coloring_with_CAP.scripts.train",
             "console": "integratedTerminal",
             "args": [
                 "--agents",
-                "1",
+                "2",
                 // "--percentage-reward",
                 // "True",
                 "--model",
-                "test",
+                "test2",
                 "--save-interval",
                 "10",
                 "--frames",

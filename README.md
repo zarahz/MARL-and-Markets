@@ -25,11 +25,18 @@ TODO
     - encoding of actions
     - market matrix: agent can EITHER buy or sell in one step!
         - sm: 
-            - (aktion, kaufen/verkaufen/nichtstun, kaufaktion) -> wenn verkaufen der fall ist und mehrere agenten kaufen möchten kriegt jeder eine aktie -> beim ende einer episode und der reward berechnung erhalten die aktionäre dann die dividenden in einer gewissen betragshöhe (kaufpreis hier gleich dividende zB 0.5)
+            - (env_aktion, "verkaufen", "share/aktion")
+            - (env_aktion, "kaufen", "share/aktion von anderen")
+            - (env_aktion, "nichts tun", "[keine bedeutung hier] share/aktion")
+            - wenn verkaufen der fall ist und mehrere agenten kaufen möchten kriegt jeder eine aktie -> beim ende einer episode und der reward berechnung erhalten die aktionäre dann die dividenden in einer gewissen betragshöhe (kaufpreis hier gleich dividende zB 0.5)
             - Fällt balance des agents beim trade unter null findet der trade nicht statt. möchten mehrere agents kaufen wird in ZUFÄLLIGER REIHENFOLGE verkauft
         - am: 
+            - (aktion_zu_verkaufen, "verkaufen", agent)
+            - (aktion_zu_kaufen, "kaufen", agent) -> führt man hier auch gleichzeitig eine env aktion aus?
+            - (env_aktion, "nichts tun", agent)  
             - ????? zu fragen:
-            aktion sieht vermutlich so aus: (aktion, kaufen/verkaufen/nichtstun, agent)
+            aktion sieht vermutlich so aus:
+            - (aktion_zu_verkaufen, verkaufen, agent)
                 - wenn nichtstun gewählt wurde führt man die aktion in der umgebung aus?
                 - wenn kaufen gewählt wurde kauft man vom gewähltem agent die aktion, aber was macht man wenn der gewählte agent nicht die aktion ausführt? In der Umgebung wird bei einem kauf nichts ausgeführt, ansonsten schon?
                 - wenn verkaufen gewählt wurde aber niemand kauft macht man nichts? Wenn gekauft wird, führt man die aktion aus?

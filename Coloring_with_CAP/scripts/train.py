@@ -167,11 +167,11 @@ txt_logger.info("Observations preprocessor loaded")
 # Load model
 models = []
 for agent in range(agents):
-    # if args.market:
-    #     action_space = envs[0].action_space.nvec.prod()
-    # else:
-    #     action_space = envs[0].action_space.n
-    model = ACModel(obs_space, envs[0].action_space)
+    if args.market:
+        action_space = envs[0].action_space.nvec.prod()
+    else:
+        action_space = envs[0].action_space.n
+    model = ACModel(obs_space, action_space)
     if "model_state" in status:
         model.load_state_dict(status["model_state"][agent])
     model.to(device)
