@@ -2,7 +2,7 @@ import numpy
 import re
 import torch
 import gym
-from learning.utils.dictlist import DictList
+from learning.ppo.utils.dictlist import DictList
 
 
 def get_obss_preprocessor(obs_space):

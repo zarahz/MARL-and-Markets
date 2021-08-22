@@ -5,7 +5,7 @@ import torch
 import logging
 import sys
 
-import learning.utils
+import learning.ppo.utils
 
 
 def create_folders_if_necessary(path):
@@ -37,13 +37,13 @@ def get_status_path(model_dir):
 def get_status(model_dir):
     # model_dir = 'storage\\one-agent'
     path = get_status_path(model_dir)
-    learning.utils.create_folders_if_necessary(path)
+    learning.ppo.utils.create_folders_if_necessary(path)
     return torch.load(path)
 
 
 def save_status(status, model_dir):
     path = get_status_path(model_dir)
-    learning.utils.create_folders_if_necessary(path)
+    learning.ppo.utils.create_folders_if_necessary(path)
     torch.save(status, path)
 
 
@@ -53,7 +53,7 @@ def get_model_state(model_dir):
 
 def get_txt_logger(model_dir):
     path = os.path.join(model_dir, "log.txt")
-    learning.utils.create_folders_if_necessary(path)
+    learning.ppo.utils.create_folders_if_necessary(path)
 
     logging.basicConfig(
         level=logging.INFO,
@@ -69,7 +69,7 @@ def get_txt_logger(model_dir):
 
 def get_csv_logger(model_dir, name):
     csv_path = os.path.join(model_dir, name+".csv")
-    learning.utils.create_folders_if_necessary(csv_path)
+    learning.ppo.utils.create_folders_if_necessary(csv_path)
     csv_file = open(csv_path, "a")
     return csv_file, csv.writer(csv_file)
 
@@ -88,11 +88,12 @@ def prepare_csv_data(agents, logs, update, num_frames, start_time=None, txt_logg
     header = ["update_count", "frames", "duration_in_seconds"]  # "FPS"
     data = [update, num_frames, duration]  # fps
 
-    reset_fields_stats = learning.utils.synthesize(logs['num_reset_fields'])
+    reset_fields_stats = learning.ppo.utils.synthesize(
+        logs['num_reset_fields'])
     header, data = log_stats(
         reset_fields_stats, "num_reset_fields", header, data)
 
-    coloration_percentage_stats = learning.utils.synthesize(
+    coloration_percentage_stats = learning.ppo.utils.synthesize(
         logs['grid_coloration_percentage'])
     header, data = log_stats(coloration_percentage_stats,
                              "grid_coloration_percentage", header, data)
@@ -106,9 +107,9 @@ def prepare_csv_data(agents, logs, update, num_frames, start_time=None, txt_logg
         if("reward_agent_" in key):
             all_rewards_per_episode[key] = value
             reward_per_episode_stats.append(
-                learning.utils.synthesize(value))
+                learning.ppo.utils.synthesize(value))
 
-    # num_frames_per_episode = learning.utils.synthesize(
+    # num_frames_per_episode = learning.ppo.utils.synthesize(
     #     logs["num_frames_per_episode"])
 
     # header += ["num_frames_" +

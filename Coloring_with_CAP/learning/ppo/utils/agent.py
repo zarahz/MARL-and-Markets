@@ -1,7 +1,7 @@
 import torch
 
-import learning.utils
-from learning.model import ACModel
+import learning.ppo.utils
+from learning.ppo.model import ACModel
 
 
 class Agent:
@@ -13,7 +13,7 @@ class Agent:
 
     def __init__(self, agent_index, obs_space, action_space, model_dir,
                  device=None, argmax=False, num_envs=1):
-        obs_space, self.preprocess_obss = learning.utils.get_obss_preprocessor(
+        obs_space, self.preprocess_obss = learning.ppo.utils.get_obss_preprocessor(
             obs_space)
         self.acmodel = ACModel(obs_space, action_space)
         self.device = device
@@ -21,11 +21,11 @@ class Agent:
         self.num_envs = num_envs
 
         try:
-            all_states = learning.utils.get_model_state(model_dir)
+            all_states = learning.ppo.utils.get_model_state(model_dir)
             state = all_states[agent_index]
         except IndexError:
-            state_len = len(learning.utils.get_model_state(model_dir))
-            state = learning.utils.get_model_state(
+            state_len = len(learning.ppo.utils.get_model_state(model_dir))
+            state = learning.ppo.utils.get_model_state(
                 model_dir)[agent_index % state_len]
         self.acmodel.load_state_dict(state)
         self.acmodel.to(self.device)

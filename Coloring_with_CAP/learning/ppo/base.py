@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 import torch
 import numpy as np
 
-# from learning.utils import
-from learning.utils import DictList, ParallelEnv, default_preprocess_obss
+# from learning.ppo.utils import
+from learning.ppo.utils import DictList, ParallelEnv, default_preprocess_obss
 
 
 class BaseAlgo(ABC):

@@ -10,9 +10,9 @@ import torch
 import tensorboardX
 import sys
 
-import learning.utils
-from learning.model import ACModel
-from learning.utils.storage import prepare_csv_data, update_csv_file
+import learning.ppo.utils
+from learning.ppo.model import ACModel
+from learning.ppo.utils.storage import prepare_csv_data, update_csv_file
 
 # to show large tensors without truncation uncomment the next line
 # torch.set_printoptions(threshold=10_000)
@@ -112,13 +112,13 @@ date = datetime.datetime.now().strftime("%y-%m-%d-%H-%M-%S")
 default_model_name = f"{args.env}_{args.algo}_seed{args.seed}_{date}"
 
 model_name = args.model or default_model_name
-model_dir = learning.utils.get_model_dir(model_name)
+model_dir = learning.ppo.utils.get_model_dir(model_name)
 
 # Load loggers and Tensorboard writer
 
-txt_logger = learning.utils.get_txt_logger(model_dir)
-csv_file, csv_logger = learning.utils.get_csv_logger(model_dir, "log")
-csv_rewards_file, csv_rewards_logger = learning.utils.get_csv_logger(
+txt_logger = learning.ppo.utils.get_txt_logger(model_dir)
+csv_file, csv_logger = learning.ppo.utils.get_csv_logger(model_dir, "log")
+csv_rewards_file, csv_rewards_logger = learning.ppo.utils.get_csv_logger(
     model_dir, "rewards")
 tb_writer = tensorboardX.SummaryWriter(model_dir)
 
@@ -129,7 +129,7 @@ txt_logger.info("{}\n".format(args))
 
 # Set seed for all randomness sources
 
-learning.utils.seed(args.seed)
+learning.ppo.utils.seed(args.seed)
 
 # Set device
 
@@ -140,7 +140,7 @@ txt_logger.info(f"Device: {device}\n")
 
 envs = []
 for i in range(args.procs):
-    envs.append(learning.utils.make_env(
+    envs.append(learning.ppo.utils.make_env(
         args.env, args.agents,
         grid_size=args.grid_size,
         percentage_reward=args.percentage_reward,
@@ -153,14 +153,14 @@ txt_logger.info("Environments loaded\n")
 # Load training status
 
 try:
-    status = learning.utils.get_status(model_dir)
+    status = learning.ppo.utils.get_status(model_dir)
 except OSError:
     status = {"num_frames": 0, "update": 0}
 txt_logger.info("Training status loaded\n")
 
 # Load observations preprocessor
 
-obs_space, preprocess_obss = learning.utils.get_obss_preprocessor(
+obs_space, preprocess_obss = learning.ppo.utils.get_obss_preprocessor(
     envs[0].observation_space)
 txt_logger.info("Observations preprocessor loaded")
 
@@ -182,10 +182,10 @@ txt_logger.info("Model loaded\n")
 # Load algo
 print("NAME:________________________  ", __name__)
 if __name__ == '__main__':
-    algo = learning.PPOAlgo(envs, agents, models, device, args.frames_per_proc,
-                            args.discount, args.lr, args.gae_lambda, args.entropy_coef, args.value_loss_coef,
-                            args.max_grad_norm, args.recurrence, args.optim_eps, args.clip_eps, args.epochs,
-                            args.batch_size, preprocess_obss)
+    algo = learning.ppo.PPOAlgo(envs, agents, models, device, args.frames_per_proc,
+                                args.discount, args.lr, args.gae_lambda, args.entropy_coef, args.value_loss_coef,
+                                args.max_grad_norm, args.recurrence, args.optim_eps, args.clip_eps, args.epochs,
+                                args.batch_size, preprocess_obss)
 
     if "optimizer_state" in status:  # TODO
         for agent in range(agents):
@@ -245,5 +245,5 @@ if __name__ == '__main__':
             status = {"num_frames": num_frames, "update": update,
                       "model_state": [models[agent].state_dict() for agent in range(agents)],
                       "optimizer_state": [algo.optimizers[agent].state_dict() for agent in range(agents)]}
-            learning.utils.save_status(status, model_dir)
+            learning.ppo.utils.save_status(status, model_dir)
             txt_logger.info("Status saved")

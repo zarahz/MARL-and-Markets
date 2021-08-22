@@ -3,7 +3,7 @@ import time
 import numpy
 import torch
 
-from learning.utils import *
+from learning.ppo.utils import *
 
 
 # Parse arguments
@@ -40,7 +40,7 @@ args = parser.parse_args()
 
 # Set seed for all randomness sources
 
-learning.utils.seed(args.seed)
+learning.ppo.utils.seed(args.seed)
 
 # Set device
 
@@ -49,7 +49,7 @@ print(f"Device: {device}\n")
 
 # Load environment
 
-env = learning.utils.make_env(
+env = learning.ppo.utils.make_env(
     args.env, args.agents, grid_size=args.grid_size, percentage_reward=args.percentage_reward, mixed_motive=args.mixed_motive, seed=args.seed)
 # for _ in range(args.shift):
 #     env.reset()
@@ -57,15 +57,15 @@ print("Environment loaded\n")
 
 # Load agent
 
-model_dir = learning.utils.get_model_dir(args.model)
+model_dir = learning.ppo.utils.get_model_dir(args.model)
 agents = []
 if args.market:
     action_space = env.action_space.nvec.prod()
 else:
     action_space = env.action_space.n
 for agent in range(args.agents):
-    agents.append(learning.utils.Agent(agent, env.observation_space, action_space, model_dir,
-                                       device=device, argmax=args.argmax))
+    agents.append(learning.ppo.utils.Agent(agent, env.observation_space, action_space, model_dir,
+                                           device=device, argmax=args.argmax))
 print("Agents loaded\n")
 
 # Run the agent

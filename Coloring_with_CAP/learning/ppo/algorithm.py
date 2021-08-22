@@ -2,7 +2,7 @@ import numpy
 import torch
 import torch.nn.functional as F
 
-from learning.algos.base import BaseAlgo
+from learning.ppo.base import BaseAlgo
 
 
 class PPOAlgo(BaseAlgo):
