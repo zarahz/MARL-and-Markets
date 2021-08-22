@@ -529,6 +529,7 @@ class GridEnv(gym.Env):
         self.width = width
         self.height = height
         self.max_steps = max_steps
+        print("---------> max steps: ", self.max_steps)
         self.see_through_walls = see_through_walls
 
         self.agents = {}

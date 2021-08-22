@@ -191,11 +191,11 @@
             "console": "integratedTerminal",
             "args": [
                 "--agents",
-                "2",
+                "1",
                 // "--percentage-reward",
                 // "True",
                 "--model",
-                "test2",
+                "test",
                 "--save-interval",
                 "10",
                 "--frames",
