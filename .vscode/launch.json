@@ -216,7 +216,7 @@
                 // "--mixed-motive",
                 // "True",
                 "--model",
-                "test"
+                "one-agent"
             ]
         },
         {

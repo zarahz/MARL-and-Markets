@@ -21,6 +21,8 @@ parser.add_argument("--percentage-reward", default=False,
                     help="reward agents based on percentage of coloration in the grid (default: False)")
 parser.add_argument("--mixed-motive", default=False,
                     help="If set to true the reward is not shared which enables a mixed motive environment (one vs. all). Otherwise agents need to work in cooperation to gain more reward. (default: False = Cooperation)")
+parser.add_argument("--market", default="",
+                    help="There are three options 'sm', 'am' and '' for none. SM = Shareholder Market where agents can auction actions similar to stocks. AM = Action Market where agents can buy specific actions from others. (Default = '')")
 parser.add_argument("--seed", type=int, default=1,
                     help="random seed (default: 1)")
 parser.add_argument("--shift", type=int, default=0,
@@ -57,8 +59,12 @@ print("Environment loaded\n")
 
 model_dir = learning.utils.get_model_dir(args.model)
 agents = []
+if args.market:
+    action_space = env.action_space.nvec.prod()
+else:
+    action_space = env.action_space.n
 for agent in range(args.agents):
-    agents.append(learning.utils.Agent(agent, env.observation_space, env.action_space, model_dir,
+    agents.append(learning.utils.Agent(agent, env.observation_space, action_space, model_dir,
                                        device=device, argmax=args.argmax))
 print("Agents loaded\n")
 
