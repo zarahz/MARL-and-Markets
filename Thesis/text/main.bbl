@@ -1,3 +1,9 @@
-\begin{thebibliography}{}
+\newcommand{\etalchar}[1]{$^{#1}$}
+\begin{thebibliography}{SWD{\etalchar{+}}17}
+
+\bibitem[SWD{\etalchar{+}}17]{scwo2017}
+John Schulman, Filip Wolski, Prafulla Dhariwal, Alec Radford, and Oleg Klimov.
+\newblock Proximal policy optimization algorithms.
+\newblock {\em arXiv preprint arXiv:1707.06347}, 2017.
 
 \end{thebibliography}
