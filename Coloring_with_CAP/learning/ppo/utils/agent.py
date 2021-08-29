@@ -1,6 +1,7 @@
 import torch
 
 import learning.ppo.utils
+import learning.utils
 from learning.ppo.model import ACModel
 
 
@@ -13,8 +14,9 @@ class Agent:
 
     def __init__(self, agent_index, obs_space, action_space, model_dir,
                  device=None, argmax=False, num_envs=1):
-        obs_space, self.preprocess_obss = learning.ppo.utils.get_obss_preprocessor(
+        obs_space, self.preprocess_obss = learning.utils.get_obss_preprocessor(
             obs_space)
+        # TODO action-space differ bet
         self.acmodel = ACModel(obs_space, action_space)
         self.device = device
         self.argmax = argmax

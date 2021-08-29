@@ -11,6 +11,8 @@ tensorflow = "*"
 tensorboardx = "*"
 jupyter = "*"
 seaborn = "*"
+torchvision = "*"
+array2gif = "*"
 
 [dev-packages]
 

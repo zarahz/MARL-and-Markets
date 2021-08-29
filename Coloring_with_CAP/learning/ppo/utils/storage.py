@@ -1,6 +1,7 @@
 import csv
 import os
 import time
+from array2gif.core import write_gif
 import torch
 import logging
 import sys
@@ -45,6 +46,14 @@ def save_status(status, model_dir):
     path = get_status_path(model_dir)
     learning.ppo.utils.create_folders_if_necessary(path)
     torch.save(status, path)
+
+
+def save_capture(model_dir, name, frames):
+    path = os.path.join(model_dir, "captures\\"+name)
+    learning.ppo.utils.create_folders_if_necessary(path)
+    print("Saving gif... ", end="")
+    write_gif(frames, path, fps=1)
+    print("Done.")
 
 
 def get_model_state(model_dir):

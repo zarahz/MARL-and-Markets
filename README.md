@@ -1,3 +1,20 @@
+1 0 - 1 0.05 - 1.05
+0 1 - 0 0.95 - 0.95
+
+- AM: statt aktion vllt state? 
+-> oder micromanagement -> aktion wird anderem agenten vorgeschlagen
+-> übergeordnet -> trade conditionieren auf actionssequenzen/verhaltensmuster
+-> state als goal -> wenn state erreicht wurde verkauf/share 
+
+- wiviele aktionen pro zeitschritt
+- PLOT: trading matrix 
+- PLOT: training für größeren bereich (grid size)
+- Episoden längen / max steps ändern (mixed - vs not mixed)
+one/two agents training visualisieren und speichern 
+
+- shares: wann macht es sinn? -> würde es cap lösen/agenten helfen?
+-> agent mit höherem reward = mehr shares = vermutung -> niedriger/kein störrfaktor
+
 TODO 
 ====== Unklarheiten
 - start implementation of shareholder market

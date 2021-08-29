@@ -1,6 +1,7 @@
 import argparse
 import time
 import datetime
+import numpy as np
 import torch
 # import learning
 # cd into storage and call either
@@ -11,8 +12,9 @@ import tensorboardX
 import sys
 
 import learning.ppo.utils
+import learning.utils
 from learning.ppo.model import ACModel
-from learning.ppo.utils.storage import prepare_csv_data, update_csv_file
+from learning.ppo.utils.storage import prepare_csv_data, save_capture, update_csv_file
 
 # to show large tensors without truncation uncomment the next line
 # torch.set_printoptions(threshold=10_000)
@@ -50,6 +52,8 @@ parser.add_argument("--log-interval", type=int, default=1,
                     help="number of updates between two logs (default: 1)")
 parser.add_argument("--save-interval", type=int, default=10,
                     help="number of updates between two saves (default: 10, 0 means no saving)")
+parser.add_argument("--capture", type=bool, default=True,
+                    help="Boolean to enable capturing of environment and save as gif (default: True)")
 parser.add_argument("--procs", type=int, default=16,
                     help="number of processes (default: 16)")
 parser.add_argument("--frames", type=int, default=10**7,
@@ -160,7 +164,7 @@ txt_logger.info("Training status loaded\n")
 
 # Load observations preprocessor
 
-obs_space, preprocess_obss = learning.ppo.utils.get_obss_preprocessor(
+obs_space, preprocess_obss = learning.utils.get_obss_preprocessor(
     envs[0].observation_space)
 txt_logger.info("Observations preprocessor loaded")
 
@@ -178,6 +182,7 @@ for agent in range(agents):
     models.append(model)
 
 txt_logger.info("Model loaded\n")
+
 
 # Load algo
 print("NAME:________________________  ", __name__)
@@ -247,3 +252,5 @@ if __name__ == '__main__':
                       "optimizer_state": [algo.optimizers[agent].state_dict() for agent in range(agents)]}
             learning.ppo.utils.save_status(status, model_dir)
             txt_logger.info("Status saved")
+            gif_name = str(update) + "_" + str(num_frames) + ".gif"
+            save_capture(model_dir, gif_name, np.array(logs["capture_frames"]))

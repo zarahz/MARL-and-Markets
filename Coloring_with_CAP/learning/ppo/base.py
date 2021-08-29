@@ -3,7 +3,8 @@ import torch
 import numpy as np
 
 # from learning.ppo.utils import
-from learning.ppo.utils import DictList, ParallelEnv, default_preprocess_obss
+from learning.ppo.utils import DictList, ParallelEnv
+import learning.utils
 
 
 class BaseAlgo(ABC):
@@ -20,7 +21,7 @@ class BaseAlgo(ABC):
         self.num_frames_per_proc = num_frames_per_proc
         self.discount = discount
         self.gae_lambda = gae_lambda
-        self.preprocess_obss = preprocess_obss or default_preprocess_obss
+        self.preprocess_obss = preprocess_obss or learning.utils.default_preprocess_obss
 
         # Configure all models
         for agent in range(agents):
@@ -85,6 +86,8 @@ class BaseAlgo(ABC):
             Useful stats about the training process, including the average
             reward, policy loss, value loss, etc.
         """
+        # save rgb frames for gif creation
+        capture_frames = []
 
         # frames-per-proc = 128 that means 128 times the (16) parallel envs are played through and logged.
         # If worst case and all environments are played until max_steps (25) are reached it can at least finish
@@ -118,6 +121,11 @@ class BaseAlgo(ABC):
             tensor_actions = torch.stack(joint_actions[:])
             obs, reward, done, info = self.env.step(
                 [action.cpu().numpy() for action in joint_actions])
+
+            # capture the last n (50) enviroment steps if episode started
+            if(i > self.num_frames_per_proc-50):
+                capture_frames.append(np.moveaxis(
+                    self.env.envs[0].render("rgb_array"), 2, 0))
 
             self.obss[i] = self.obs  # old obs
             self.obs = obs  # set old obs to new experience obs
@@ -186,6 +194,7 @@ class BaseAlgo(ABC):
             self.log_episode_reset_fields, dim=1)
         keep = max(self.log_done_counter, self.num_procs)
         logs = {
+            "capture_frames": capture_frames,
             "num_reset_fields": self.log_num_reset_fields[-keep:].tolist(),
             "grid_coloration_percentage": self.log_coloration_percentage
         }
