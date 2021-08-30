@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020/W32TeX) (preloaded format=pdflatex 2020.10.31)  29 AUG 2021 11:27
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020/W32TeX) (preloaded format=pdflatex 2020.10.31)  30 AUG 2021 16:09
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -867,10 +867,7 @@ Class scrbook Warning: \float@addtolists detected!
 
 ]
 chapter 2.
-) (c:/Users/Zarah/Documents/workspace/MA/Thesis/text/text/Background.tex [3] [4
-
-
-]
+[3]) (c:/Users/Zarah/Documents/workspace/MA/Thesis/text/text/Background.tex [4]
 chapter 3.
 
 Underfull \hbox (badness 10000) in paragraph at lines 14--14
@@ -882,8 +879,11 @@ Underfull \hbox (badness 10000) in paragraph at lines 41--41
 []\T1/lmr/m/n/10.95 problem
  []
 
-[5]
-<pictures/ppo_algo_code.png, id=174, 1086.30844pt x 298.86656pt>
+[5
+
+
+]
+<pictures/ppo_algo_code.png, id=177, 1086.30844pt x 298.86656pt>
 File: pictures/ppo_algo_code.png Graphic file (type png)
 <use pictures/ppo_algo_code.png>
 Package pdftex.def Info: pictures/ppo_algo_code.png  used on input line 78.
@@ -964,7 +964,7 @@ chapter without number
 ]
 chapter without number
 
-Underfull \hbox (badness 1303) in paragraph at lines 5--8
+Underfull \hbox (badness 1303) in paragraph at lines 10--13
 []\T1/lmr/m/n/10.95 John Schul-man, Filip Wol-ski, Pra-fulla Dhari-wal, Alec Rad-ford, and
  []
 
@@ -994,18 +994,18 @@ Package rerunfilecheck Info: File `main.out' has not changed.
 (rerunfilecheck)             Checksum: D41D8CD98F00B204E9800998ECF8427E;0.
  ) 
 Here is how much of TeX's memory you used:
- 15034 strings out of 479497
- 256618 string characters out of 5876370
+ 15036 strings out of 479497
+ 256633 string characters out of 5876370
  747482 words of memory out of 5000000
- 31579 multiletter control sequences out of 15000+600000
+ 31580 multiletter control sequences out of 15000+600000
  597358 words of font info for 63 fonts, out of 8000000 for 9000
  1142 hyphenation exceptions out of 8191
  106i,9n,111p,10738b,497s stack positions out of 5000i,500n,10000p,200000b,80000s
-{d:/texlive/2020/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc}{d:/texlive/2020/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc}{d:/texlive/2020/texmf-dist/fonts/enc/dvips/lm/lm-mathit.enc}{d:/texlive/2020/texmf-dist/fonts/enc/dvips/lm/lm-rm.enc}<d:/texlive/2020/texmf-dist/fonts/type1/public/lm/lmbx10.pfb><d:/texlive/2020/texmf-dist/fonts/type1/public/lm/lmmi10.pfb><d:/texlive/2020/texmf-dist/fonts/type1/public/lm/lmmi6.pfb><d:/texlive/2020/texmf-dist/fonts/type1/public/lm/lmmi8.pfb><d:/texlive/2020/texmf-dist/fonts/type1/public/lm/lmr10.pfb><d:/texlive/2020/texmf-dist/fonts/type1/public/lm/lmr12.pfb><d:/texlive/2020/texmf-dist/fonts/type1/public/lm/lmr8.pfb><d:/texlive/2020/texmf-dist/fonts/type1/public/lm/lmri10.pfb><d:/texlive/2020/texmf-dist/fonts/type1/public/lm/lmri12.pfb><d:/texlive/2020/texmf-dist/fonts/type1/public/lm/lmro10.pfb><d:/texlive/2020/texmf-dist/fonts/type1/public/lm/lmssbx10.pfb><d:/texlive/2020/texmf-dist/fonts/type1/public/lm/lmsy10.pfb><d:/texlive/2020/texmf-dist/fonts/type1/public/lm/lmsy8.pfb><d:/texlive/2020/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on c:/Users/Zarah/Documents/workspace/MA/Thesis/text/main.pdf (33 pages, 2954369 bytes).
+{d:/texlive/2020/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc}{d:/texlive/2020/texmf-dist/fonts/enc/dvips/lm/lm-mathit.enc}{d:/texlive/2020/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc}{d:/texlive/2020/texmf-dist/fonts/enc/dvips/lm/lm-rm.enc}<d:/texlive/2020/texmf-dist/fonts/type1/public/lm/lmbx10.pfb><d:/texlive/2020/texmf-dist/fonts/type1/public/lm/lmmi10.pfb><d:/texlive/2020/texmf-dist/fonts/type1/public/lm/lmmi6.pfb><d:/texlive/2020/texmf-dist/fonts/type1/public/lm/lmmi8.pfb><d:/texlive/2020/texmf-dist/fonts/type1/public/lm/lmr10.pfb><d:/texlive/2020/texmf-dist/fonts/type1/public/lm/lmr12.pfb><d:/texlive/2020/texmf-dist/fonts/type1/public/lm/lmr8.pfb><d:/texlive/2020/texmf-dist/fonts/type1/public/lm/lmri10.pfb><d:/texlive/2020/texmf-dist/fonts/type1/public/lm/lmri12.pfb><d:/texlive/2020/texmf-dist/fonts/type1/public/lm/lmro10.pfb><d:/texlive/2020/texmf-dist/fonts/type1/public/lm/lmssbx10.pfb><d:/texlive/2020/texmf-dist/fonts/type1/public/lm/lmsy10.pfb><d:/texlive/2020/texmf-dist/fonts/type1/public/lm/lmsy8.pfb><d:/texlive/2020/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
+Output written on c:/Users/Zarah/Documents/workspace/MA/Thesis/text/main.pdf (33 pages, 2961824 bytes).
 PDF statistics:
- 388 PDF objects out of 1000 (max. 8388607)
- 300 compressed objects within 3 object streams
- 62 named destinations out of 1000 (max. 500000)
+ 391 PDF objects out of 1000 (max. 8388607)
+ 302 compressed objects within 4 object streams
+ 63 named destinations out of 1000 (max. 500000)
  196 words of extra memory for PDF output out of 10000 (max. 10000000)
 

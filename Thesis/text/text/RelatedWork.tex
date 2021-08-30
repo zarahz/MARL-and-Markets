@@ -16,8 +16,54 @@
 - Which comparable work in research exists? \\
 - Seperation from other works
 
-\section{Reinfocement learning}
+\section{Reinforcement learning}
 %https://lilianweng.github.io/lil-log/2018/02/19/a-long-peek-into-reinforcement-learning.html#key-concepts
+\marginpar{rl components}
+Reinforcement learning (RL) consists of the following components: an environment,
+one or multiple agents and time sensitive information like environment states $s_{t}$,
+agent actions $a_{t}$ and rewards $r_{t}$.
+Initially an agent has no knowledge of good or bad actions and learns as it acts in an
+environment. Based on the executed action the environment changes and returns the new
+state $s'_{t}$ and a reward back to the agent. The agent processes those environment
+signals and chooses the next action with the goal of maximizing the rewards. Hence
+RL is a cycle which ends once a condition is reached.
+
+\marginpar{policy}
+Sutton and Barto, the authors of ``Reinforcement learning: An introduction'' \cite{suba18},
+define the agents action selection with respect to the current state as a policy $\pi$.
+They explain further that a policy could be as simple as a lookup table, mapping
+states to actions or it could contain a complicated search process for the best
+decision. In most cases it is of stochastic nature, mapping actions and states with
+probabilities. During environment interactions agents gain rewards, which then can be
+used to update the policy accordingly. For example, should the reward, which is a number,
+be low or even negative it could be interpreted as a penalty. In return the policy
+could then be adapted to set a very low probability for that action in combination with
+that certain state. So next time the agent finds itself in that state the bad action is
+not very likely to be chosen again.
+
+\marginpar{value function}
+While rewards only rate the immediate situation, a value function $v(s)$ can be
+used to estimate the long term value of a state. The resulting value is the total reward
+an agent could get down the line,
+starting from a state $s$. This is of importance, since an action
+could result in a new state with high reward but afterwards could lie a low reward
+streak. Or the opposite could be the case, where an action resulting in a low reward
+could subsequently yield high rewards. Sutton and Barto claim, that the reward estimation
+is a key function of RL, since the goal is to achieve as much reward as possible.
+
+\marginpar{exploration vs exploitation}
+
+
+A strategy an agent can form after it has gained some knowledge is to execute actions
+it knows will result in good reward. This strategy is called exploitation. In order
+to achieve this knowledge an agent first needs to explore. In RL a challenge lies 
+between harmonizing the level of exploration and exploitation.
+
+actions that results in high rewards are always picked, leading
+to a greedy behavior. This leads to exploitation of the learned A common trade-off in RL is between exploitation and exploration. In order for the agent to gain a lot of reward it would make sense to always choose actions
+resulting in high rewards. This is often described as being greedy and exploiting the 
+expirience the agent has gained.
+
 
 \subsection{Environment Interaction}
 Describe and explain the reward system -> Agent observes, takes action,
@@ -30,7 +76,7 @@ env reacts and returns reward
 \subsection{Multiagent settings}
 Describe and explain the settings, mixed/cooperation
 
-\section{CAP}
+\section{Credit assignment problem}
 
 \section{Markets}
 

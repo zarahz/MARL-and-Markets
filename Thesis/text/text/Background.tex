@@ -2,10 +2,10 @@
 - Describe the technical basis of your work \\
 - Do not tell a historical story - make it short
 
-\section{PPO}
+\section{Proximal Policy Optimization}
 \marginpar{intro}
 In 2017 Schulman et al. introduced the concept of Proximal Policy Optimization (PPO) in
-the article ``Proximal Policy Optimization Algorithms''\cite{scwo2017}.
+the article ``Proximal Policy Optimization Algorithms''\cite{scwo17}.
 This section is solely based on that article in order to explain the Algorithm.
 Policy optimization is the improvement of the action selection strategy $\pi$ based on the
 current state $s_{t}$. This is achieved by rotating two steps: 1. sampling data from the policy and 2.
@@ -76,7 +76,7 @@ corresponding $NT$ timesteps of data, using a minibatch.
 \begin{figure}[hpbt]
     \centering
     \includegraphics[width=1\textwidth]{pictures/ppo_algo_code.png}\\
-    \caption[Exemplary use of PPO]{Exemplary use of PPO, as shown in ``Proximal Policy Optimization Algorithms''\cite{scwo2017}}\label{fig:ppo_algo_code}
+    \caption[Exemplary use of PPO]{Exemplary use of PPO, as shown in ``Proximal Policy Optimization Algorithms''\cite{scwo17}}\label{fig:ppo_algo_code}
 \end{figure}
 
-\section{DQN}
+\section{Deep Q-Learning}

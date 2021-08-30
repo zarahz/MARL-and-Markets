@@ -161,6 +161,46 @@
                 "500000"
             ]
         },
+        {
+            "name": "PPO 5",
+            "type": "python",
+            "request": "launch",
+            "module": "Coloring_with_CAP.scripts.train",
+            "console": "integratedTerminal",
+            "args": [
+                "--agents",
+                "5",
+                "--model",
+                "five-agents",
+                "--grid-size",
+                "10",
+                "--save-interval",
+                "10",
+                "--frames",
+                "1000000"
+            ]
+        },
+        {
+            "name": "PPO 5 percentage",
+            "type": "python",
+            "request": "launch",
+            "module": "Coloring_with_CAP.scripts.train",
+            "console": "integratedTerminal",
+            "args": [
+                "--agents",
+                "5",
+                "--model",
+                "five-agents-pecentage",
+                "--percentage-reward",
+                "True",
+                "--grid-size",
+                "10",
+                "--save-interval",
+                "10",
+                "--frames",
+                "1000000"
+            ]
+        },
         // ------------- END OF - DO NOT CHANGE - -------------
         {
             "name": "Q-Learning",
