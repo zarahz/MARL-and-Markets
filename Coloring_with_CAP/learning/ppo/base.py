@@ -68,7 +68,7 @@ class BaseAlgo(ABC):
         self.log_num_frames = []  # [0] * self.num_procs
         self.log_coloration_percentage = []
 
-    def prepare_experiences(self):
+    def prepare_experiences(self, frames_to_capture):
         """Collects rollouts and computes advantages.
         Runs several environments concurrently. The next actions are computed
         in a batch mode for all environments at the same time. The rollouts
@@ -122,8 +122,8 @@ class BaseAlgo(ABC):
             obs, reward, done, info = self.env.step(
                 [action.cpu().numpy() for action in joint_actions])
 
-            # capture the last n (50) enviroment steps if episode started
-            if(i > self.num_frames_per_proc-50):
+            # capture the last n enviroment steps if episode started
+            if(i > self.num_frames_per_proc-frames_to_capture):
                 capture_frames.append(np.moveaxis(
                     self.env.envs[0].render("rgb_array"), 2, 0))
 

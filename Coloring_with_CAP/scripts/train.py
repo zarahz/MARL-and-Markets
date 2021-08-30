@@ -50,6 +50,10 @@ parser.add_argument("--trading-fee", default=0.05, type=float,
 
 parser.add_argument("--log-interval", type=int, default=1,
                     help="number of updates between two logs (default: 1)")
+parser.add_argument("--capture-interval", type=int, default=10,
+                    help="number of gif caputures of episodes (default: 10, 0 means no capturing)")
+parser.add_argument("--capture-frames", type=int, default=50,
+                    help="number of frames in caputure (default: 50, 0 means no capturing)")
 parser.add_argument("--save-interval", type=int, default=10,
                     help="number of updates between two saves (default: 10, 0 means no saving)")
 parser.add_argument("--capture", type=bool, default=True,
@@ -218,7 +222,7 @@ if __name__ == '__main__':
         }
 
         update_start_time = time.time()
-        logs = algo.prepare_experiences()
+        logs = algo.prepare_experiences(args.capture_frames)
         # logs = {}
         for agent in range(agents):
             exps, logs1 = algo.collect_experience(agent)
@@ -252,5 +256,7 @@ if __name__ == '__main__':
                       "optimizer_state": [algo.optimizers[agent].state_dict() for agent in range(agents)]}
             learning.ppo.utils.save_status(status, model_dir)
             txt_logger.info("Status saved")
+        if args.capture_interval > 0 and update % args.capture_interval == 0 or num_frames > args.frames:
+            # ensure saving of last round
             gif_name = str(update) + "_" + str(num_frames) + ".gif"
             save_capture(model_dir, gif_name, np.array(logs["capture_frames"]))

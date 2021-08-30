@@ -195,10 +195,14 @@
                 "True",
                 "--grid-size",
                 "10",
+                "--capture-interval",
+                "160",
+                "--capture-frames",
+                "100",
                 "--save-interval",
                 "10",
                 "--frames",
-                "1000000"
+                "2000000"
             ]
         },
         // ------------- END OF - DO NOT CHANGE - -------------
