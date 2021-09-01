@@ -13,6 +13,10 @@
 one/two agents training visualisieren und speichern 
 
 - shares: wann macht es sinn? -> würde es cap lösen/agenten helfen?
+Problem: agenten profitieren nicht von share verkauf! 
+Möglichkeit wäre es zu einem "realistischeren" Aktienmarkt zu machen: Agenten die kaufen zahlen einen fixpreis von zB 0.01 für 5% des Rewards
+Agenten die verkaufen kriegen direkt den Gewinn
+
 -> agent mit höherem reward = mehr shares = vermutung -> niedriger/kein störrfaktor
 
 TODO 

@@ -52,31 +52,21 @@ could subsequently yield high rewards. Sutton and Barto claim, that the reward e
 is a key function of RL, since the goal is to achieve as much reward as possible.
 
 \marginpar{exploration vs exploitation}
-
-
-A strategy an agent can form after it has gained some knowledge is to execute actions
-it knows will result in good reward. This strategy is called exploitation. In order
-to achieve this knowledge an agent first needs to explore. In RL a challenge lies 
-between harmonizing the level of exploration and exploitation.
-
-actions that results in high rewards are always picked, leading
-to a greedy behavior. This leads to exploitation of the learned A common trade-off in RL is between exploitation and exploration. In order for the agent to gain a lot of reward it would make sense to always choose actions
-resulting in high rewards. This is often described as being greedy and exploiting the 
-expirience the agent has gained.
-
-
-\subsection{Environment Interaction}
-Describe and explain the reward system -> Agent observes, takes action,
-env reacts and returns reward
-
-\subsection{Policy Optimization vs Action selection optimization}
-Describe and explain the reward system -> Agent observes, takes action,
-env reacts and returns reward
-
-\subsection{Multiagent settings}
-Describe and explain the settings, mixed/cooperation
+The last part to note about RL is that it entails the problem of balancing
+exploration and exploitation. In order to learn, an agent has to explore the options
+given. However, since the highest reward is the goal an agent could become greedy
+and always choose actions of which is known to result in reward. If an agent doesn't
+explore enough the best strategy will stay hidden and if an agent always explores
+without exploiting the gained knowledge chances are that the reward will not be as good.
 
 \section{Credit assignment problem}
+\marginpar{Multiagent settings}
+\marginpar{CAP example}
+\marginpar{CAP and diff kinds}
 
 \section{Markets}
+\marginpar{markets and advantage}
+\marginpar{sm}
+\marginpar{am}
+\marginpar{what is expected?}
 

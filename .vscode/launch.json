@@ -228,16 +228,18 @@
             ]
         },
         {
-            "name": "no market PPO train",
+            "name": "PPO test",
             "type": "python",
             "request": "launch",
             "module": "Coloring_with_CAP.scripts.train",
             "console": "integratedTerminal",
             "args": [
                 "--agents",
-                "1",
+                "2",
                 // "--percentage-reward",
                 // "True",
+                "--market",
+                "sm",
                 "--model",
                 "test",
                 "--save-interval",
