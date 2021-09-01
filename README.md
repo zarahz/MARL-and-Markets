@@ -1,6 +1,3 @@
-1 0 - 1 0.05 - 1.05
-0 1 - 0 0.95 - 0.95
-
 - AM: statt aktion vllt state? 
 -> oder micromanagement -> aktion wird anderem agenten vorgeschlagen
 -> übergeordnet -> trade conditionieren auf actionssequenzen/verhaltensmuster
@@ -12,12 +9,24 @@
 - Episoden längen / max steps ändern (mixed - vs not mixed)
 one/two agents training visualisieren und speichern 
 
-- shares: wann macht es sinn? -> würde es cap lösen/agenten helfen?
-Problem: agenten profitieren nicht von share verkauf! 
-Möglichkeit wäre es zu einem "realistischeren" Aktienmarkt zu machen: Agenten die kaufen zahlen einen fixpreis von zB 0.01 für 5% des Rewards
-Agenten die verkaufen kriegen direkt den Gewinn
+# shares
+wann macht es sinn? -> würde es cap lösen/agenten helfen?
+- Problem: agenten profitieren nicht von share verkauf! 
+- Möglichkeit wäre es zu einem "realistischeren" Aktienmarkt zu machen: Agenten die kaufen zahlen einen fixpreis von zB 0.01 für 5% des Rewards
+Agenten die verkaufen kriegen direkt den Gewinn -> das könnte es für agenten attraktiver machen zu verkaufen und durch shares ist es eh gut zu kaufen
+- aktuelle Situation: 
+    - trade findet statt, dann geht ein agent ins "minus" und der andere erhält den preis als reward
+    - (ist es der letzte schritt wird der gewinn vom verkaufendem agenten auf alle käufer wieder aufgeteilt)
+- wie löst es cap? momentan, dem plot zu urteilen macht das noch keinen unterschied
 
 -> agent mit höherem reward = mehr shares = vermutung -> niedriger/kein störrfaktor
+
+## Fragen
+### shares
+- soll der gezahlte betrag bis zum ende in jedem schritt als reward wieder an den agenten gegeben werden? Aktuell kauft agent einen share und geht dabei ins minus um 1/3 des anteils, also hier zB -0.016 und das aber auch nur einmalig (da kauf). nach abschluss des schrittes ist der reward wieder auf 0 und am ende der episode werden shares mit dem endgültigen reward verrechnet (bei 0 oder niedriger erhälten käufer nichts) 
+- soll die letzte trading runde auch mitgezählt werden? ZB agent 2 kauft 5% shares von agent 1 und zahlt dafür 0.016 -> da letzte runde wird der gewinn von agent 1 (die 0.016) auf alle share besitzer mit aufgeteilt und agent 2 hat einen reward von -0.016 + (0.016*0.05) = -0.0152
+
+
 
 TODO 
 ====== Unklarheiten

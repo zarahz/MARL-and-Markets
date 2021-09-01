@@ -181,6 +181,31 @@
             ]
         },
         {
+            "name": "PPO 5 sm",
+            "type": "python",
+            "request": "launch",
+            "module": "Coloring_with_CAP.scripts.train",
+            "console": "integratedTerminal",
+            "args": [
+                "--agents",
+                "5",
+                "--model",
+                "five-agents-sm",
+                "--grid-size",
+                "10",
+                "--market",
+                "sm",
+                "--capture-interval",
+                "160",
+                "--capture-frames",
+                "100",
+                "--save-interval",
+                "10",
+                "--frames",
+                "1000000"
+            ]
+        },
+        {
             "name": "PPO 5 percentage",
             "type": "python",
             "request": "launch",
@@ -202,7 +227,7 @@
                 "--save-interval",
                 "10",
                 "--frames",
-                "2000000"
+                "1000000"
             ]
         },
         // ------------- END OF - DO NOT CHANGE - -------------

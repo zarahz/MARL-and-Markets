@@ -115,6 +115,8 @@ for episode in range(args.episodes):
 
         # get reward/observation/terminalInfo
         observation, reward, done, info = env.step(np.array(joint_actions))
+        print(*reward, sep=", ")
+        print(info)
 
         if args.mixed_motive:
             for agent in range(agents):

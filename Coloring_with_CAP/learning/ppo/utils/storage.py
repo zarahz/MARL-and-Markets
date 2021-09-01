@@ -83,8 +83,10 @@ def get_csv_logger(model_dir, name):
     return csv_file, csv.writer(csv_file)
 
 
-def log_stats(stats, descr, header, data):
-    header += [key + "_" + descr for key in stats.keys()]
+def log_stats(logs, key, header, data):
+    stats = learning.ppo.utils.synthesize(
+        logs[key])
+    header += [calculation_key + "_" + key for calculation_key in stats.keys()]
     data += stats.values()
     return header, data
 
@@ -97,41 +99,20 @@ def prepare_csv_data(agents, logs, update, num_frames, start_time=None, txt_logg
     header = ["update_count", "frames", "duration_in_seconds"]  # "FPS"
     data = [update, num_frames, duration]  # fps
 
-    reset_fields_stats = learning.ppo.utils.synthesize(
-        logs['num_reset_fields'])
-    header, data = log_stats(
-        reset_fields_stats, "num_reset_fields", header, data)
+    header, data = log_stats(logs, 'num_reset_fields', header, data)
+    header, data = log_stats(logs, 'grid_coloration_percentage', header, data)
+    # if "trades" in logs:
+    header, data = log_stats(logs, 'trades', header, data)
 
-    coloration_percentage_stats = learning.ppo.utils.synthesize(
-        logs['grid_coloration_percentage'])
-    header, data = log_stats(coloration_percentage_stats,
-                             "grid_coloration_percentage", header, data)
-    # header += [key + "_grid_coloration_percentage"
-    #            for key in coloration_percentage.keys()]
-    # data += coloration_percentage.values()
-
-    reward_per_episode_stats = []  # contains mean,std,min,max
     all_rewards_per_episode = {}
     for key, value in logs.items():
         if("reward_agent_" in key):
             all_rewards_per_episode[key] = value
-            reward_per_episode_stats.append(
-                learning.ppo.utils.synthesize(value))
-
-    # num_frames_per_episode = learning.ppo.utils.synthesize(
-    #     logs["num_frames_per_episode"])
-
-    # header += ["num_frames_" +
-    #            key for key in num_frames_per_episode.keys()]
-    # data += num_frames_per_episode.values()
 
     # agent specific data
     for agent in range(agents):
-        header, data = log_stats(reward_per_episode_stats[agent],
+        header, data = log_stats(all_rewards_per_episode,
                                  "reward_agent_" + str(agent), header, data)
-        # header += [key + "_reward_agent_" + str(agent)
-        #            for key in reward_per_episode_stats[agent].keys()]
-        # data += reward_per_episode_stats[agent].values()
         header += ["entropy_agent_" + str(agent)]
         data += [logs["entropy"][agent]]
         header += ["value_agent_" + str(agent)]

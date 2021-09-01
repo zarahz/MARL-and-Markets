@@ -58,6 +58,12 @@ class BaseAlgo(ABC):
         self.log_episode_reset_fields = torch.zeros(
             shape, dtype=torch.int)
 
+        # variable to sum up all executed trades
+        self.log_trades = torch.zeros(shape[0], dtype=torch.int)
+        # variable to save the trades for each episode
+        self.log_episode_trades = torch.zeros(
+            shape, dtype=torch.int)
+
         self.log_episode_return = torch.zeros(
             (self.num_procs, agents), device=self.device)
         self.log_episode_num_frames = torch.zeros(
@@ -122,7 +128,7 @@ class BaseAlgo(ABC):
             obs, reward, done, info = self.env.step(
                 [action.cpu().numpy() for action in joint_actions])
 
-            # capture the last n enviroment steps if episode started
+            # capture the last n enviroment steps
             if(i > self.num_frames_per_proc-frames_to_capture):
                 capture_frames.append(np.moveaxis(
                     self.env.envs[0].render("rgb_array"), 2, 0))
@@ -142,6 +148,10 @@ class BaseAlgo(ABC):
             # Update log values
             self.log_episode_reset_fields[i] = torch.tensor(
                 [env_info['reset_fields'] for env_info in info], device=self.device)
+
+            if any('trades' in env_info for env_info in info):
+                self.log_episode_trades[i] = torch.tensor(
+                    [env_info['trades'] for env_info in info], device=self.device)
             self.log_episode_return += torch.tensor(
                 reward, device=self.device, dtype=torch.float)
             self.log_episode_num_frames += torch.ones(
@@ -192,9 +202,12 @@ class BaseAlgo(ABC):
         # logs for all agents
         self.log_num_reset_fields = torch.sum(
             self.log_episode_reset_fields, dim=1)
+        self.log_trades = torch.sum(
+            self.log_episode_trades, dim=1)
         keep = max(self.log_done_counter, self.num_procs)
         logs = {
             "capture_frames": capture_frames,
+            "trades": self.log_trades[-keep:].tolist(),
             "num_reset_fields": self.log_num_reset_fields[-keep:].tolist(),
             "grid_coloration_percentage": self.log_coloration_percentage
         }

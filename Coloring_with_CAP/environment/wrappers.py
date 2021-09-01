@@ -25,16 +25,24 @@ class MultiagentWrapper(gym.core.ObservationWrapper):
 
     def step(self, actions):
         if self.market:
-            actions = self.env.decode_actions(actions)
+            # ------------------------------------------------------------
+            actions = self.env.decode_actions(actions)  # TODO! uncomment
+            # ------------------------------------------------------------
             # always take the first action, since the following are only relevant for the market
             market_actions = actions[:, 1:]
             actions = actions[:, 0]
-            self.market.calculate_balance(market_actions, self.env.trading_fee)
+            # is_last_step = (self.env.step_count+1 >= self.env.max_steps)
+            trades, trading_reward = self.market.execute_market_actions(
+                market_actions, self.env.trading_fee)
         observation, reward, done, info = self.env.step(actions)
 
         # reward is an array of length agents
         # array formation, so that mixed motive rewards are easily adapted (each agent is rewarded seperately)
         reward = [0]*len(self.env.agents)
+
+        if(self.market):
+            info.update(trades)
+            reward = trading_reward
         if done:
             reward = self.calculate_reward(reward)
 
@@ -53,16 +61,19 @@ class MultiagentWrapper(gym.core.ObservationWrapper):
                     cell_colors == self.env.agents[agent]['color']).sum()
                 color_percentage = agent_coloration / \
                     len(self.env.walkable_cells())
-                reward[agent] = color_percentage
+                reward[agent] += color_percentage
         else:
             # coop reward based on completed coloring
             if self.env.whole_grid_colored():
                 print('---- GRID FULLY COLORED! ---- steps', self.env.step_count)
-                reward = [1]*len(agents)
+                reward = [r + one for r, one in zip(reward, [1]*len(agents))]
 
             # coop reward based on coloring percentage
             elif self.percentage_reward:
-                reward = [1 * self.env.grid_colored_percentage()]*len(agents)
+                percentage_reward = [
+                    1 * self.env.grid_colored_percentage()]*len(agents)
+                reward = [r + percentage for r,
+                          percentage in zip(reward, percentage_reward)]
 
         # execute market calculations too
         if self.market:
