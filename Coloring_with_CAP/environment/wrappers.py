@@ -15,7 +15,7 @@ class MultiagentWrapper(gym.core.ObservationWrapper):
         self.percentage_reward = percentage_reward
         self.mixed_motive = mixed_motive
         if self.env.market:
-            self.market = market.Market(self.env.market)
+            self.market = market.Market(self.env.market, self.env.trading_fee)
 
     def reset(self):
         if self.market:
@@ -32,8 +32,8 @@ class MultiagentWrapper(gym.core.ObservationWrapper):
             market_actions = actions[:, 1:]
             actions = actions[:, 0]
             # is_last_step = (self.env.step_count+1 >= self.env.max_steps)
-            trades, trading_reward = self.market.execute_market_actions(
-                market_actions, self.env.trading_fee)
+            trades, trading_reward = self.market.execute_market_actions(actions,
+                                                                        market_actions)
         observation, reward, done, info = self.env.step(actions)
 
         # reward is an array of length agents

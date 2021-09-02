@@ -103,6 +103,25 @@
             ]
         },
         {
+            "name": "PPO train two with am",
+            "type": "python",
+            "request": "launch",
+            "module": "Coloring_with_CAP.scripts.train",
+            "console": "integratedTerminal",
+            "args": [
+                "--agents",
+                "2",
+                "--market",
+                "am",
+                "--model",
+                "two-agents-am",
+                "--save-interval",
+                "10",
+                "--frames",
+                "300000"
+            ]
+        },
+        {
             "name": "PPO train two with sm and percentage rewards",
             "type": "python",
             "request": "launch",
@@ -281,13 +300,15 @@
             "console": "integratedTerminal",
             "args": [
                 "--agents",
-                "1",
+                "2",
+                // "--market",
+                // "am",
                 // "--percentage-reward",
                 // "True",
                 // "--mixed-motive",
                 // "True",
                 "--model",
-                "one-agent"
+                "two-agents"
             ]
         },
         {

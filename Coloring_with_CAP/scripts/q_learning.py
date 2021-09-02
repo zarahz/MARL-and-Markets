@@ -78,7 +78,7 @@ def softmax():
 #######################
 # conduct experiment
 #######################
-market = "sm"
+market = "am"
 trading_fee = 0.05
 env = gym.make(id=args.env, agents=args.agents,
                agent_view_size=args.agent_view_size, max_steps=args.max_steps, market=market, trading_fee=trading_fee, size=args.size)

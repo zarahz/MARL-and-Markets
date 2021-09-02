@@ -489,16 +489,17 @@ class GridEnv(gym.Env):
         self.actions = GridEnv.Actions
         self.market = market
         self.trading_fee = trading_fee
-        if market and market == "sm":
-            # market actions are unconditional (no recieving agent)
-            # action = [env_action, buying(0=buy from agent 0, num>agents=dont buy), selling(0=donothing, 1=sell)]
-            self.action_space = gym.spaces.MultiDiscrete(
-                [len(self.actions), agents+1, 2])
+        if market:
+            if market == "sm":
+                # market actions are unconditional (no recieving agent)
+                # action = [env_action, buying(0=buy from agent 0, num>agents=dont buy), selling(0=donothing, 1=sell)]
+                self.action_space = gym.spaces.MultiDiscrete(
+                    [len(self.actions), agents+1, 2])
+            else:  # market == "am"
+                # market actions are conditional (a recieving agent is set)
+                self.action_space = gym.spaces.MultiDiscrete(
+                    [len(self.actions), agents+1, len(self.actions)])
             self.action_table = self.encode_actions()
-        elif market and market == "am":
-            # market actions are conditional (a recieving agent is set)
-            self.action_space = gym.spaces.MultiDiscrete(
-                [len(self.actions), len(self.actions), agents+1, agents+1])
         else:
             self.action_space = spaces.Discrete(len(self.actions))
 

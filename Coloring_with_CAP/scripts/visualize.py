@@ -50,7 +50,7 @@ print(f"Device: {device}\n")
 # Load environment
 
 env = learning.ppo.utils.make_env(
-    args.env, args.agents, grid_size=args.grid_size, percentage_reward=args.percentage_reward, mixed_motive=args.mixed_motive, seed=args.seed)
+    args.env, args.agents, grid_size=args.grid_size, percentage_reward=args.percentage_reward, mixed_motive=args.mixed_motive, market=args.market, seed=args.seed)
 # for _ in range(args.shift):
 #     env.reset()
 print("Environment loaded\n")
@@ -84,12 +84,14 @@ for episode in range(args.episodes):
         env.render('human')
         if args.gif:
             frames.append(numpy.moveaxis(env.render("rgb_array"), 2, 0))
-        joint_actions = []
+        joint_actions = np.array((1, len(agents)))  # []
         for agent_index, agent in enumerate(agents):
             action = agent.get_action(obs, agent_index)
-            joint_actions.append(action)
+            # joint_actions.append(action)
+            joint_actions[agent_index] = action
 
-        obs, reward, done, _ = env.step(joint_actions)
+        obs, reward, done, info = env.step(joint_actions)
+        print(info)
 
         if done or env.window.closed:
             break
