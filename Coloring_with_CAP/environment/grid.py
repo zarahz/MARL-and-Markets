@@ -490,7 +490,7 @@ class GridEnv(gym.Env):
         self.market = market
         self.trading_fee = trading_fee
         if market:
-            if market == "sm":
+            if "sm" in market:
                 # market actions are unconditional (no recieving agent)
                 # action = [env_action, buying(0=buy from agent 0, num>agents=dont buy), selling(0=donothing, 1=sell)]
                 self.action_space = gym.spaces.MultiDiscrete(
@@ -855,6 +855,7 @@ class GridEnv(gym.Env):
         done = False
         obs = {}
         reset_fields = 0
+        reset_fields_by = []
         for agent in self.agents:
             x = self.agents[agent]['pos'][0]
             y = self.agents[agent]['pos'][1]
@@ -878,15 +879,19 @@ class GridEnv(gym.Env):
                 new_pos_cell = self.grid.get(*new_pos)
                 if new_pos_cell == None or new_pos_cell.can_overlap():
                     self.agents[agent]['pos'] = new_pos
-                    reset_fields += self.toggle_is_colored(
+                    agent_reset_field = self.toggle_is_colored(
                         new_pos_cell, self.agents[agent]['color'], new_pos, old_pos)
+                    reset_fields += agent_reset_field
+                    # if agent reset the field save it to info in order to (possibly) restrict market transactions
+                    if(agent_reset_field > 0 and agent not in reset_fields_by):
+                        reset_fields_by.append(agent)
 
             obs[agent] = self.gen_obs(agent)
 
         if self.whole_grid_colored() or self.step_count >= self.max_steps:
             done = True
             reward = self._reward()
-        info = {"reset_fields": reset_fields,
+        info = {"reset_fields": reset_fields, "reset_fields_by": reset_fields_by,
                 "coloration_percentage": round(self.grid_colored_percentage(), 2)}
         return obs, reward, done, info
 

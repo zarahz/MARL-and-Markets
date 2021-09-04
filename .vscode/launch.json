@@ -122,6 +122,44 @@
             ]
         },
         {
+            "name": "PPO train two with am and goal condition",
+            "type": "python",
+            "request": "launch",
+            "module": "Coloring_with_CAP.scripts.train",
+            "console": "integratedTerminal",
+            "args": [
+                "--agents",
+                "2",
+                "--market",
+                "am-goal",
+                "--model",
+                "two-agents-am-goal",
+                "--save-interval",
+                "10",
+                "--frames",
+                "300000"
+            ]
+        },
+        {
+            "name": "PPO train two with am and goal condition and no reset rule",
+            "type": "python",
+            "request": "launch",
+            "module": "Coloring_with_CAP.scripts.train",
+            "console": "integratedTerminal",
+            "args": [
+                "--agents",
+                "2",
+                "--market",
+                "am-goal-no-reset",
+                "--model",
+                "two-agents-am-goal-no-reset",
+                "--save-interval",
+                "10",
+                "--frames",
+                "300000"
+            ]
+        },
+        {
             "name": "PPO train two with sm and percentage rewards",
             "type": "python",
             "request": "launch",
@@ -261,6 +299,10 @@
                 "Empty-Grid-v0",
                 "--agents",
                 "3",
+                // "--mixed-motive",
+                // "True",
+                "--percentage-reward",
+                "True",
                 "--agent_view_size",
                 "5",
                 // "--max_steps",
@@ -283,7 +325,7 @@
                 // "--percentage-reward",
                 // "True",
                 "--market",
-                "sm",
+                "am-goal",
                 "--model",
                 "test",
                 "--save-interval",
@@ -324,23 +366,6 @@
                 "one-agent",
                 "--agents",
                 "1"
-            ]
-        },
-        {
-            "name": "plot",
-            "type": "python",
-            "request": "launch",
-            "module": "Coloring_with_CAP.scripts.plot",
-            "console": "integratedTerminal",
-            "args": [
-                "--env",
-                "Empty-Grid-v0",
-                "--model",
-                "EmptyGridMultiAgents",
-                "--agents",
-                "2",
-                "--max-steps",
-                "15"
             ]
         }
     ]

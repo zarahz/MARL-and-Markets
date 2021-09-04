@@ -15,11 +15,12 @@ class MultiagentWrapper(gym.core.ObservationWrapper):
         self.percentage_reward = percentage_reward
         self.mixed_motive = mixed_motive
         if self.env.market:
-            self.market = market.Market(self.env.market, self.env.trading_fee)
+            self.market = market.Market(
+                self.env.market, self.env.trading_fee, len(self.env.agents))
 
     def reset(self):
         if self.market:
-            self.market.reset(len(self.env.agents))
+            self.market.reset()
         observation = self.env.reset()
         return observation
 
@@ -31,9 +32,7 @@ class MultiagentWrapper(gym.core.ObservationWrapper):
             # always take the first action, since the following are only relevant for the market
             market_actions = actions[:, 1:]
             actions = actions[:, 0]
-            # is_last_step = (self.env.step_count+1 >= self.env.max_steps)
-            trades, trading_reward = self.market.execute_market_actions(actions,
-                                                                        market_actions)
+
         observation, reward, done, info = self.env.step(actions)
 
         # reward is an array of length agents
@@ -41,8 +40,12 @@ class MultiagentWrapper(gym.core.ObservationWrapper):
         reward = [0]*len(self.env.agents)
 
         if(self.market):
+            # is_last_step = (self.env.step_count+1 >= self.env.max_steps)
+            trades, trading_reward = self.market.execute_market_actions(actions,
+                                                                        market_actions, info["reset_fields_by"])
             info.update(trades)
             reward = trading_reward
+
         if done:
             reward = self.calculate_reward(reward)
 
@@ -50,6 +53,7 @@ class MultiagentWrapper(gym.core.ObservationWrapper):
 
     def calculate_reward(self, reward):
         agents = self.env.agents
+        env_goal_reached = self.env.whole_grid_colored()
         if self.mixed_motive:
             # self.env.colored_cells() returns all cell encodings that contain a one in the middle
             # i.e. [3,1,2] -> 1 = cell is colored
@@ -64,7 +68,7 @@ class MultiagentWrapper(gym.core.ObservationWrapper):
                 reward[agent] += color_percentage
         else:
             # coop reward based on completed coloring
-            if self.env.whole_grid_colored():
+            if env_goal_reached:
                 print('---- GRID FULLY COLORED! ---- steps', self.env.step_count)
                 reward = [r + one for r, one in zip(reward, [1]*len(agents))]
 
@@ -77,5 +81,6 @@ class MultiagentWrapper(gym.core.ObservationWrapper):
 
         # execute market calculations too
         if self.market:
-            reward = self.market.calculate_traded_reward(reward)
+            reward = self.market.calculate_traded_reward(
+                reward, env_goal_reached)
         return reward
