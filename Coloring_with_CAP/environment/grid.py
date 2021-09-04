@@ -473,6 +473,7 @@ class GridEnv(gym.Env):
         see_through_walls=True,
         seed=1337,
         agent_view_size=5,
+        competitive=False,
         market="",
         trading_fee=0.05,
         agents=2
@@ -489,6 +490,7 @@ class GridEnv(gym.Env):
         self.actions = GridEnv.Actions
         self.market = market
         self.trading_fee = trading_fee
+        self.competitive = competitive
         if market:
             if "sm" in market:
                 # market actions are unconditional (no recieving agent)
@@ -924,7 +926,7 @@ class GridEnv(gym.Env):
         field_reset = False
         is_colored = 1
         if obj is not None and obj.is_colored:
-            is_colored = 0
+            is_colored = 0 if not self.competitive else 1
             field_reset = True
 
         self.put_obj(Agent(is_colored, color), *new_pos)

@@ -13,7 +13,7 @@ print(f"Device: {device}\n")
 # Load environment
 
 env = learning.ppo.utils.make_env(
-    args.env, args.agents, grid_size=args.grid_size, percentage_reward=args.percentage_reward, mixed_motive=args.mixed_motive, seed=args.seed)
+    args.env, args.agents, grid_size=args.grid_size, setting=args.setting, seed=args.seed)
 # for _ in range(args.shift):
 #     env.reset()
 print("Environment loaded\n")

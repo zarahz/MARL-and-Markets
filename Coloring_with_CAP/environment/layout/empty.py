@@ -12,6 +12,7 @@ class EmptyEnv(GridEnv):
         agents=1,
         agent_view_size=7,  # currently training with view size smaller than 7 fails! TODO!
         max_steps=None,
+        competitive=False,
         market="",
         trading_fee=0.05,
         size=5
@@ -28,6 +29,7 @@ class EmptyEnv(GridEnv):
             agents=agents,
             max_steps=max_steps,
             agent_view_size=agent_view_size,
+            competitive=competitive,
             market=market,
             trading_fee=trading_fee
             # Set this to True for maximum speed

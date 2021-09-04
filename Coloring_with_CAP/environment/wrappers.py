@@ -9,11 +9,10 @@ class MultiagentWrapper(gym.core.ObservationWrapper):
     This can be used to have the agent to solve the gridworld in pixel space.
     """
 
-    def __init__(self, env, percentage_reward=False, mixed_motive=False, tile_size=8):
+    def __init__(self, env, setting="", tile_size=8):
         super().__init__(env)
         self.tile_size = tile_size
-        self.percentage_reward = percentage_reward
-        self.mixed_motive = mixed_motive
+        self.setting = setting
         if self.env.market:
             self.market = market.Market(
                 self.env.market, self.env.trading_fee, len(self.env.agents))
@@ -54,7 +53,7 @@ class MultiagentWrapper(gym.core.ObservationWrapper):
     def calculate_reward(self, reward):
         agents = self.env.agents
         env_goal_reached = self.env.whole_grid_colored()
-        if self.mixed_motive:
+        if "mixed-motive" in self.setting:
             # self.env.colored_cells() returns all cell encodings that contain a one in the middle
             # i.e. [3,1,2] -> 1 = cell is colored
             # with the indexing a new array is created that only contains the last value of the encoding (the color)
@@ -73,7 +72,7 @@ class MultiagentWrapper(gym.core.ObservationWrapper):
                 reward = [r + one for r, one in zip(reward, [1]*len(agents))]
 
             # coop reward based on coloring percentage
-            elif self.percentage_reward:
+            elif "percentage-reward" in self.setting:
                 percentage_reward = [
                     1 * self.env.grid_colored_percentage()]*len(agents)
                 reward = [r + percentage for r,

@@ -17,10 +17,8 @@ parser.add_argument("--agents", default=1, type=int,
                     help="amount of agents")
 parser.add_argument("--grid-size", default=5, type=int,
                     help="size of the playing area (default: 5)")
-parser.add_argument("--percentage-reward", default=False,
-                    help="reward agents based on percentage of coloration in the grid (default: False)")
-parser.add_argument("--mixed-motive", default=False,
-                    help="If set to true the reward is not shared which enables a mixed motive environment (one vs. all). Otherwise agents need to work in cooperation to gain more reward. (default: False = Cooperation)")
+parser.add_argument("--setting", default="",
+                    help="If set to mixed-motive the reward is not shared which enables a competitive environment (one vs. all). Another setting is percentage-reward, where the reward is shared (coop) and is based on the percanted of the grid coloration. The last option is mixed-motive-competitive which extends the normal mixed-motive setting by removing the field reset option. When agents run over already colored field it immidiatly changes to the color of the agent instead of resetting to the default state. (default: empty string -> coop reward of 1 if the whole grid is colored else 0)")
 parser.add_argument("--market", default="",
                     help="There are three options 'sm', 'am' and '' for none. SM = Shareholder Market where agents can auction actions similar to stocks. AM = Action Market where agents can buy specific actions from others. (Default = '')")
 parser.add_argument("--seed", type=int, default=1,
@@ -50,7 +48,7 @@ print(f"Device: {device}\n")
 # Load environment
 
 env = learning.ppo.utils.make_env(
-    args.env, args.agents, grid_size=args.grid_size, percentage_reward=args.percentage_reward, mixed_motive=args.mixed_motive, market=args.market, seed=args.seed)
+    args.env, args.agents, grid_size=args.grid_size, setting=args.setting, market=args.market, seed=args.seed)
 # for _ in range(args.shift):
 #     env.reset()
 print("Environment loaded\n")

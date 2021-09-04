@@ -12,10 +12,8 @@ parser.add_argument("--env", required=True,
                     help="name of the environment(REQUIRED)")
 parser.add_argument("--agents", required=True, type=int,
                     help="number of agents (REQUIRED)")
-parser.add_argument("--percentage-reward", default=False,
-                    help="reward agents based on percentage of coloration in the grid (default: False)")
-parser.add_argument("--mixed-motive", default=False,
-                    help="If set to true the reward is not shared which enables a mixed motive environment (one vs. all). Otherwise agents need to work in cooperation to gain more reward. (default: False = Cooperation)")
+parser.add_argument("--setting", default="",
+                    help="If set to mixed-motive the reward is not shared which enables a competitive environment (one vs. all). Another setting is percentage-reward, where the reward is shared (coop) and is based on the percanted of the grid coloration. The last option is mixed-motive-competitive which extends the normal mixed-motive setting by removing the field reset option. When agents run over already colored fields the field immidiatly change the color the one of the agent instead of resetting the color. (default: empty string - coop reward of one if the whole grid is colored)")
 # optional
 parser.add_argument("--agent_view_size", type=int, default=5,
                     help="partial view size of the agents, needs to be an odd number! (default: 5)")
@@ -85,13 +83,13 @@ trading_fee = 0.05
 env = gym.make(id=args.env, agents=args.agents,
                agent_view_size=args.agent_view_size, max_steps=args.max_steps, market=market, trading_fee=trading_fee, size=args.size)
 # wrapper for environment adjustments
-env = MultiagentWrapper(env, args.percentage_reward, args.mixed_motive)
+env = MultiagentWrapper(env, args.setting)
 
 window = Window(args.env)
 
 
 action_space = env.action_space.nvec[0] if market else env.action_space.n
-if args.mixed_motive:
+if "mixed-motive" in args.setting:
     # variable to count the number of times an action was pulled
     action_count = [np.zeros(action_space)]*agents
     # Q value => expected average reward
@@ -109,7 +107,7 @@ for episode in range(args.episodes):
             # select the action (1,1,2)
             action = epsilon_greedy()  # softmax()
             # update the count of that action
-            if args.mixed_motive:
+            if "mixed-motive" in args.setting:
                 action_count[agent][action] += 1
             else:
                 action_count[action] += 1
@@ -120,7 +118,7 @@ for episode in range(args.episodes):
         print(*reward, sep=", ")
         print(info)
 
-        # if args.mixed_motive:
+        # if "mixed-motive" in args.setting:
         #     for agent in range(agents):
         #         # recalculate its Q value
         #         Q[agent][action] = Q[agent][action] + (1/action_count[agent][action]) * \

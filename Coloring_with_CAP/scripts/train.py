@@ -1,4 +1,5 @@
 import argparse
+import os
 import time
 import datetime
 import numpy as np
@@ -38,10 +39,8 @@ parser.add_argument("--env", default='Empty-Grid-v0',
                     help="name of the environment to train on (default: empty grid size 5x5)")
 parser.add_argument("--grid-size", default=5, type=int,
                     help="size of the playing area (default: 5)")
-parser.add_argument("--percentage-reward", default=False,
-                    help="reward agents based on percentage of coloration in the grid (default: False)")
-parser.add_argument("--mixed-motive", default=False,
-                    help="If set to true the reward is not shared which enables a mixed motive environment (one vs. all). Otherwise agents need to work in cooperation to gain more reward. (default: False = Cooperation)")
+parser.add_argument("--setting", default="",
+                    help="If set to mixed-motive the reward is not shared which enables a competitive environment (one vs. all). Another setting is percentage-reward, where the reward is shared (coop) and is based on the percanted of the grid coloration. The last option is mixed-motive-competitive which extends the normal mixed-motive setting by removing the field reset option. When agents run over already colored fields the field immidiatly change the color the one of the agent instead of resetting the color. (default: empty string - coop reward of one if the whole grid is colored)")
 parser.add_argument("--market", default='',
                     help="There are three options 'sm', 'am' and '' for none. SM = Shareholder Market where agents can auction actions similar to stocks. AM = Action Market where agents can buy specific actions from others. (Default = '')")
 parser.add_argument("--trading-fee", default=0.05, type=float,
@@ -151,8 +150,7 @@ for i in range(args.procs):
     envs.append(learning.ppo.utils.make_env(
         args.env, args.agents,
         grid_size=args.grid_size,
-        percentage_reward=args.percentage_reward,
-        mixed_motive=args.mixed_motive,
+        setting=args.setting,
         market=args.market,
         trading_fee=args.trading_fee,
         seed=args.seed + 10000 * i))
@@ -260,3 +258,5 @@ if __name__ == '__main__':
             # ensure saving of last round
             gif_name = str(update) + "_" + str(num_frames) + ".gif"
             save_capture(model_dir, gif_name, np.array(logs["capture_frames"]))
+
+    os._exit(1)

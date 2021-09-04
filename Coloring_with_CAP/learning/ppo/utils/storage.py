@@ -134,6 +134,8 @@ def print_logs(txt_logger, header, data):
         formatted_value = "{:.2f}".format(
             value) if isinstance(value, float) else str(value)
         info += "| " + header + ": " + formatted_value
+        if "duration_in_seconds" in header or "max" in header or "grad_norm" in header:
+            info += "\n"
     txt_logger.info(info)
     # txt_logger.info(  # FPS {:04.0f} | Frames/Episode : [mean, std, min, Max] {:.1f} {:.1f} {} {}
     #     "Update {} | Frames {:06} | Duration {} | Reward:μσmM {:.2f} {:.2f} {:.2f} {:.2f}".format(*data))
