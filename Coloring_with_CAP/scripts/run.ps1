@@ -28,7 +28,7 @@ pipenv run python -m Coloring_with_CAP.scripts.train --agents 3 --model 3-ppo-mi
 pipenv run python -m Coloring_with_CAP.scripts.train --agents 3 --model 3-ppo-mixed-competitive-sm-goal --setting mixed-motive-competitive --market sm-goal --grid-size 10 --capture-interval 200 --capture-frames 30 --save-interval 10 --frames 600000
 pipenv run python -m Coloring_with_CAP.scripts.train --agents 3 --model 3-ppo-mixed-competitive-sm-goal-no-reset --setting mixed-motive-competitive --market sm-goal-no-reset --grid-size 10 --capture-interval 200 --capture-frames 30 --save-interval 10 --frames 600000
 
-# 3 Agents + am market
+# # 3 Agents + am market
 pipenv run python -m Coloring_with_CAP.scripts.train --agents 3 --model 3-ppo-am --market am --grid-size 10 --capture-interval 200 --capture-frames 30 --save-interval 10 --frames 600000
 pipenv run python -m Coloring_with_CAP.scripts.train --agents 3 --model 3-ppo-am-goal --market am-goal --grid-size 10 --capture-interval 200 --capture-frames 30 --save-interval 10 --frames 600000
 pipenv run python -m Coloring_with_CAP.scripts.train --agents 3 --model 3-ppo-am-goal-no-reset --market am-goal-no-reset --grid-size 10 --capture-interval 200 --capture-frames 30 --save-interval 10 --frames 600000

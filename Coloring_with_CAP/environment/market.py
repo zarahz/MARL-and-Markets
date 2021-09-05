@@ -129,10 +129,13 @@ class Market:
         trading_rewards = [0]*len(rewards)
         for agent in range(len(rewards)):
             for a, trade in enumerate(self.trading_matrix[agent]):
-                if ("goal" in self.type and not env_goal) or "am" in self.type:
-                    # in this case either no market trades will be executed since goal is not reached
-                    # or am market is the current type which always exchange rewards immediatly
-                    return rewards
+                if "goal" in self.type:
+                    if not env_goal:
+                        # in this case no market trades will be executed since goal was set but not reached
+                        return rewards
+                    elif "am" in self.type and env_goal:
+                        # only in this am scenario change rewards at the end
+                        trading_rewards[agent] += (rewards[a] + trade).item()
 
                 if("sm" in self.type and rewards[a] > 0):
                     # only share positive reward with buyers
