@@ -223,6 +223,9 @@ class Grid:
         self.vert_wall(x, y, h)
         self.vert_wall(x+w-1, y, h)
 
+    def place_floor(self, x, y):
+        self.set(x, y, Floor())
+
     def rotate_left(self):
         """
         Rotate the grid to the left (counter-clockwise)
@@ -794,7 +797,7 @@ class GridEnv(gym.Env):
             ))
 
             # Don't place the object on top of another object
-            if not self.grid.get(*pos).can_overlap():
+            if self.grid.get(*pos) and not self.grid.get(*pos).can_overlap():
                 continue
 
             # Check if there is a filtering criterion
@@ -890,15 +893,21 @@ class GridEnv(gym.Env):
 
             obs[agent] = self.gen_obs(agent)
 
+        info = {"reset_fields": reset_fields, "reset_fields_by": reset_fields_by,
+                "coloration_percentage": round(self.grid_colored_percentage(), 2), "fully_colored": 0}
+
         if self.whole_grid_colored() or self.step_count >= self.max_steps:
+            info["fully_colored"] = 1 if self.whole_grid_colored() else 0
             done = True
             reward = self._reward()
-        info = {"reset_fields": reset_fields, "reset_fields_by": reset_fields_by,
-                "coloration_percentage": round(self.grid_colored_percentage(), 2)}
+
         return obs, reward, done, info
 
     def whole_grid_colored(self):
-        return all(self.grid.encode_grid_objects()[:, :, 1].ravel())
+        is_colored = all(self.grid.encode_grid_objects()[:, :, 1].ravel())
+        if is_colored:
+            print('---- GRID FULLY COLORED! ---- steps', self.step_count)
+        return is_colored
 
     def grid_colored_percentage(self):
         # walkable_cells include agent and floor objects

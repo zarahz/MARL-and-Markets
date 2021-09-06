@@ -95,6 +95,10 @@ class BaseAlgo(ABC):
         # save rgb frames for gif creation
         capture_frames = []
 
+        # count all episodes that finish with a fully colored grid
+        log_fully_colored = 0
+        log_episode_runs = 0
+
         # frames-per-proc = 128 that means 128 times the (16) parallel envs are played through and logged.
         # If worst case and all environments are played until max_steps (25) are reached it can at least finish
         # 5 times and log its rewards (that means there are at least 5*16=80 rewards in log_return)
@@ -166,7 +170,9 @@ class BaseAlgo(ABC):
                         self.log_episode_num_frames[done_index].item())
                     self.log_coloration_percentage.extend(
                         [env_info['coloration_percentage'] for env_info in info])
-
+                    log_fully_colored += sum([env_info['fully_colored']
+                                             for env_info in info])
+                    log_episode_runs += len(info)
             # transpose rewards to [agent, processes] to multiplicate a mask of [processes] with it
             log_episode_return_transposed = self.log_episode_return.transpose(
                 0, 1) * self.mask
@@ -205,12 +211,14 @@ class BaseAlgo(ABC):
         self.log_trades = torch.sum(
             self.log_episode_trades, dim=1)
         keep = max(self.log_done_counter, self.num_procs)
+
+        print("-------- max count fully colored: " + str(log_episode_runs))
         logs = {
             "capture_frames": capture_frames,
             "trades": self.log_trades[-keep:].tolist(),
             "num_reset_fields": self.log_num_reset_fields[-keep:].tolist(),
-            "grid_coloration_percentage": self.log_coloration_percentage
-        }
+            "grid_coloration_percentage": self.log_coloration_percentage,
+            "fully_colored": log_fully_colored}
         return logs
 
     def collect_experience(self, agent):

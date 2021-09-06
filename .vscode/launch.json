@@ -22,10 +22,41 @@
             "args": [
                 "--model",
                 "one-agent",
+                // "--save-interval",
+                // "10",
+                // "--frames",
+                // "80000"
+                // "--grid-size",
+                // "19",
                 "--save-interval",
                 "10",
+                // "--frames-per-proc",
+                // "1024",
                 "--frames",
                 "80000"
+            ]
+        },
+        {
+            "name": "PPO train one rooms env",
+            "type": "python",
+            "request": "launch",
+            "module": "Coloring_with_CAP.scripts.train",
+            "console": "integratedTerminal",
+            "args": [
+                "--model",
+                "one-agent-rooms",
+                "--env",
+                "FourRooms-Grid-v0",
+                "--grid-size",
+                "19",
+                // "--capture-interval",
+                // "30",
+                "--save-interval",
+                "10",
+                "--frames-per-proc",
+                "1024",
+                "--frames",
+                "500000"
             ]
         },
         {
@@ -360,6 +391,10 @@
             "args": [
                 "--agents",
                 "1",
+                "--env",
+                "FourRooms-Grid-v0",
+                "--grid-size",
+                "19",
                 // "--market",
                 // "am",
                 // "--setting",

@@ -96,8 +96,9 @@ def prepare_csv_data(agents, logs, update, num_frames, start_time=None, txt_logg
     start_time = start_time if start_time else time.time()
     duration = int(time.time() - start_time)
 
-    header = ["update_count", "frames", "duration_in_seconds"]  # "FPS"
-    data = [update, num_frames, duration]  # fps
+    header = ["update_count", "frames",
+              "duration_in_seconds", "fully_colored"]  # "FPS"
+    data = [update, num_frames, duration, logs["fully_colored"]]  # fps
 
     header, data = log_stats(logs, 'num_reset_fields', header, data)
     header, data = log_stats(logs, 'grid_coloration_percentage', header, data)
@@ -134,7 +135,7 @@ def print_logs(txt_logger, header, data):
         formatted_value = "{:.2f}".format(
             value) if isinstance(value, float) else str(value)
         info += "| " + header + ": " + formatted_value
-        if "duration_in_seconds" in header or "max" in header or "grad_norm" in header:
+        if "fully_colored" in header or "max" in header or "grad_norm" in header:
             info += "\n"
     txt_logger.info(info)
     # txt_logger.info(  # FPS {:04.0f} | Frames/Episode : [mean, std, min, Max] {:.1f} {:.1f} {} {}
