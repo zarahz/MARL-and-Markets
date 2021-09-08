@@ -39,6 +39,8 @@ parser.add_argument("--env", default='Empty-Grid-v0',
                     help="name of the environment to train on (default: empty grid size 5x5)")
 parser.add_argument("--grid-size", default=5, type=int,
                     help="size of the playing area (default: 5)")
+parser.add_argument("--max-steps", default=None, type=int,
+                    help="max steps in environment to reach a goal")
 parser.add_argument("--setting", default="",
                     help="If set to mixed-motive the reward is not shared which enables a competitive environment (one vs. all). Another setting is percentage-reward, where the reward is shared (coop) and is based on the percanted of the grid coloration. The last option is mixed-motive-competitive which extends the normal mixed-motive setting by removing the field reset option. When agents run over already colored fields the field immidiatly change the color the one of the agent instead of resetting the color. (default: empty string - coop reward of one if the whole grid is colored)")
 parser.add_argument("--market", default='',
@@ -150,6 +152,7 @@ for i in range(args.procs):
     envs.append(learning.ppo.utils.make_env(
         args.env, args.agents,
         grid_size=args.grid_size,
+        max_steps=args.max_steps,
         setting=args.setting,
         market=args.market,
         trading_fee=args.trading_fee,

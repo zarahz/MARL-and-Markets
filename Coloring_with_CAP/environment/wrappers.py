@@ -34,16 +34,17 @@ class MultiagentWrapper(gym.core.ObservationWrapper):
 
         observation, reward, done, info = self.env.step(actions)
 
-        # reward is an array of length agents
-        # array formation, so that mixed motive rewards are easily adapted (each agent is rewarded seperately)
-        reward = [0]*len(self.env.agents)
+        if not "mixed-motive" in self.setting:
+            # assign all agents the same reward since here the reward is containig positive values for agents
+            # that have colored a field!
+            reward = [sum(reward)]*len(self.env.agents)
 
         if(self.market):
             # is_last_step = (self.env.step_count+1 >= self.env.max_steps)
             trades, trading_reward = self.market.execute_market_actions(actions,
                                                                         market_actions, info["reset_fields_by"])
             info.update(trades)
-            reward = trading_reward
+            reward = [r + tr for r, tr in zip(reward, trading_reward)]
 
         if done:
             reward = self.calculate_reward(reward)

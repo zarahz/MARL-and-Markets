@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 import torch
 import numpy as np
+import math
 
 # from learning.ppo.utils import
 from learning.ppo.utils import DictList, ParallelEnv
@@ -66,6 +67,13 @@ class BaseAlgo(ABC):
 
         self.log_episode_return = torch.zeros(
             (self.num_procs, agents), device=self.device)
+
+        # DELETE ME
+        self.prev_log_episode_return = torch.zeros(
+            (self.num_procs, agents), device=self.device)
+        self.prev_log_return = []
+        # DELETE ME
+
         self.log_episode_num_frames = torch.zeros(
             self.num_procs, device=self.device)
 
@@ -97,7 +105,6 @@ class BaseAlgo(ABC):
 
         # count all episodes that finish with a fully colored grid
         log_fully_colored = 0
-        log_episode_runs = 0
 
         # frames-per-proc = 128 that means 128 times the (16) parallel envs are played through and logged.
         # If worst case and all environments are played until max_steps (25) are reached it can at least finish
@@ -172,7 +179,6 @@ class BaseAlgo(ABC):
                         [env_info['coloration_percentage'] for env_info in info])
                     log_fully_colored += sum([env_info['fully_colored']
                                              for env_info in info])
-                    log_episode_runs += len(info)
             # transpose rewards to [agent, processes] to multiplicate a mask of [processes] with it
             log_episode_return_transposed = self.log_episode_return.transpose(
                 0, 1) * self.mask
@@ -212,7 +218,6 @@ class BaseAlgo(ABC):
             self.log_episode_trades, dim=1)
         keep = max(self.log_done_counter, self.num_procs)
 
-        print("-------- max count fully colored: " + str(log_episode_runs))
         logs = {
             "capture_frames": capture_frames,
             "trades": self.log_trades[-keep:].tolist(),

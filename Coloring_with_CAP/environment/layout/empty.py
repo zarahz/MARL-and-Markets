@@ -19,7 +19,7 @@ class EmptyEnv(GridEnv):
     ):
         if not max_steps and agents <= 1:
             # since walls are not walkable agent has some additional steps
-            max_steps = size * size
+            max_steps = (size * size) * 2
         elif not max_steps:
             # calculate the walkable floor (by substracting the surrounding walls)
             walkable_floor_size = (size*size) - (((size-2)*4)+4)

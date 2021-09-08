@@ -11,17 +11,26 @@
 % -------------------------------------------------------------------------------------------------
 %
 \chapter{Related Work}\label{sec:RelatedWork}
-- Definiton of field of research \\
+- Definition of field of research \\
 - Scientific Scope \\
 - Which comparable work in research exists? \\
-- Seperation from other works
+- Separation from other works
 
 \section{Reinforcement learning}
 %https://lilianweng.github.io/lil-log/2018/02/19/a-long-peek-into-reinforcement-learning.html#key-concepts
 \marginpar{rl components}
-Reinforcement learning (RL) consists of the following components: an environment,
-one or multiple agents and time sensitive information like environment states $s_{t}$,
-agent actions $a_{t}$ and rewards $r_{t}$.
+Reinforcement learning (RL) in its core is defined by Sutton and Barto as ``learning from 
+interaction to achieve a goal'' \cite{suba18}. As displayed in Figure \ref{fig:rl_cycle}
+the authors divided the  consists of the following components: an environment,
+one or multiple agents and time sensitive information like environment states $S_{t}$,
+agent actions $A_{t}$ and rewards $R_{t}$.
+\begin{figure}[hpbt]
+    \centering
+    \includegraphics[width=0.6\textwidth]{pictures/RLInteractionSB}\\
+    \caption[reinforcement learning cycle]{The cycle of agent-environment interaction as shown in ``Reinforcement learning: An introduction''\cite{suba18}}\label{fig:rl_cycle}
+\end{figure}
+
+\marginpar{learning}
 Initially an agent has no knowledge of good or bad actions and learns as it acts in an
 environment. Based on the executed action the environment changes and returns the new
 state $s'_{t}$ and a reward back to the agent. The agent processes those environment
@@ -60,7 +69,21 @@ explore enough the best strategy will stay hidden and if an agent always explore
 without exploiting the gained knowledge chances are that the reward will not be as good.
 
 \section{Credit assignment problem}
-\marginpar{Multiagent settings}
+\marginpar{intro (single and multi)}
+
+\marginpar{intro}
+RL in the real world often involves multiple agents solving problems together, for
+example working in warehouses and factories. In this case agents apply actions in a shared
+environment and try to work together to reach a goal. However, for each multi-action sequence
+the environment only returns one global reward.   The environment only returns one
+global reward to be shared by all agents.
+and execute actions
+simultaneously.  consists of a shared environment between multiple agents. An example
+is
+stocking warehouses or playing against each other in multiplayer games. However
+having one environment containing multiple agents also comes with great difficulties for
+the learning process.     can be conducted in a multi-agent environment, there are a few difficulties
+that needs to be faced.
 \marginpar{CAP example}
 \marginpar{CAP and diff kinds}
 

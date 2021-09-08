@@ -78,7 +78,7 @@ def softmax():
 #######################
 # conduct experiment
 #######################
-market = "sm-no-reset-goal"
+market = ""  # "sm-no-reset-goal"
 trading_fee = 0.05
 env = gym.make(id=args.env, agents=args.agents,
                agent_view_size=args.agent_view_size, max_steps=args.max_steps, market=market, trading_fee=trading_fee, size=args.size)
@@ -112,6 +112,8 @@ for episode in range(args.episodes):
             else:
                 action_count[action] += 1
             joint_actions.append(action)
+
+        # action: left = 1 | right = 2 | up = 3 | down = 4 | wait = 0
 
         # get reward/observation/terminalInfo
         observation, reward, done, info = env.step(np.array(joint_actions))

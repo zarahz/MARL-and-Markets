@@ -22,18 +22,20 @@
             "args": [
                 "--model",
                 "one-agent",
-                // "--save-interval",
-                // "10",
-                // "--frames",
-                // "80000"
-                // "--grid-size",
-                // "19",
+                "--agents",
+                "1",
+                "--grid-size",
+                "9",
+                "--max-steps",
+                "400",
+                // "--recurrence",
+                // "4", //512 69% 1024 71%
                 "--save-interval",
                 "10",
-                // "--frames-per-proc",
-                // "1024",
+                "--frames-per-proc",
+                "1024",
                 "--frames",
-                "80000"
+                "1500000"
             ]
         },
         {
@@ -66,14 +68,24 @@
             "module": "Coloring_with_CAP.scripts.train",
             "console": "integratedTerminal",
             "args": [
-                "--agents",
-                "2",
                 "--model",
                 "two-agents",
+                "--agents",
+                "2",
+                "--grid-size",
+                "9",
+                "--max-steps",
+                "400",
+                "--market",
+                "sm",
+                // "--recurrence",
+                // "4", //512 69% 1024 71%
                 "--save-interval",
                 "10",
+                "--frames-per-proc",
+                "1024",
                 "--frames",
-                "300000"
+                "1500000"
             ]
         },
         {
@@ -349,15 +361,15 @@
                 "Empty-Grid-v0",
                 "--agents",
                 "3",
-                "--setting",
-                "percentage-reward",
+                // "--setting",
+                // "percentage-reward",
                 // "mixed-motive",
                 "--agent_view_size",
                 "5",
                 // "--max_steps",
                 // "10",
                 "--episodes",
-                "5",
+                "10",
                 "--size",
                 "5"
             ]

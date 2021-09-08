@@ -691,7 +691,7 @@ class GridEnv(gym.Env):
         Compute the reward to be given upon success
         """
 
-        return 1 - 0.9 * (self.step_count / self.max_steps)
+        return 1
 
     def _rand_int(self, low, high):
         """
@@ -856,7 +856,7 @@ class GridEnv(gym.Env):
 
     def step(self, actions):
         self.step_count += 1
-        reward = 0
+        reward = [0]*len(self.agents)
         done = False
         obs = {}
         reset_fields = 0
@@ -887,9 +887,14 @@ class GridEnv(gym.Env):
                     agent_reset_field = self.toggle_is_colored(
                         new_pos_cell, self.agents[agent]['color'], new_pos, old_pos)
                     reset_fields += agent_reset_field
-                    # if agent reset the field save it to info in order to (possibly) restrict market transactions
-                    if(agent_reset_field > 0 and agent not in reset_fields_by):
-                        reset_fields_by.append(agent)
+                    if not agent_reset_field:
+                        # add small positive reward!
+                        reward[agent] += 0.05
+                    else:
+                        reward[agent] -= 0.1
+                        # if agent reset the field save it to info in order to (possibly) restrict market transactions
+                        if agent not in reset_fields_by:
+                            reset_fields_by.append(agent)
 
             obs[agent] = self.gen_obs(agent)
 
@@ -899,7 +904,7 @@ class GridEnv(gym.Env):
         if self.whole_grid_colored() or self.step_count >= self.max_steps:
             info["fully_colored"] = 1 if self.whole_grid_colored() else 0
             done = True
-            reward = self._reward()
+            # reward = [1]*len(self.agents)
 
         return obs, reward, done, info
 
@@ -943,9 +948,11 @@ class GridEnv(gym.Env):
             old_pos_attr = self.grid.get(*old_pos)
             for agent in self.agents:
                 if (self.agents[agent]['pos'] == old_pos).all():
+                    # in this case the acting agent moves away from a field where another
+                    # agent was also standing -> render the staying agent here
                     self.put_obj(Agent(is_colored=old_pos_attr.is_colored,
                                        color=old_pos_attr.color), *old_pos)
-                    return field_reset
+            # render the old position without an agent on it
             self.put_obj(Floor(is_colored=old_pos_attr.is_colored,
                          color=old_pos_attr.color), *old_pos)
 
