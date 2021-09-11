@@ -54,6 +54,9 @@ class MultiagentWrapper(gym.core.ObservationWrapper):
     def calculate_reward(self, reward):
         agents = self.env.agents
         env_goal_reached = self.env.whole_grid_colored()
+        if env_goal_reached:
+            print('---- GRID FULLY COLORED! ---- steps', self.env.step_count)
+
         if "mixed-motive" in self.setting:
             # self.env.colored_cells() returns all cell encodings that contain a one in the middle
             # i.e. [3,1,2] -> 1 = cell is colored

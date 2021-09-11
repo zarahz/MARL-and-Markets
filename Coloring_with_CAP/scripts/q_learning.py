@@ -80,8 +80,9 @@ def softmax():
 #######################
 market = ""  # "sm-no-reset-goal"
 trading_fee = 0.05
+competitive = "competitive" in args.setting
 env = gym.make(id=args.env, agents=args.agents,
-               agent_view_size=args.agent_view_size, max_steps=args.max_steps, market=market, trading_fee=trading_fee, size=args.size)
+               agent_view_size=args.agent_view_size, max_steps=args.max_steps, competitive=competitive, market=market, trading_fee=trading_fee, size=args.size)
 # wrapper for environment adjustments
 env = MultiagentWrapper(env, args.setting)
 

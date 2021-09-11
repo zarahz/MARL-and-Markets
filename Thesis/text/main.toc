@@ -2,19 +2,19 @@
 \babel@toc {english}{}
 \contentsline {chapter}{\numberline {1}Introduction}{1}{chapter.1}%
 \contentsline {chapter}{\numberline {2}Related Work}{3}{chapter.2}%
-\contentsline {section}{\numberline {2.1}Reinforcement learning}{3}{section.2.1}%
-\contentsline {section}{\numberline {2.2}Credit assignment problem}{4}{section.2.2}%
-\contentsline {section}{\numberline {2.3}Markets}{4}{section.2.3}%
-\contentsline {chapter}{\numberline {3}Background}{5}{chapter.3}%
-\contentsline {section}{\numberline {3.1}Proximal Policy Optimization}{5}{section.3.1}%
-\contentsline {section}{\numberline {3.2}Deep Q-Learning}{6}{section.3.2}%
-\contentsline {chapter}{\numberline {4}Concept}{7}{chapter.4}%
-\contentsline {chapter}{\numberline {5}Implementation}{9}{chapter.5}%
-\contentsline {chapter}{\numberline {6}Results}{11}{chapter.6}%
-\contentsline {chapter}{\numberline {7}Discussion}{13}{chapter.7}%
-\contentsline {chapter}{\numberline {8}Conclusion}{15}{chapter.8}%
-\contentsline {chapter}{\nonumberline List of Figures}{17}{chapter*.4}%
-\contentsline {chapter}{\nonumberline List of Tables}{19}{chapter*.5}%
-\contentsline {chapter}{\nonumberline Listings}{21}{chapter*.6}%
-\contentsline {chapter}{\nonumberline Bibliography}{23}{chapter*.7}%
+\contentsline {section}{\numberline {2.1}Reinforcement Learning}{3}{section.2.1}%
+\contentsline {section}{\numberline {2.2}Credit Assignment Problem}{4}{section.2.2}%
+\contentsline {section}{\numberline {2.3}Markets}{5}{section.2.3}%
+\contentsline {chapter}{\numberline {3}Background}{7}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Proximal Policy Optimization}{7}{section.3.1}%
+\contentsline {section}{\numberline {3.2}Deep Q-Learning}{8}{section.3.2}%
+\contentsline {chapter}{\numberline {4}Concept}{9}{chapter.4}%
+\contentsline {chapter}{\numberline {5}Implementation}{11}{chapter.5}%
+\contentsline {chapter}{\numberline {6}Results}{13}{chapter.6}%
+\contentsline {chapter}{\numberline {7}Discussion}{15}{chapter.7}%
+\contentsline {chapter}{\numberline {8}Conclusion}{17}{chapter.8}%
+\contentsline {chapter}{\nonumberline List of Figures}{19}{chapter*.4}%
+\contentsline {chapter}{\nonumberline List of Tables}{21}{chapter*.5}%
+\contentsline {chapter}{\nonumberline Listings}{23}{chapter*.6}%
+\contentsline {chapter}{\nonumberline Bibliography}{25}{chapter*.7}%
 \providecommand \tocbasic@end@toc@file {}\tocbasic@end@toc@file 

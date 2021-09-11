@@ -4,7 +4,7 @@ from os import stat
 import gym
 from enum import IntEnum
 import numpy as np
-from gym import error, spaces, utils
+from gym import spaces
 from gym.utils import seeding
 from .rendering import *
 from environment.colors import *
@@ -686,12 +686,25 @@ class GridEnv(gym.Env):
         '''
         return np.array([self.action_table[key] for key in keys])  # self.action_table[key]
 
-    def _reward(self):
+    def _reward(self, agent, cell_status_changed, reward, agent_reset_field, reset_fields_by):
         """
         Compute the reward to be given upon success
         """
 
-        return 1
+        # if agent stays on its colors (by waiting or in competitive) reward should stay 0
+        if not cell_status_changed:
+            return reward, reset_fields_by
+
+        if agent_reset_field:
+            # agent reset a field here so return a penalty!
+            reward[agent] -= 0.1
+            # if agent reset the field save it to info in order to (possibly) restrict market transactions
+            if agent not in reset_fields_by:
+                reset_fields_by.append(agent)
+        else:
+            # add small positive reward, since agent colored the new cell!
+            reward[agent] += 0.1
+        return reward, reset_fields_by
 
     def _rand_int(self, low, high):
         """
@@ -883,18 +896,16 @@ class GridEnv(gym.Env):
             if new_pos is not None:
                 new_pos_cell = self.grid.get(*new_pos)
                 if new_pos_cell == None or new_pos_cell.can_overlap():
+                    cell_status = new_pos_cell
                     self.agents[agent]['pos'] = new_pos
                     agent_reset_field = self.toggle_is_colored(
                         new_pos_cell, self.agents[agent]['color'], new_pos, old_pos)
                     reset_fields += agent_reset_field
-                    if not agent_reset_field:
-                        # add small positive reward!
-                        reward[agent] += 0.05
-                    else:
-                        reward[agent] -= 0.1
-                        # if agent reset the field save it to info in order to (possibly) restrict market transactions
-                        if agent not in reset_fields_by:
-                            reset_fields_by.append(agent)
+                    updated_new_pos_cell = self.grid.get(*new_pos)
+                    # cell status change needs two conditions since new pos contains agent which could have the same color as prev!
+                    cell_status_changed = cell_status.color != updated_new_pos_cell.color or cell_status.is_colored != updated_new_pos_cell.is_colored
+                    reward, reset_fields_by = self._reward(agent, cell_status_changed, reward,
+                                                           agent_reset_field, reset_fields_by)
 
             obs[agent] = self.gen_obs(agent)
 
@@ -909,10 +920,7 @@ class GridEnv(gym.Env):
         return obs, reward, done, info
 
     def whole_grid_colored(self):
-        is_colored = all(self.grid.encode_grid_objects()[:, :, 1].ravel())
-        if is_colored:
-            print('---- GRID FULLY COLORED! ---- steps', self.step_count)
-        return is_colored
+        return all(self.grid.encode_grid_objects()[:, :, 1].ravel())
 
     def grid_colored_percentage(self):
         # walkable_cells include agent and floor objects
@@ -939,8 +947,8 @@ class GridEnv(gym.Env):
     def toggle_is_colored(self, obj, color, new_pos, old_pos):
         field_reset = False
         is_colored = 1
-        if obj is not None and obj.is_colored:
-            is_colored = 0 if not self.competitive else 1
+        if obj is not None and obj.is_colored and not self.competitive:
+            is_colored = 0
             field_reset = True
 
         self.put_obj(Agent(is_colored, color), *new_pos)

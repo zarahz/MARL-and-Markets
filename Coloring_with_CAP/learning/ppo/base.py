@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 import torch
 import numpy as np
-import math
 
 # from learning.ppo.utils import
 from learning.ppo.utils import DictList, ParallelEnv
@@ -67,12 +66,6 @@ class BaseAlgo(ABC):
 
         self.log_episode_return = torch.zeros(
             (self.num_procs, agents), device=self.device)
-
-        # DELETE ME
-        self.prev_log_episode_return = torch.zeros(
-            (self.num_procs, agents), device=self.device)
-        self.prev_log_return = []
-        # DELETE ME
 
         self.log_episode_num_frames = torch.zeros(
             self.num_procs, device=self.device)
