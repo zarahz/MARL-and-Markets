@@ -91,6 +91,8 @@ with many difficulties. On the one hand
 in a scenario where agents work independently it is very probable that they get in
 each other's way in order to score highest or finish a task, preventing the overall
 goal to be achieved.
+
+
 In cooperative environments on the other hand, agents share the reward and therefore
 can not tell who contributed useful actions and who did not. Hence all agents receive
 the same reward regardless of their contribution which aggravates learning.
@@ -105,8 +107,11 @@ contain bad choices that could be rewarded or, in case of a penalty, good action
 that would be punished. Deciding which agent deserves more or less reward, when
 splitting it up is referred to as the credit assignment problem (CAP) \cite{mi61}.
 
-\marginpar{CAP example}
-\marginpar{CAP and diff kinds}
+\marginpar{CAP diff kinds}
+However the CAP originated in a one-agent environment that only rewarded the agent once
+the goal was reached or the terminating condition applied. A popular example of this is
+a chess game. In 1961, Minsky \cite{mi61} elaborated on this by explaining that a
+player wins or loses the game, but cannot retrace which decision got him there.
 
 \section{Markets}\label{market}
 \marginpar{markets and advantage}
