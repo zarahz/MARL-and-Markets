@@ -1,15 +1,30 @@
 \newcommand{\etalchar}[1]{$^{#1}$}
 \begin{thebibliography}{SWD{\etalchar{+}}17}
 
+\bibitem[AT04]{agtu04}
+Adrian~K Agogino and Kagan Tumer.
+\newblock Unifying temporal and structural credit assignment problems.
+\newblock In {\em AAMAS}, volume~4, pages 980--987, 2004.
+
 \bibitem[Min61]{mi61}
 Marvin Minsky.
 \newblock Steps toward artificial intelligence.
 \newblock {\em Proceedings of the IRE}, 49(1):8--30, 1961.
 
+\bibitem[NKL18]{ngku18}
+Duc~Thien Nguyen, Akshat Kumar, and Hoong~Chuin Lau.
+\newblock Credit assignment for collective multiagent rl with global rewards.
+\newblock 2018.
+
 \bibitem[SB18]{suba18}
 Richard~S Sutton and Andrew~G Barto.
 \newblock {\em Reinforcement learning: An introduction}.
 \newblock MIT press, 2018.
+
+\bibitem[Sut84]{su84}
+Richard~Stuart Sutton.
+\newblock {\em Temporal credit assignment in reinforcement learning}.
+\newblock PhD thesis, University of Massachusetts Amherst, 1984.
 
 \bibitem[SWD{\etalchar{+}}17]{scwo17}
 John Schulman, Filip Wolski, Prafulla Dhariwal, Alec Radford, and Oleg Klimov.
