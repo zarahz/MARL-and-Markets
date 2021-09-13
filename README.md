@@ -1,3 +1,9 @@
+TODO:
+- DQN implementation
+- Basic Difference reward (each step reward compared with waiting action) 
+- plots refinement: plot matrix where each row is a setting with 4 columns 1) reward 2) grid coloration 3) trades 4) reset fields
+
+--------------------------------------------------
 - AM: statt aktion vllt state? 
 -> oder micromanagement -> aktion wird anderem agenten vorgeschlagen
 -> übergeordnet -> trade conditionieren auf actionssequenzen/verhaltensmuster
@@ -26,10 +32,8 @@ Agenten die verkaufen kriegen direkt den Gewinn -> das könnte es für agenten a
 - soll der gezahlte betrag bis zum ende in jedem schritt als reward wieder an den agenten gegeben werden? Aktuell kauft agent einen share und geht dabei ins minus um 1/3 des anteils, also hier zB -0.016 und das aber auch nur einmalig (da kauf). nach abschluss des schrittes ist der reward wieder auf 0 und am ende der episode werden shares mit dem endgültigen reward verrechnet (bei 0 oder niedriger erhälten käufer nichts) 
 - soll die letzte trading runde auch mitgezählt werden? ZB agent 2 kauft 5% shares von agent 1 und zahlt dafür 0.016 -> da letzte runde wird der gewinn von agent 1 (die 0.016) auf alle share besitzer mit aufgeteilt und agent 2 hat einen reward von -0.016 + (0.016*0.05) = -0.0152
 
-
-
-TODO 
-====== Unklarheiten
+--------------------------------- 
+TODO unklarheiten
 - start implementation of shareholder market
     - TBD:
         - "agents can only make either selling or buying offers at a time"? Not implemented yet, all agents can sell and buy 
@@ -40,7 +44,7 @@ TODO
           if the agent wants to sell or buy (or do nothing)?
         - How to define the action space? Problem is the current Linear NN which returns a number within the action_space
             is an encoding sufficient? sm: action_space.n=5 NN returns a number of 5x5 i.e. 25 = [4,4] -> hotencoding
-=======
+----------------------------
 - ANMERKUNG: two agents mixed resetted fields: agenten setzen gegnerische felder nicht gezielt zurück, da sie dadurch selbst keine direkten vorteil erzielen (feld ist dann nur resetted aber nicht ihnen zugehörig) (vermutlich würden sie eher diese taktik spielen, wenn die felder nicht zurückgesetzt werden, sondern direkt ihre farbe übernehmen)
     - vielleicht noch neue settings: 
         - competitive mixed, bei denen nur der agent mit höherem prozent den reward erhält?

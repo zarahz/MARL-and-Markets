@@ -9,7 +9,12 @@
 \contentsline {section}{\numberline {3.1}Proximal Policy Optimization}{7}{section.3.1}%
 \contentsline {section}{\numberline {3.2}Deep Q-Learning}{8}{section.3.2}%
 \contentsline {chapter}{\numberline {4}Concept}{9}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Gridworld}{9}{section.4.1}%
+\contentsline {section}{\numberline {4.2}MARL Challenges}{9}{section.4.2}%
 \contentsline {chapter}{\numberline {5}Implementation}{11}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Learning Algorithms}{11}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Agent Compositions}{11}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Reward Calculations}{11}{section.5.3}%
 \contentsline {chapter}{\numberline {6}Results}{13}{chapter.6}%
 \contentsline {chapter}{\numberline {7}Discussion}{15}{chapter.7}%
 \contentsline {chapter}{\numberline {8}Conclusion}{17}{chapter.8}%

@@ -6,6 +6,12 @@ Adrian~K Agogino and Kagan Tumer.
 \newblock Unifying temporal and structural credit assignment problems.
 \newblock In {\em AAMAS}, volume~4, pages 980--987, 2004.
 
+\bibitem[BBDS10]{buba10}
+Lucian Bu{\c{s}}oniu, Robert Babu{\v{s}}ka, and Bart De~Schutter.
+\newblock Multi-agent reinforcement learning: An overview.
+\newblock {\em Innovations in multi-agent systems and applications-1}, pages
+  183--221, 2010.
+
 \bibitem[Min61]{mi61}
 Marvin Minsky.
 \newblock Steps toward artificial intelligence.
@@ -22,7 +28,7 @@ Richard~S Sutton and Andrew~G Barto.
 \newblock MIT press, 2018.
 
 \bibitem[Sut84]{su84}
-Richard~Stuart Sutton.
+Richard~S Sutton.
 \newblock {\em Temporal credit assignment in reinforcement learning}.
 \newblock PhD thesis, University of Massachusetts Amherst, 1984.
 
