@@ -28,14 +28,14 @@ def get_train_args():
     parser.add_argument("--batch-size", type=int, default=128,
                         help="batch size for dqn (default: 128)")
     # epsilon for action selection
-    parser.add_argument("--epsilon-start", type=float, default=0.9,
+    parser.add_argument("--epsilon-start", type=float, default=1.0,
                         help="starting value of epsilon, used for action selection (default: 0.9 -> high exploration)")
-    parser.add_argument("--epsilon-end", type=float, default=0.05,
+    parser.add_argument("--epsilon-end", type=float, default=0.01,
                         help="ending value of epsilon, used for action selection (default: 0.05 -> high exploitation)")
-    parser.add_argument("--epsilon-decay", type=int, default=200,
-                        help="Controls the rate of the epsilon decay in order to shift from eploration to exploitation (default: 200)")
-    parser.add_argument("--target-update", type=int, default=10,
-                        help="Steps (?) between updating the target network (default: 10)")
+    parser.add_argument("--epsilon-decay", type=int, default=500,
+                        help="Controls the rate of the epsilon decay in order to shift from exploration to exploitation (default: 500)")
+    parser.add_argument("--target-update", type=int, default=1000,
+                        help="Steps (?) between updating the target network (default: 1000)")
 
     args = parser.parse_args()
 

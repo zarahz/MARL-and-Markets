@@ -116,14 +116,18 @@ def prepare_csv_data(agents, logs, update, num_frames, start_time=None, txt_logg
     for agent in range(agents):
         header, data = log_stats(all_rewards_per_episode,
                                  "reward_agent_" + str(agent), header, data)
-        header += ["entropy_agent_" + str(agent)]
-        data += [logs["entropy"][agent]]
-        header += ["value_agent_" + str(agent)]
-        data += [logs["value"][agent]]
-        header += ["policy_loss_agent_" + str(agent)]
-        data += [logs["policy_loss"][agent]]
-        header += ["grad_norm_agent_" + str(agent)]
-        data += [logs["grad_norm"][agent]]
+        if "entropy" in logs:
+            header += ["entropy_agent_" + str(agent)]
+            data += [logs["entropy"][agent]]
+        if "value" in logs:
+            header += ["value_agent_" + str(agent)]
+            data += [logs["value"][agent]]
+        if "policy_loss" in logs:
+            header += ["policy_loss_agent_" + str(agent)]
+            data += [logs["policy_loss"][agent]]
+        if "grad_norm" in logs:
+            header += ["grad_norm_agent_" + str(agent)]
+            data += [logs["grad_norm"][agent]]
 
     if txt_logger:
         print_logs(txt_logger, header, data)
