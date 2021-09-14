@@ -23,11 +23,11 @@ class Agent:
         self.num_envs = num_envs
 
         try:
-            all_states = learning.ppo.utils.get_model_state(model_dir)
+            all_states = learning.utils.get_model_state(model_dir)
             state = all_states[agent_index]
         except IndexError:
-            state_len = len(learning.ppo.utils.get_model_state(model_dir))
-            state = learning.ppo.utils.get_model_state(
+            state_len = len(learning.utils.get_model_state(model_dir))
+            state = learning.utils.get_model_state(
                 model_dir)[agent_index % state_len]
         self.acmodel.load_state_dict(state)
         self.acmodel.to(self.device)

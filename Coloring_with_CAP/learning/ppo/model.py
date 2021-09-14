@@ -41,6 +41,15 @@ class ACModel(nn.Module, RecurrentACModel):
     def __init__(self, obs_space, action_space):
         super().__init__()
 
+        n = obs_space["image"][0]
+        m = obs_space["image"][1]
+        size = ((n-1)//2-2)*((m-1)//2-2)*64
+        self.embedding_size = size
+        kernel_size = 2
+        if size == 0:
+            self.embedding_size = 64
+            kernel_size = 1
+
         # Define image embedding
         self.image_conv = nn.Sequential(
             nn.Conv2d(3, 16, (2, 2)),
@@ -48,13 +57,9 @@ class ACModel(nn.Module, RecurrentACModel):
             nn.MaxPool2d((2, 2)),
             nn.Conv2d(16, 32, (2, 2)),
             nn.ReLU(),
-            nn.Conv2d(32, 64, (2, 2)),
+            nn.Conv2d(32, 64, (kernel_size, kernel_size)),
             nn.ReLU()
         )
-        n = obs_space["image"][0]
-        m = obs_space["image"][1]
-        self.embedding_size = ((n-1)//2-2)*((m-1)//2-2)*64
-
         # Define actor's model
         self.actor = nn.Sequential(
             nn.Linear(self.embedding_size, 64),

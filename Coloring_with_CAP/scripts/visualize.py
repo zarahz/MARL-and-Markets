@@ -1,44 +1,17 @@
-import argparse
-import time
-import numpy
+import numpy as np
 import torch
 
 from learning.ppo.utils import *
+from learning.ppo.utils.arguments import get_vis_args
+from learning.utils.other import seed
 
 
 # Parse arguments
-
-parser = argparse.ArgumentParser()
-parser.add_argument("--model", required=True,
-                    help="name of the trained model (REQUIRED)")
-parser.add_argument("--env", default='Empty-Grid-v0',
-                    help="name of the environment to be run (REQUIRED)")
-parser.add_argument("--agents", default=1, type=int,
-                    help="amount of agents")
-parser.add_argument("--grid-size", default=5, type=int,
-                    help="size of the playing area (default: 5)")
-parser.add_argument("--setting", default="",
-                    help="If set to mixed-motive the reward is not shared which enables a competitive environment (one vs. all). Another setting is percentage-reward, where the reward is shared (coop) and is based on the percanted of the grid coloration. The last option is mixed-motive-competitive which extends the normal mixed-motive setting by removing the field reset option. When agents run over already colored field it immidiatly changes to the color of the agent instead of resetting to the default state. (default: empty string -> coop reward of 1 if the whole grid is colored else 0)")
-parser.add_argument("--market", default="",
-                    help="There are three options 'sm', 'am' and '' for none. SM = Shareholder Market where agents can auction actions similar to stocks. AM = Action Market where agents can buy specific actions from others. (Default = '')")
-parser.add_argument("--seed", type=int, default=1,
-                    help="random seed (default: 1)")
-parser.add_argument("--shift", type=int, default=0,
-                    help="number of times the environment is reset at the beginning (default: 0)")
-parser.add_argument("--argmax", action="store_true", default=False,
-                    help="select the action with highest probability (default: False)")
-parser.add_argument("--pause", type=float, default=0.1,
-                    help="pause duration between two consequent actions of the agent (default: 0.1)")
-parser.add_argument("--gif", type=str, default=None,
-                    help="store output as gif with the given filename")
-parser.add_argument("--episodes", type=int, default=1000000,
-                    help="number of episodes to visualize")
-
-args = parser.parse_args()
+args = get_vis_args()
 
 # Set seed for all randomness sources
 
-learning.ppo.utils.seed(args.seed)
+seed(args.seed)
 
 # Set device
 
@@ -47,15 +20,15 @@ print(f"Device: {device}\n")
 
 # Load environment
 
-env = learning.ppo.utils.make_env(
-    args.env, args.agents, grid_size=args.grid_size, setting=args.setting, market=args.market, seed=args.seed)
+env = learning.utils.make_env(
+    args.env, args.agents, grid_size=args.grid_size, agent_view_size=args.agent_view_size, setting=args.setting, market=args.market, seed=args.seed)
 # for _ in range(args.shift):
 #     env.reset()
 print("Environment loaded\n")
 
 # Load agent
 
-model_dir = learning.ppo.utils.get_model_dir(args.model)
+model_dir = learning.utils.get_model_dir(args.model)
 agents = []
 if args.market:
     action_space = env.action_space.nvec.prod()
@@ -68,7 +41,7 @@ print("Agents loaded\n")
 
 # Run the agent
 
-if args.gif:
+if args.capture:
     from array2gif import write_gif
     frames = []
 
@@ -80,8 +53,8 @@ for episode in range(args.episodes):
 
     while True:
         env.render('human')
-        if args.gif:
-            frames.append(numpy.moveaxis(env.render("rgb_array"), 2, 0))
+        if args.capture:
+            frames.append(np.moveaxis(env.render("rgb_array"), 2, 0))
         joint_actions = np.array((1, len(agents)))  # []
         for agent_index, agent in enumerate(agents):
             action = agent.get_action(obs, agent_index)
@@ -97,7 +70,7 @@ for episode in range(args.episodes):
     if env.window.closed:
         break
 
-if args.gif:
+if args.capture:
     print("Saving gif... ", end="")
     write_gif(numpy.array(frames), args.gif+".gif", fps=1/args.pause)
     print("Done.")

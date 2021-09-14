@@ -6,7 +6,9 @@ import torch
 import logging
 import sys
 
-import learning.ppo.utils
+from learning.utils.other import synthesize
+
+# import learning.ppo.utils
 
 
 def create_folders_if_necessary(path):
@@ -38,19 +40,19 @@ def get_status_path(model_dir):
 def get_status(model_dir):
     # model_dir = 'storage\\one-agent'
     path = get_status_path(model_dir)
-    learning.ppo.utils.create_folders_if_necessary(path)
+    create_folders_if_necessary(path)
     return torch.load(path)
 
 
 def save_status(status, model_dir):
     path = get_status_path(model_dir)
-    learning.ppo.utils.create_folders_if_necessary(path)
+    create_folders_if_necessary(path)
     torch.save(status, path)
 
 
 def save_capture(model_dir, name, frames):
     path = os.path.join(model_dir, "captures\\"+name)
-    learning.ppo.utils.create_folders_if_necessary(path)
+    create_folders_if_necessary(path)
     print("Saving gif... ", end="")
     write_gif(frames, path, fps=1)
     print("Done.")
@@ -62,7 +64,7 @@ def get_model_state(model_dir):
 
 def get_txt_logger(model_dir):
     path = os.path.join(model_dir, "log.txt")
-    learning.ppo.utils.create_folders_if_necessary(path)
+    create_folders_if_necessary(path)
 
     logging.basicConfig(
         level=logging.INFO,
@@ -78,13 +80,13 @@ def get_txt_logger(model_dir):
 
 def get_csv_logger(model_dir, name):
     csv_path = os.path.join(model_dir, name+".csv")
-    learning.ppo.utils.create_folders_if_necessary(csv_path)
+    create_folders_if_necessary(csv_path)
     csv_file = open(csv_path, "a")
     return csv_file, csv.writer(csv_file)
 
 
 def log_stats(logs, key, header, data):
-    stats = learning.ppo.utils.synthesize(
+    stats = synthesize(
         logs[key])
     header += [calculation_key + "_" + key for calculation_key in stats.keys()]
     data += stats.values()

@@ -1,4 +1,4 @@
-import argparse
+
 import os
 import time
 import datetime
@@ -11,123 +11,34 @@ import torch
 # python -m tensorboard.main --logdir ./ --host localhost --port 8888
 import tensorboardX
 import sys
+from learning.ppo.algorithm import PPO
 
 import learning.ppo.utils
+from learning.ppo.utils.arguments import get_train_args
 import learning.utils
 from learning.ppo.model import ACModel
-from learning.ppo.utils.storage import prepare_csv_data, save_capture, update_csv_file
+from learning.utils.other import seed
+from learning.utils.storage import prepare_csv_data, save_capture, update_csv_file
 
 # to show large tensors without truncation uncomment the next line
 # torch.set_printoptions(threshold=10_000)
 
-# Parse arguments
-
-parser = argparse.ArgumentParser()
-
-# General parameters
-parser.add_argument("--algo", default="ppo",
-                    help="algorithm to use: a2c | ppo (REQUIRED)")
-parser.add_argument("--agents", default=1, type=int,
-                    help="amount of agents")
-parser.add_argument("--model", default=None,
-                    help="name of the model (default: {ENV}_{ALGO}_{TIME})")
-parser.add_argument("--seed", type=int, default=1,
-                    help="random seed (default: 1)")
-
-# Environment settings
-parser.add_argument("--env", default='Empty-Grid-v0',
-                    help="name of the environment to train on (default: empty grid size 5x5)")
-parser.add_argument("--grid-size", default=5, type=int,
-                    help="size of the playing area (default: 5)")
-parser.add_argument("--max-steps", default=None, type=int,
-                    help="max steps in environment to reach a goal")
-parser.add_argument("--setting", default="",
-                    help="If set to mixed-motive the reward is not shared which enables a competitive environment (one vs. all). Another setting is percentage-reward, where the reward is shared (coop) and is based on the percanted of the grid coloration. The last option is mixed-motive-competitive which extends the normal mixed-motive setting by removing the field reset option. When agents run over already colored fields the field immidiatly change the color the one of the agent instead of resetting the color. (default: empty string - coop reward of one if the whole grid is colored)")
-parser.add_argument("--market", default='',
-                    help="There are three options 'sm', 'am' and '' for none. SM = Shareholder Market where agents can auction actions similar to stocks. AM = Action Market where agents can buy specific actions from others. (Default = '')")
-parser.add_argument("--trading-fee", default=0.05, type=float,
-                    help="If a trade is executed, this value determens the price (market type am) / share (market type sm) the agents exchange (Default: 0.05)")
-
-
-parser.add_argument("--log-interval", type=int, default=1,
-                    help="number of updates between two logs (default: 1)")
-parser.add_argument("--capture-interval", type=int, default=10,
-                    help="number of gif caputures of episodes (default: 10, 0 means no capturing)")
-parser.add_argument("--capture-frames", type=int, default=50,
-                    help="number of frames in caputure (default: 50, 0 means no capturing)")
-parser.add_argument("--save-interval", type=int, default=10,
-                    help="number of updates between two saves (default: 10, 0 means no saving)")
-parser.add_argument("--capture", type=bool, default=True,
-                    help="Boolean to enable capturing of environment and save as gif (default: True)")
-parser.add_argument("--procs", type=int, default=16,
-                    help="number of processes (default: 16)")
-parser.add_argument("--frames", type=int, default=10**7,
-                    help="number of frames of training (default: 1e7)")
-
-# Parameters for main algorithm
-# epochs range(3,30), wie oft anhand der experience gelernt wird?
-parser.add_argument("--epochs", type=int, default=4,
-                    help="number of epochs for PPO (default: 4)")
-# batch range(4, 4096) -> 256 insgesamt erhält man frames-per-proc*procs (128*16=2048) batch elemente / Transitions
-# und davon erhält man 2048/256 = 8 mini batches
-parser.add_argument("--batch-size", type=int, default=256,
-                    help="batch size for PPO (default: 256)")
-# a Number that defines how often a (random) action is chosen for the batch/experience
-# i.e. frames-per-proc = 128 that means 128 times the (16) parallel envs are played through and logged (in func prepare_experiences).
-# If max_steps = 25 the environment can at least finish 5 times (done if max step is reached)
-# and save its rewards that means there are at least 5*16=80 rewards
-parser.add_argument("--frames-per-proc", type=int, default=None,
-                    help="number of frames per process before update (default: 5 for A2C and 128 for PPO)")
-# gamma = discount range(0.88,0.99) most common is 0.99
-parser.add_argument("--discount", type=float, default=0.99,
-                    help="discount factor (default: 0.99)")
-parser.add_argument("--lr", type=float, default=0.001,
-                    help="learning rate (default: 0.001)")
-# GAE = Generalized advantage estimator wird in verbindung mit dem advantage estimator berechnet
-# Â von GAE(delta, lambda) zum zeitpunkt t = Summe (lambda*gamma)^l * delta zum zeitpunkt (t+l) ^ V
-# range(0.9,1)
-parser.add_argument("--gae-lambda", type=float, default=0.95,
-                    help="lambda coefficient in GAE formula (default: 0.95, 1 means no gae)")
-# entropy coef -> c2 * S[pi von theta](state t)
-# with S as "entropy Bonus"
-# range(0, 0.01)
-parser.add_argument("--entropy-coef", type=float, default=0.01,
-                    help="entropy term coefficient (default: 0.01)")
-# value function coef -> c1 * Loss func von VF zum Zeitpunkt t
-# with LVF in t = (Vtheta(state t) - Vt ^ targ)^2 => squared error loss
-# range(0.5,1)
-# nötig wenn parameter zwischen policy und value funct. geteilt werden
-parser.add_argument("--value-loss-coef", type=float, default=0.5,
-                    help="value loss term coefficient (default: 0.5)")
-parser.add_argument("--max-grad-norm", type=float, default=0.5,
-                    help="maximum norm of gradient (default: 0.5)")
-parser.add_argument("--optim-eps", type=float, default=1e-8,
-                    help="Adam and RMSprop optimizer epsilon (default: 1e-8)")
-parser.add_argument("--optim-alpha", type=float, default=0.99,
-                    help="RMSprop optimizer alpha (default: 0.99)")
-# epsilon of clipping range(0.1,0.3)
-parser.add_argument("--clip-eps", type=float, default=0.2,
-                    help="clipping epsilon for PPO (default: 0.2)")
-# neural net training fine-tuning the weights of a neural net based on the error rate obtained in the previous epoch
-parser.add_argument("--recurrence", type=int, default=1,
-                    help="number of time-steps gradient is backpropagated (default: 1). If > 1, a LSTM is added to the model to have memory.")
-
-args = parser.parse_args()
+args = get_train_args()
 agents = args.agents
 
 # Set run dir
 
 date = datetime.datetime.now().strftime("%y-%m-%d-%H-%M-%S")
-default_model_name = f"{args.env}_{args.algo}_seed{args.seed}_{date}"
+default_model_name = f"{args.env}_ppo_seed{args.seed}_{date}"
 
 model_name = args.model or default_model_name
-model_dir = learning.ppo.utils.get_model_dir(model_name)
+model_dir = learning.utils.get_model_dir(model_name)
 
 # Load loggers and Tensorboard writer
 
-txt_logger = learning.ppo.utils.get_txt_logger(model_dir)
-csv_file, csv_logger = learning.ppo.utils.get_csv_logger(model_dir, "log")
-csv_rewards_file, csv_rewards_logger = learning.ppo.utils.get_csv_logger(
+txt_logger = learning.utils.get_txt_logger(model_dir)
+csv_file, csv_logger = learning.utils.get_csv_logger(model_dir, "log")
+csv_rewards_file, csv_rewards_logger = learning.utils.get_csv_logger(
     model_dir, "rewards")
 tb_writer = tensorboardX.SummaryWriter(model_dir)
 
@@ -138,7 +49,7 @@ txt_logger.info("{}\n".format(args))
 
 # Set seed for all randomness sources
 
-learning.ppo.utils.seed(args.seed)
+seed(args.seed)
 
 # Set device
 
@@ -149,9 +60,10 @@ txt_logger.info(f"Device: {device}\n")
 
 envs = []
 for i in range(args.procs):
-    envs.append(learning.ppo.utils.make_env(
+    envs.append(learning.utils.make_env(
         args.env, args.agents,
         grid_size=args.grid_size,
+        agent_view_size=args.agent_view_size,
         max_steps=args.max_steps,
         setting=args.setting,
         market=args.market,
@@ -162,7 +74,7 @@ txt_logger.info("Environments loaded\n")
 # Load training status
 
 try:
-    status = learning.ppo.utils.get_status(model_dir)
+    status = learning.utils.get_status(model_dir)
 except OSError:
     status = {"num_frames": 0, "update": 0}
 txt_logger.info("Training status loaded\n")
@@ -189,17 +101,17 @@ for agent in range(agents):
 txt_logger.info("Model loaded\n")
 
 
-# Load algo
+# Load ppo
 print("NAME:________________________  ", __name__)
 if __name__ == '__main__':
-    algo = learning.ppo.PPOAlgo(envs, agents, models, device, args.frames_per_proc,
-                                args.discount, args.lr, args.gae_lambda, args.entropy_coef, args.value_loss_coef,
-                                args.max_grad_norm, args.recurrence, args.optim_eps, args.clip_eps, args.epochs,
-                                args.batch_size, preprocess_obss)
+    ppo = PPO(envs, agents, models, device, args.frames_per_proc,
+              args.gamma, args.lr, args.gae_lambda, args.entropy_coef, args.value_loss_coef,
+              args.max_grad_norm, args.recurrence, args.optim_eps, args.clip_eps, args.epochs,
+              args.batch_size, preprocess_obss)
 
     if "optimizer_state" in status:  # TODO
         for agent in range(agents):
-            algo.optimizers[agent].load_state_dict(
+            ppo.optimizers[agent].load_state_dict(
                 status["optimizer_state"][agent])
 
     txt_logger.info("Optimizer loaded\n")
@@ -222,13 +134,12 @@ if __name__ == '__main__':
             "grad_norm": []
         }
 
-        update_start_time = time.time()
-        logs = algo.prepare_experiences(args.capture_frames)
+        logs = ppo.prepare_experiences(args.capture_frames)
         # logs = {}
         for agent in range(agents):
-            exps, logs1 = algo.collect_experience(agent)
+            exps, logs1 = ppo.collect_experience(agent)
             logs.update(logs1)
-            log_per_agent = algo.update_parameters(exps, agent, log_per_agent)
+            log_per_agent = ppo.update_parameters(exps, agent, log_per_agent)
         logs.update(log_per_agent)
         # update_end_time = time.time()
 
@@ -254,8 +165,8 @@ if __name__ == '__main__':
         if args.save_interval > 0 and update % args.save_interval == 0:
             status = {"num_frames": num_frames, "update": update,
                       "model_state": [models[agent].state_dict() for agent in range(agents)],
-                      "optimizer_state": [algo.optimizers[agent].state_dict() for agent in range(agents)]}
-            learning.ppo.utils.save_status(status, model_dir)
+                      "optimizer_state": [ppo.optimizers[agent].state_dict() for agent in range(agents)]}
+            learning.utils.save_status(status, model_dir)
             txt_logger.info("Status saved")
         if args.capture_interval > 0 and update % args.capture_interval == 0 or num_frames > args.frames:
             # ensure saving of last round

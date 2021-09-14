@@ -1,5 +1,4 @@
 import numpy
-import re
 import torch
 import gym
 from learning.ppo.utils.dictlist import DictList

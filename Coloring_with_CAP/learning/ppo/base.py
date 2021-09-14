@@ -10,7 +10,7 @@ import learning.utils
 class BaseAlgo(ABC):
     """The base class for RL algorithms."""
 
-    def __init__(self, envs, agents, models, device, num_frames_per_proc, discount, gae_lambda, preprocess_obss):
+    def __init__(self, envs, agents, models, device, num_frames_per_proc, gamma, gae_lambda, preprocess_obss):
 
         # Store parameters
 
@@ -19,7 +19,7 @@ class BaseAlgo(ABC):
         self.models = models
         self.device = device
         self.num_frames_per_proc = num_frames_per_proc
-        self.discount = discount
+        self.gamma = gamma
         self.gae_lambda = gae_lambda
         self.preprocess_obss = preprocess_obss or learning.utils.default_preprocess_obss
 
@@ -198,10 +198,10 @@ class BaseAlgo(ABC):
                 next_advantage = self.advantages[i +
                                                  1][agent] if i < self.num_frames_per_proc - 1 else 0
 
-                delta = self.rewards[i][:, agent] + self.discount * \
+                delta = self.rewards[i][:, agent] + self.gamma * \
                     next_value * next_mask - self.values[i][agent]
                 # advantage function is calculated here!
-                self.advantages[i][agent] = delta + self.discount * \
+                self.advantages[i][agent] = delta + self.gamma * \
                     self.gae_lambda * next_advantage * next_mask
 
         # logs for all agents
