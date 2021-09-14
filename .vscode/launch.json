@@ -24,17 +24,17 @@
                 "dqn-one-agent",
                 "--agents",
                 "1",
-                // "--grid-size",
-                // "9",
-                // "--max-steps",
-                // "300",
+                "--grid-size",
+                "9",
+                "--max-steps",
+                "300",
                 "--save-interval",
-                // "16384",
-                "1024",
+                "16384",
+                // "1024",
                 "--frames-per-proc",
-                "128",
+                "1024",
                 "--frames",
-                "80000"
+                "1000000"
             ]
         },
         {

@@ -32,8 +32,8 @@ def get_train_args():
                         help="starting value of epsilon, used for action selection (default: 0.9 -> high exploration)")
     parser.add_argument("--epsilon-end", type=float, default=0.01,
                         help="ending value of epsilon, used for action selection (default: 0.05 -> high exploitation)")
-    parser.add_argument("--epsilon-decay", type=int, default=500,
-                        help="Controls the rate of the epsilon decay in order to shift from exploration to exploitation (default: 500)")
+    parser.add_argument("--epsilon-decay", type=int, default=10000,
+                        help="Controls the rate of the epsilon decay in order to shift from exploration to exploitation. The higher the value the slower epsilon decays. (default: 1000)")
     parser.add_argument("--target-update", type=int, default=1000,
                         help="Steps (?) between updating the target network (default: 1000)")
 

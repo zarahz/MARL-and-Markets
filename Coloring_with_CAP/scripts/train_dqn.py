@@ -5,9 +5,7 @@ from itertools import count
 
 import tensorboardX
 import torch
-from torch import nn
 import torch.nn.functional as F
-import torch.optim as optim
 
 # from learning.dqn.config import *
 # Training
@@ -95,7 +93,7 @@ for agent in range(agents):
         policy_net.load_state_dict(status["policy_state"][agent])
     target_net.load_state_dict(policy_net.state_dict())
     target_net.eval()
-    optimizer = optim.RMSprop(policy_net.parameters())
+    optimizer = torch.optim.Adam(policy_net.parameters(), 0.001, eps=1e-8)
 
     policy_nets.append(policy_net)
     target_nets.append(target_net)
@@ -122,10 +120,10 @@ def select_action(state):
         with torch.no_grad():
             joint_actions = []
             for agent in range(agents):
-                obs = torch.tensor(state[agent]["image"], device=device, dtype=torch.float).transpose(
-                    2, 1).transpose(0, 1)
+                obs = torch.tensor(
+                    state[agent]["image"], device=device, dtype=torch.float)
                 result = policy_net(obs.unsqueeze(0))
-                joint_actions.append([result.max(1)[1].item()])  # .view(1, 1)
+                joint_actions.append([result.max(1)[1].item()])
             return torch.tensor(joint_actions)
     else:
         return torch.tensor([[random.randrange(action_space) for _ in range(agents)]], device=device, dtype=torch.long)
@@ -141,7 +139,7 @@ def optimize_model():
     simplicity.
     """
     if len(memory) < args.batch_size:
-        return
+        return 0, 0, 0
     transitions = memory.sample(args.batch_size)
     # Transpose the batch (see http://stackoverflow.com/a/19343/3343043 for detailed explanation).
     batch = Transition(*zip(*transitions))
@@ -151,44 +149,37 @@ def optimize_model():
                                             batch.next_state)), device=device, dtype=torch.uint8)
     non_final_next_states = torch.tensor([s[0]["image"] for s in batch.next_state
                                           if s is not None], device=device, dtype=torch.float)
-    non_final_next_states = non_final_next_states.transpose(
-        3, 2).transpose(1, 2)
     state_batch = torch.tensor([state[0]["image"]
                                 for state in batch.state if state is not None], device=device, dtype=torch.float)
-    # reshape into (batch_size, 3, 7 (agent_view), 7 (agent_view))
-    state_batch = state_batch.transpose(3, 2).transpose(1, 2)
-    # state_batch = torch.cat(state_batch)
+
     action_batch = torch.cat(batch.action)
     reward_batch = torch.cat(batch.reward)
 
-    # print("-------------------")
-    # print("state_action_values:")
     # Compute Q(s_t, a) - the networks computes Q(s_t), then we select the
     # columns of actions taken
     state_action_values = policy_net(state_batch).gather(1, action_batch)
-    # print(torch.mean(state_action_values))
 
-    # print("next_state_values:")
     # Compute V(s_{t+1}) for all next states.
     next_state_values = torch.zeros(args.batch_size, device=device)
     next_state_values[non_final_mask] = target_net(
         non_final_next_states).max(1)[0].detach()
-    # print(torch.mean(next_state_values))
 
-    # print("expected_state_action_values:")
     # Compute the expected Q values
     expected_state_action_values = (
-        next_state_values * args.gamma) + reward_batch
-    # print(torch.mean(expected_state_action_values))
+        next_state_values * args.gamma) + reward_batch[0:].T
 
-    # print("loss:")
+    # calculate mean squared error -> Q learning is lowering the estimated from actual value!
+    # squared, so that large errors have more relevance!
+    # downside -> large values would change target drastically on big error!
+    mse = (next_state_values - expected_state_action_values)**2
+    # alternative is absolute mean error -> calculates big and small errors
+    # downside -> large errors don't have much relevance!
+    mae = abs(next_state_values - expected_state_action_values)
+
     # Compute Huber loss
-    criterion = nn.SmoothL1Loss()
-    loss = criterion(state_action_values,
-                     expected_state_action_values.unsqueeze(1))
-    # print(loss)
-    # loss = F.smooth_l1_loss(state_action_values,
-    #                         expected_state_action_values.unsqueeze(1))
+    # huber loss combines errors with condition to value big errors while preventing drastic changes
+    loss = F.smooth_l1_loss(state_action_values,
+                            expected_state_action_values.transpose(0, 1))  # .unsqueeze(1)
 
     # Optimize the model
     optimizer.zero_grad()
@@ -196,6 +187,8 @@ def optimize_model():
     for param in policy_net.parameters():
         param.grad.data.clamp_(-1, 1)
     optimizer.step()
+
+    return loss.item(), torch.mean(mse), torch.mean(mae)
 
 
 # Main Training Loop
@@ -219,6 +212,12 @@ if __name__ == '__main__':
     # variable to save the reset fields for each episode
     log_episode_reset_fields = torch.zeros(
         args.frames_per_proc, dtype=torch.int)
+    log_episode_loss = torch.zeros(
+        args.frames_per_proc, dtype=torch.float)
+    log_episode_mean_mae = torch.zeros(
+        args.frames_per_proc, dtype=torch.float)
+    log_episode_mean_mse = torch.zeros(
+        args.frames_per_proc, dtype=torch.float)
 
     steps = status["num_frames"]
     while steps < args.frames:
@@ -255,7 +254,9 @@ if __name__ == '__main__':
                 state = next_state
 
                 # Perform one step of the optimization (on the target networks)
-                optimize_model()
+
+                log_episode_loss[i], log_episode_mean_mse[i], log_episode_mean_mae[i] = optimize_model(
+                )
                 if done:
                     log_return.append(env_reward)
                     log_coloration_percentage.append(
@@ -263,7 +264,7 @@ if __name__ == '__main__':
                     log_fully_colored += info["fully_colored"]
                     # break
 
-                 # Update the target networks
+                # Update the target networks
                 # TARGET_UPDATE = giving your network more time to consider many
                 # actions that have taken place recently instead of updating all the time
                 if episode % args.target_update == 0:
@@ -283,7 +284,10 @@ if __name__ == '__main__':
                         "trades": log_episode_trades[-keep:].tolist(),
                         "num_reset_fields": log_episode_trades[-keep:].tolist(),
                         "grid_coloration_percentage": log_coloration_percentage,
-                        "fully_colored": log_fully_colored
+                        "fully_colored": log_fully_colored,
+                        "huber_loss": log_episode_loss[-keep:].tolist(),
+                        "mse": log_episode_mean_mse[-keep:].tolist(),
+                        "mae": log_episode_mean_mae[-keep:].tolist()
                     }
                     logs.update(agent_logs)
                     header, data, reward_data = prepare_csv_data(
@@ -309,6 +313,13 @@ if __name__ == '__main__':
                     log_episode_reset_fields = torch.zeros(
                         args.frames_per_proc, dtype=torch.int)
 
+                    log_episode_loss = torch.zeros(
+                        args.frames_per_proc, dtype=torch.float)
+                    log_episode_mean_mae = torch.zeros(
+                        args.frames_per_proc, dtype=torch.float)
+                    log_episode_mean_mse = torch.zeros(
+                        args.frames_per_proc, dtype=torch.float)
+
                     if csv_update % 10 == 0:
                         status = {"num_frames": steps, "episode": episode, "update": update,
                                   "policy_state": [policy_nets[agent].state_dict() for agent in range(agents)],
@@ -321,5 +332,3 @@ if __name__ == '__main__':
                     break
 
     print('Complete')
-    # plt.ioff()
-    # plt.show()

@@ -107,6 +107,13 @@ def prepare_csv_data(agents, logs, update, num_frames, start_time=None, txt_logg
     # if "trades" in logs:
     header, data = log_stats(logs, 'trades', header, data)
 
+    if "huber_loss" in logs:
+        header, data = log_stats(logs, "huber_loss", header, data)
+    if "mse" in logs:
+        header, data = log_stats(logs, "mse", header, data)
+    if "mae" in logs:
+        header, data = log_stats(logs, "mae", header, data)
+
     all_rewards_per_episode = {}
     for key, value in logs.items():
         if("reward_agent_" in key):
