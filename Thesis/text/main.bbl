@@ -27,6 +27,16 @@ Richard~S Sutton and Andrew~G Barto.
 \newblock {\em Reinforcement learning: An introduction}.
 \newblock MIT press, 2018.
 
+\bibitem[SBM{\etalchar{+}}21]{scbe21}
+Kyrill Schmid, Lenz Belzner, Robert Müller, Johannes Tochtermann, and Claudia
+  Linnhoff-Popien.
+\newblock Stochastic market games.
+\newblock In Zhi-Hua Zhou, editor, {\em Proceedings of the Thirtieth
+  International Joint Conference on Artificial Intelligence, {IJCAI-21}}, pages
+  384--390. International Joint Conferences on Artificial Intelligence
+  Organization, 8 2021.
+\newblock Main Track.
+
 \bibitem[Sut84]{su84}
 Richard~S Sutton.
 \newblock {\em Temporal credit assignment in reinforcement learning}.
