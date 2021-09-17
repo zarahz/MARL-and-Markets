@@ -16,7 +16,7 @@ def base_args(parser):
     # Environment settings
     parser.add_argument("--env", default='Empty-Grid-v0',
                         help="name of the environment to train on (default: empty grid)")
-    parser.add_argument("--agent-view-size", default=5, type=int,
+    parser.add_argument("--agent-view-size", default=7, type=int,
                         help="grid size the agent can see, while standing in the middle (default: 5, so agent sees the 5x5 grid around him)")
     parser.add_argument("--grid-size", default=5, type=int,
                         help="size of the playing area (default: 5)")

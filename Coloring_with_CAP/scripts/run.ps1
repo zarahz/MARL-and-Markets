@@ -23,7 +23,7 @@ Set-Location -Path "C:\Users\Zarah\Documents\workspace\MA\"
 # ------------- 1 Agent ------------- #
 pipenv run python -m Coloring_with_CAP.scripts.train --agents 1 --model 1-ppo `
     --grid-size 9 `
-    --max-steps 350 `
+    --max-steps 300 `
     --capture-interval 20 `
     --save-interval 10 `
     --frames-per-proc 1024 `
@@ -31,30 +31,12 @@ pipenv run python -m Coloring_with_CAP.scripts.train --agents 1 --model 1-ppo `
 pipenv run python -m Coloring_with_CAP.scripts.train --agents 1 --model 1-ppo-rooms `
     --env FourRooms-Grid-v0 `
     --grid-size 9 `
-    --max-steps 450 `
+    --max-steps 400 `
     --capture-interval 20 `
     --save-interval 10 `
     --frames-per-proc 1024 `
     --frames 1500000
 
-
-pipenv run python -m Coloring_with_CAP.scripts.train --agents 1 --model 1-ppo-view-size-7 `
-    --agent-view-size 7 `
-    --grid-size 9 `
-    --max-steps 350 `
-    --capture-interval 20 `
-    --save-interval 10 `
-    --frames-per-proc 1024 `
-    --frames 1000000
-pipenv run python -m Coloring_with_CAP.scripts.train --agents 1 --model 1-ppo-rooms-view-size-7 `
-    --agent-view-size 7 `
-    --env FourRooms-Grid-v0 `
-    --grid-size 9 `
-    --max-steps 450 `
-    --capture-interval 20 `
-    --save-interval 10 `
-    --frames-per-proc 1024 `
-    --frames 1500000
 # ------------- 3 Agents ------------- #
 # pipenv run python -m Coloring_with_CAP.scripts.train --agents 3 --model 3-ppo `
 #     --grid-size 9 `
@@ -92,7 +74,7 @@ pipenv run python -m Coloring_with_CAP.scripts.train --agents 1 --model 1-ppo-ro
 #     --setting percentage-reward `
 #     --env FourRooms-Grid-v0 `
 #     --grid-size 9 `
-#     --max-steps 450 `
+#     --max-steps 400 `
 #     --capture-interval 20 `
 #     --save-interval 10 `
 #     --frames-per-proc 1024 `
@@ -159,7 +141,7 @@ pipenv run python -m Coloring_with_CAP.scripts.train --agents 1 --model 1-ppo-ro
 #     --market sm `
 #     --env FourRooms-Grid-v0 `
 #     --grid-size 9 `
-#     --max-steps 450 `
+#     --max-steps 400 `
 #     --capture-interval 20 `
 #     --save-interval 10 `
 #     --frames-per-proc 1024 `
@@ -169,7 +151,7 @@ pipenv run python -m Coloring_with_CAP.scripts.train --agents 1 --model 1-ppo-ro
 #     --market sm-goal `
 #     --env FourRooms-Grid-v0 `
 #     --grid-size 9 `
-#     --max-steps 450 `
+#     --max-steps 400 `
 #     --capture-interval 20 `
 #     --save-interval 10 `
 #     --frames-per-proc 1024 `
@@ -179,7 +161,7 @@ pipenv run python -m Coloring_with_CAP.scripts.train --agents 1 --model 1-ppo-ro
 #     --market sm-goal-no-reset `
 #     --env FourRooms-Grid-v0 `
 #     --grid-size 9 `
-#     --max-steps 450 `
+#     --max-steps 400 `
 #     --capture-interval 20 `
 #     --save-interval 10 `
 #     --frames-per-proc 1024 `
@@ -303,7 +285,7 @@ pipenv run python -m Coloring_with_CAP.scripts.train --agents 1 --model 1-ppo-ro
 #     --market am `
 #     --env FourRooms-Grid-v0 `
 #     --grid-size 9 `
-#     --max-steps 450 `
+#     --max-steps 400 `
 #     --capture-interval 20 `
 #     --save-interval 10 `
 #     --frames-per-proc 1024 `
@@ -313,7 +295,7 @@ pipenv run python -m Coloring_with_CAP.scripts.train --agents 1 --model 1-ppo-ro
 #     --market am-goal `
 #     --env FourRooms-Grid-v0 `
 #     --grid-size 9 `
-#     --max-steps 450 `
+#     --max-steps 400 `
 #     --capture-interval 20 `
 #     --save-interval 10 `
 #     --frames-per-proc 1024 `
@@ -323,7 +305,7 @@ pipenv run python -m Coloring_with_CAP.scripts.train --agents 1 --model 1-ppo-ro
 #     --market am-goal-no-reset `
 #     --env FourRooms-Grid-v0 `
 #     --grid-size 9 `
-#     --max-steps 450 `
+#     --max-steps 400 `
 #     --capture-interval 20 `
 #     --save-interval 10 `
 #     --frames-per-proc 1024 `
