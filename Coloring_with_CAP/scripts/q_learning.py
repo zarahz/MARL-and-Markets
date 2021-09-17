@@ -38,8 +38,8 @@ def redraw():
 def reset():
     print("resetted")
     env.reset()
-    if hasattr(env, 'mission'):
-        window.set_caption(env.mission)
+    # if hasattr(env, 'mission'):
+    #     window.set_caption(env.mission)
     redraw()
 
 

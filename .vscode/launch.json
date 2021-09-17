@@ -49,12 +49,13 @@
                 "--agents",
                 "1",
                 "--grid-size",
-                "5",
-                // "9",
-                // "--max-steps",
-                // "350",
+                // "5",
+                "9",
+                "--max-steps",
+                "350",
                 "--agent-view-size",
-                "5",
+                // "5",
+                "7",
                 // "--market",
                 // "sm",
                 // "sm-goal",
@@ -68,15 +69,16 @@
                 // "mixed-motive-competitive",
                 // "--recurrence",
                 // "4", //512 69% 1024 71%
-                // "--capture-interval",
-                // "20",
+                "--capture-interval",
+                "20",
                 "--save-interval",
                 "10",
                 "--frames-per-proc",
-                "128",
-                // "1024",
+                // "128",
+                "1024",
                 "--frames",
-                "80000"
+                // "80000"
+                "1000000"
             ]
         },
         {
@@ -87,19 +89,24 @@
             "console": "integratedTerminal",
             "args": [
                 "--model",
-                "one-agent-rooms",
+                "one-agent-rooms-restructuring",
                 "--env",
                 "FourRooms-Grid-v0",
                 "--grid-size",
                 "9",
-                // "--capture-interval",
-                // "30",
+                "--max-steps",
+                "450",
+                "--agent-view-size",
+                // "5",
+                "7",
+                "--capture-interval",
+                "20",
                 "--save-interval",
                 "10",
                 "--frames-per-proc",
                 "1024",
                 "--frames",
-                "500000"
+                "1500000"
             ]
         },
         // ------------- END OF - DO NOT CHANGE - -------------

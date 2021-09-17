@@ -19,6 +19,11 @@ from learning.utils.other import seed
 
 from learning.utils.storage import *
 
+# TODO fix bug, algorithm never stops!
+# TODO increase memory buffer (agent cannot learn if it is very forgetfull)
+# TODO implement multi agents
+
+
 args = get_train_args()
 agents = args.agents
 

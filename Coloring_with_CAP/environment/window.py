@@ -39,6 +39,7 @@ class Window:
             self.closed = True
 
         self.fig.canvas.mpl_connect('close_event', close_handler)
+        self.fig.subplots_adjust(bottom=0.2)
 
     def show_img(self, img):
         """
@@ -56,12 +57,16 @@ class Window:
         # This is needed for interactive mode to work properly
         plt.pause(1)  # (0.001)
 
-    def set_caption(self, text):
+    def set_caption(self, mission, grid_coloration_percentage=0, step_count_info=0, max_steps=0, rewards=[0]):
         """
         Set/update the caption text below the image
         """
+        info = "\ncoloration percentage: " + \
+            "{0:0.2f}".format(grid_coloration_percentage) + \
+            " steps: " + str(step_count_info) + " of " + str(max_steps) + "\n"
+        reward = "reward:" + str(["{0:0.2f}".format(i) for i in rewards])
 
-        plt.xlabel(text)
+        plt.xlabel(mission + info + reward)
 
     def reg_key_handler(self, key_handler):
         """

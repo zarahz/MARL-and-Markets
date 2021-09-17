@@ -43,10 +43,9 @@ class ACModel(nn.Module, RecurrentACModel):
 
         n = obs_space["image"][0]
         m = obs_space["image"][1]
-        size = ((n-1)//2-2)*((m-1)//2-2)*64
-        self.embedding_size = size
+        self.embedding_size = ((n-1)//2-2)*((m-1)//2-2)*64
         kernel_size = 2
-        if size == 0:
+        if self.embedding_size == 0:
             self.embedding_size = 64
             kernel_size = 1
 

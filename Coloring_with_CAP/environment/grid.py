@@ -539,8 +539,10 @@ class GridEnv(gym.Env):
         self.see_through_walls = see_through_walls
 
         self.agents = {}
+        self.reward = []
         for agent in range(agents):
             self.agents[agent] = {'pos': None, 'color': agent+2}
+            self.reward.append(0)
         # Initialize the RNG
         self.seed(seed=seed)
 
@@ -551,6 +553,7 @@ class GridEnv(gym.Env):
         for agent in self.agents:
             # Current position of the agent
             self.agents[agent] = {**self.agents[agent], 'pos': None}
+            self.reward[agent] = 0
 
         if not IDX_TO_COLOR:
             # ensure colors are generated
@@ -869,7 +872,7 @@ class GridEnv(gym.Env):
 
     def step(self, actions):
         self.step_count += 1
-        reward = [0]*len(self.agents)
+        self.reward = [0]*len(self.agents)
         done = False
         obs = {}
         reset_fields = 0
@@ -904,8 +907,8 @@ class GridEnv(gym.Env):
                     updated_new_pos_cell = self.grid.get(*new_pos)
                     # cell status change needs two conditions since new pos contains agent which could have the same color as prev!
                     cell_status_changed = cell_status.color != updated_new_pos_cell.color or cell_status.is_colored != updated_new_pos_cell.is_colored
-                    reward, reset_fields_by = self._reward(agent, cell_status_changed, reward,
-                                                           agent_reset_field, reset_fields_by)
+                    self.reward, reset_fields_by = self._reward(agent, cell_status_changed, self.reward,
+                                                                agent_reset_field, reset_fields_by)
 
             obs[agent] = self.gen_obs(agent)
 
@@ -917,7 +920,7 @@ class GridEnv(gym.Env):
             done = True
             # reward = [1]*len(self.agents)
 
-        return obs, reward, done, info
+        return obs, self.reward, done, info
 
     def whole_grid_colored(self):
         return all(self.grid.encode_grid_objects()[:, :, 1].ravel())
@@ -1079,7 +1082,9 @@ class GridEnv(gym.Env):
         )
 
         if mode == 'human':
-            self.window.set_caption(self.mission)
+            coloration_percentage = self.grid_colored_percentage()
+            self.window.set_caption(
+                self.mission, coloration_percentage, self.step_count, self.max_steps, self.reward)
             self.window.show_img(img)
 
         return img
