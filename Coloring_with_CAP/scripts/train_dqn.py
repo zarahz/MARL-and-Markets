@@ -2,6 +2,7 @@ import datetime
 import math
 import random
 from itertools import count
+import numpy as np
 
 import tensorboardX
 import torch
@@ -69,7 +70,7 @@ txt_logger.info("Environment loaded\n")
 try:
     status = get_status(model_dir)
 except OSError:
-    status = {"num_frames": 0, "episode": 0, "update": 0, "csv_update": 0}
+    status = {"num_frames": 0, "update": 0, "csv_update": 0}
 txt_logger.info("Training status loaded\n")
 
 # Load observations preprocessor
@@ -176,10 +177,10 @@ def optimize_model():
     # calculate mean squared error -> Q learning is lowering the estimated from actual value!
     # squared, so that large errors have more relevance!
     # downside -> large values would change target drastically on big error!
-    mse = (next_state_values - expected_state_action_values)**2
+    # mse = (next_state_values - expected_state_action_values)**2
     # alternative is absolute mean error -> calculates big and small errors
     # downside -> large errors don't have much relevance!
-    mae = abs(next_state_values - expected_state_action_values)
+    # mae = abs(next_state_values - expected_state_action_values)
 
     # Compute Huber loss
     # huber loss combines errors with condition to value big errors while preventing drastic changes
@@ -193,7 +194,7 @@ def optimize_model():
         param.grad.data.clamp_(-1, 1)
     optimizer.step()
 
-    return loss.item(), torch.mean(mse), torch.mean(mae)
+    return loss.item()
 
 
 # Main Training Loop
@@ -206,6 +207,7 @@ if __name__ == '__main__':
     # log values
     log_return = []
 
+    # count all episodes that finish with a fully colored grid
     log_fully_colored = 0
     log_coloration_percentage = []
     # variable to sum up all executed trades
@@ -219,121 +221,119 @@ if __name__ == '__main__':
         args.frames_per_proc, dtype=torch.int)
     log_episode_loss = torch.zeros(
         args.frames_per_proc, dtype=torch.float)
-    log_episode_mean_mae = torch.zeros(
-        args.frames_per_proc, dtype=torch.float)
-    log_episode_mean_mse = torch.zeros(
-        args.frames_per_proc, dtype=torch.float)
+    # save rgb frames for gif creation
+    capture_frames = []
 
     steps = status["num_frames"]
-    while steps < args.frames:
-        for episode in range(args.frames):
 
-            # Initialize the environment and state
+    # Initialize the environment and state
+    state = env.reset()
+    while steps <= args.frames:
+        i = steps % args.frames_per_proc
+        if(i == 0):
+            # save rgb frames for gif creation
+            capture_frames = []
+            # count all episodes that finish with a fully colored grid
+            log_fully_colored = 0
+        # Select and perform an action
+        joint_actions = select_action(state)
+        obs, env_reward, done, info = env.step(joint_actions)
+
+        # capture the last n enviroment steps of each process
+        if(i >= args.frames_per_proc-args.capture_frames):
+            capture_frames.append(np.moveaxis(
+                env.render("rgb_array"), 2, 0))
+
+        # Update log values
+        log_episode_reset_fields[i] = torch.tensor(
+            [info['reset_fields']], device=device)
+        if 'trades' in info:
+            log_episode_trades[i] = torch.tensor(
+                [info['trades']], device=device)
+
+        reward = torch.tensor([env_reward], device=device)
+
+        # Observe new state
+        next_state = None if done else obs
+
+        # Store the transition in memory
+        memory.push(state, joint_actions, next_state, reward)
+
+        # Move to the next state
+        state = next_state
+
+        # Perform one step of the optimization (on the target networks)
+
+        log_episode_loss[i] = optimize_model()
+        if done:
+            log_return.append(env_reward)
+            log_coloration_percentage.append(
+                info['coloration_percentage'])
+            log_fully_colored += info["fully_colored"]
             state = env.reset()
-            for t in count():
-                # env.render('human')
-                i = steps % args.frames_per_proc
-                # Select and perform an action
-                joint_actions = select_action(state)
 
-                # print("step: ", env.env.step_count, ", action: ", joint_actions)
+        # Update the target networks
+        # TARGET_UPDATE = giving your network more time to consider many
+        # actions that have taken place recently instead of updating all the time
+        # episode % args.target_update == 0:
+        if steps % args.target_update == 0:
+            target_net.load_state_dict(policy_net.state_dict())
+            update += 1
 
-                obs, env_reward, done, info = env.step(joint_actions)
+        if args.save_interval > 0 and update > 0 and update % args.save_interval == 0:
+            status = {"num_frames": steps, "update": update,
+                      "policy_state": [policy_nets[agent].state_dict() for agent in range(agents)],
+                      "target_state": [target_nets[agent].state_dict() for agent in range(agents)],
+                      "optimizer_state": [optimizer.state_dict()]}
+            save_status(status, model_dir)
+            txt_logger.info("Status saved")
 
-                # Update log values
-                log_episode_reset_fields[i] = torch.tensor(
-                    [info['reset_fields']], device=device)
-                if 'trades' in info:
-                    log_episode_trades[i] = torch.tensor(
-                        [info['trades']], device=device)
+        if args.log_interval > 0 and steps > 0 and steps % args.log_interval == 0:
+            csv_update += 1
+            keep = int(args.frames_per_proc /
+                       env.env.max_steps)*args.procs
+            # just to have similar statistis with ppo data!
+            for agent in range(agents):
+                agent_logs = {"reward_agent_"+str(agent): [episode_log_return[agent] for episode_log_return in log_return[-keep:]]
+                              }
+            logs = {
+                "num_frames": steps,
+                "trades": log_episode_trades[-keep:].tolist(),
+                "num_reset_fields": log_episode_trades[-keep:].tolist(),
+                "grid_coloration_percentage": log_coloration_percentage,
+                "fully_colored": log_fully_colored,
+                "huber_loss": log_episode_loss[-keep:].tolist()
+            }
+            logs.update(agent_logs)
+            header, data, reward_data = prepare_csv_data(
+                agents, logs, csv_update, steps, start_time=start_time, txt_logger=txt_logger)
 
-                reward = torch.tensor([env_reward], device=device)
+            update_csv_file(csv_file, csv_logger, csv_update,
+                            dict(zip(header, data)))
+            # reset everything
+            log_return = []
 
-                # Observe new state
-                next_state = None if done else obs
+            log_fully_colored = 0
+            log_coloration_percentage = []
+            # variable to sum up all executed trades
+            log_trades = torch.zeros(
+                args.frames_per_proc, dtype=torch.int)
+            # variable to save the trades for each episode
+            log_episode_trades = torch.zeros(
+                args.frames_per_proc, dtype=torch.int)
+            # variable to sum up all reset fields
+            log_num_reset_fields = torch.zeros(
+                args.frames_per_proc, dtype=torch.int)
+            # variable to save the reset fields for each episode
+            log_episode_reset_fields = torch.zeros(
+                args.frames_per_proc, dtype=torch.int)
 
-                # Store the transition in memory
-                memory.push(state, joint_actions, next_state, reward)
+            log_episode_loss = torch.zeros(
+                args.frames_per_proc, dtype=torch.float)
 
-                # Move to the next state
-                state = next_state
-
-                # Perform one step of the optimization (on the target networks)
-
-                log_episode_loss[i], log_episode_mean_mse[i], log_episode_mean_mae[i] = optimize_model(
-                )
-                if done:
-                    log_return.append(env_reward)
-                    log_coloration_percentage.append(
-                        info['coloration_percentage'])
-                    log_fully_colored += info["fully_colored"]
-                    # break
-
-                # Update the target networks
-                # TARGET_UPDATE = giving your network more time to consider many
-                # actions that have taken place recently instead of updating all the time
-                if episode % args.target_update == 0:
-                    target_net.load_state_dict(policy_net.state_dict())
-                    update += 1
-
-                if steps % args.save_interval == 0:
-                    csv_update += 1
-                    keep = int(args.frames_per_proc /
-                               env.env.max_steps)*args.procs
-                    # just to have similar statistis with ppo data!
-                    for agent in range(agents):
-                        agent_logs = {"reward_agent_"+str(agent): [episode_log_return[agent] for episode_log_return in log_return[-keep:]]
-                                      }
-                    logs = {
-                        "num_frames": steps,
-                        "trades": log_episode_trades[-keep:].tolist(),
-                        "num_reset_fields": log_episode_trades[-keep:].tolist(),
-                        "grid_coloration_percentage": log_coloration_percentage,
-                        "fully_colored": log_fully_colored,
-                        "huber_loss": log_episode_loss[-keep:].tolist(),
-                        "mse": log_episode_mean_mse[-keep:].tolist(),
-                        "mae": log_episode_mean_mae[-keep:].tolist()
-                    }
-                    logs.update(agent_logs)
-                    header, data, reward_data = prepare_csv_data(
-                        agents, logs, csv_update, steps, start_time=start_time, txt_logger=txt_logger)
-
-                    update_csv_file(csv_file, csv_logger, csv_update,
-                                    dict(zip(header, data)))
-                    # reset everything
-                    log_return = []
-
-                    log_fully_colored = 0
-                    log_coloration_percentage = []
-                    # variable to sum up all executed trades
-                    log_trades = torch.zeros(
-                        args.frames_per_proc, dtype=torch.int)
-                    # variable to save the trades for each episode
-                    log_episode_trades = torch.zeros(
-                        args.frames_per_proc, dtype=torch.int)
-                    # variable to sum up all reset fields
-                    log_num_reset_fields = torch.zeros(
-                        args.frames_per_proc, dtype=torch.int)
-                    # variable to save the reset fields for each episode
-                    log_episode_reset_fields = torch.zeros(
-                        args.frames_per_proc, dtype=torch.int)
-
-                    log_episode_loss = torch.zeros(
-                        args.frames_per_proc, dtype=torch.float)
-                    log_episode_mean_mae = torch.zeros(
-                        args.frames_per_proc, dtype=torch.float)
-                    log_episode_mean_mse = torch.zeros(
-                        args.frames_per_proc, dtype=torch.float)
-
-                    if csv_update % 10 == 0:
-                        status = {"num_frames": steps, "episode": episode, "update": update,
-                                  "policy_state": [policy_nets[agent].state_dict() for agent in range(agents)],
-                                  "target_state": [target_nets[agent].state_dict() for agent in range(agents)],
-                                  "optimizer_state": [optimizer.state_dict()]}
-                        save_status(status, model_dir)
-                        txt_logger.info("Status saved")
-
-                if done:
-                    break
+            if args.capture_interval > 0 and csv_update > 0 and csv_update % args.capture_interval == 0:
+                # TODO ensure saving of last update!
+                gif_name = str(csv_update) + "_" + str(steps) + ".gif"
+                save_capture(model_dir, gif_name, np.array(capture_frames))
 
     print('Complete')

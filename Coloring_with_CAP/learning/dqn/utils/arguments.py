@@ -17,8 +17,14 @@ def get_train_args():
                         help="number of frames per process before update (default: 5 for A2C and 128 for PPO)")
     parser.add_argument("--procs", type=int, default=16,
                         help="[ONLY needed for logging similar data with ppo] number of processes (default: 16)")
-    parser.add_argument("--save-interval", type=int, default=16384,
-                        help="number of frames between two saves (default: 16384, 0 means no saving)")
+    parser.add_argument("--log-interval", type=int, default=16384,
+                        help="number of frames between two logs (default: 16384)")
+    parser.add_argument("--save-interval", type=int, default=10,
+                        help="number of updates between two saves (default: 10, 0 means no saving)")
+    parser.add_argument("--capture-interval", type=int, default=10,
+                        help="number of gif caputures of episodes (default: 10, 0 means no capturing)")
+    parser.add_argument("--capture-frames", type=int, default=50,
+                        help="number of frames in caputure (default: 50, 0 means no capturing)")
 
     # gamma = discount range(0.88,0.99) most common is 0.99
     parser.add_argument("--gamma", type=float, default=0.99,

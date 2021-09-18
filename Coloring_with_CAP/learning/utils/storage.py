@@ -88,8 +88,10 @@ def get_csv_logger(model_dir, name):
 def log_stats(logs, key, header, data):
     stats = synthesize(
         logs[key])
-    header += [calculation_key + "_" + key for calculation_key in stats.keys()]
-    data += stats.values()
+    if stats:
+        header += [calculation_key + "_" +
+                   key for calculation_key in stats.keys()]
+        data += stats.values()
     return header, data
 
 
@@ -109,10 +111,6 @@ def prepare_csv_data(agents, logs, update, num_frames, start_time=None, txt_logg
 
     if "huber_loss" in logs:
         header, data = log_stats(logs, "huber_loss", header, data)
-    if "mse" in logs:
-        header, data = log_stats(logs, "mse", header, data)
-    if "mae" in logs:
-        header, data = log_stats(logs, "mae", header, data)
 
     all_rewards_per_episode = {}
     for key, value in logs.items():

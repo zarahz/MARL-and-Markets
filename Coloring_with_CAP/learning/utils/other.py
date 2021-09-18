@@ -13,6 +13,8 @@ def seed(seed):
 
 
 def synthesize(array):
+    if not array:
+        return []
     d = collections.OrderedDict()
     d["mean"] = numpy.mean(array)
     d["std"] = numpy.std(array)
