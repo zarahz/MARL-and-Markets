@@ -14,10 +14,10 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "DQN train one",
+            "name": "OLD DQN train one",
             "type": "python",
             "request": "launch",
-            "module": "Coloring_with_CAP.scripts.train_dqn",
+            "module": "Coloring_with_CAP.scripts.old_train_dqn",
             "console": "integratedTerminal",
             "args": [
                 "--model",
@@ -43,6 +43,59 @@
                 "--target-update",
                 // "1000000"
                 "32"
+            ]
+        },
+        {
+            "name": "DQN train one",
+            "type": "python",
+            "request": "launch",
+            "module": "Coloring_with_CAP.scripts.train_dqn",
+            "console": "integratedTerminal",
+            "args": [
+                "--model",
+                "dqn-one-agent",
+                "--agents",
+                "1",
+                "--grid-size",
+                "9",
+                "--max-steps",
+                "300",
+                "--capture-interval",
+                "20",
+                "--save-interval",
+                "10",
+                "--frames-per-proc",
+                "1024",
+                "--frames",
+                "1000000"
+            ]
+        },
+        {
+            "name": "small DQN train one",
+            "type": "python",
+            "request": "launch",
+            "module": "Coloring_with_CAP.scripts.train_dqn",
+            "console": "integratedTerminal",
+            "args": [
+                "--model",
+                "small-dqn-one-agent",
+                "--agents",
+                "1",
+                "--grid-size",
+                "5",
+                // "--max-steps",
+                // "300",
+                "--capture-interval",
+                "20",
+                "--save-interval",
+                "10",
+                "--frames-per-proc",
+                // "1024",
+                "128",
+                "--target-update",
+                "80",
+                "--frames",
+                "80000"
             ]
         },
         {

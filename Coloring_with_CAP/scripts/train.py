@@ -154,8 +154,8 @@ if __name__ == '__main__':
 
             update_csv_file(csv_file, csv_logger, update,
                             dict(zip(header, data)))
-            update_csv_file(csv_rewards_file,
-                            csv_rewards_logger, update, reward_data)
+            # update_csv_file(csv_rewards_file,
+            #                 csv_rewards_logger, update, reward_data)
 
             for field, value in zip(header, data):
                 tb_writer.add_scalar(field, value, num_frames)
@@ -168,6 +168,7 @@ if __name__ == '__main__':
                       "optimizer_state": [ppo.optimizers[agent].state_dict() for agent in range(agents)]}
             learning.utils.save_status(status, model_dir)
             txt_logger.info("Status saved")
+
         if args.capture_interval > 0 and update % args.capture_interval == 0 or num_frames > args.frames:
             # ensure saving of last round
             gif_name = str(update) + "_" + str(num_frames) + ".gif"

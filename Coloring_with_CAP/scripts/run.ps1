@@ -5,12 +5,12 @@ Set-Location -Path "C:\Users\Zarah\Documents\workspace\MA\"
 
 # ------------------------------------------------------------ DQN --------------------------------------------------------------- #
 # ------------- 1 Agent ------------- #
-# pipenv run python -m Coloring_with_CAP.scripts.train_dqn --agents 1 --model 1-dqn `
-#     --grid-size 9 `
-#     --max-steps 300 `
-#     --save-interval 16384 `
-#     --frames-per-proc 1024 `
-#     --frames 1000000
+pipenv run python -m Coloring_with_CAP.scripts.train_dqn --agents 1 --model 1-dqn `
+    --grid-size 9 `
+    --max-steps 300 `
+    --save-interval 16384 `
+    --frames-per-proc 1024 `
+    --frames 1000000
 # pipenv run python -m Coloring_with_CAP.scripts.train --agents 1 --model 1-dqn-rooms `
 #     --env FourRooms-Grid-v0 `
 #     --grid-size 9 `
@@ -21,21 +21,21 @@ Set-Location -Path "C:\Users\Zarah\Documents\workspace\MA\"
 
 # ------------------------------------------------------------ PPO --------------------------------------------------------------- #
 # ------------- 1 Agent ------------- #
-pipenv run python -m Coloring_with_CAP.scripts.train --agents 1 --model 1-ppo `
-    --grid-size 9 `
-    --max-steps 300 `
-    --capture-interval 20 `
-    --save-interval 10 `
-    --frames-per-proc 1024 `
-    --frames 1000000
-pipenv run python -m Coloring_with_CAP.scripts.train --agents 1 --model 1-ppo-rooms `
-    --env FourRooms-Grid-v0 `
-    --grid-size 9 `
-    --max-steps 400 `
-    --capture-interval 20 `
-    --save-interval 10 `
-    --frames-per-proc 1024 `
-    --frames 1500000
+# pipenv run python -m Coloring_with_CAP.scripts.train --agents 1 --model 1-ppo `
+#     --grid-size 9 `
+#     --max-steps 300 `
+#     --capture-interval 20 `
+#     --save-interval 10 `
+#     --frames-per-proc 1024 `
+#     --frames 1000000
+# pipenv run python -m Coloring_with_CAP.scripts.train --agents 1 --model 1-ppo-rooms `
+#     --env FourRooms-Grid-v0 `
+#     --grid-size 9 `
+#     --max-steps 400 `
+#     --capture-interval 20 `
+#     --save-interval 10 `
+#     --frames-per-proc 1024 `
+#     --frames 1500000
 
 # ------------- 3 Agents ------------- #
 # pipenv run python -m Coloring_with_CAP.scripts.train --agents 3 --model 3-ppo `

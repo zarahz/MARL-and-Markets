@@ -3,9 +3,9 @@ import torch.nn.functional as F
 import numpy as np
 
 
-class DQN(nn.Module):
+class DQNModel(nn.Module):
     def __init__(self, obs_space, action_space):
-        super(DQN, self).__init__()
+        super(DQNModel, self).__init__()
         n = obs_space["image"][0]
         m = obs_space["image"][1]
         size = ((n-1)//2-2)*((m-1)//2-2)*64

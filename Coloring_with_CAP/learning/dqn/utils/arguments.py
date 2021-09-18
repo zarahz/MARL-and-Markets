@@ -17,8 +17,8 @@ def get_train_args():
                         help="number of frames per process before update (default: 5 for A2C and 128 for PPO)")
     parser.add_argument("--procs", type=int, default=16,
                         help="[ONLY needed for logging similar data with ppo] number of processes (default: 16)")
-    parser.add_argument("--log-interval", type=int, default=16384,
-                        help="number of frames between two logs (default: 16384)")
+    parser.add_argument("--log-interval", type=int, default=1,
+                        help="number of frames between two logs (default: 1)")
     parser.add_argument("--save-interval", type=int, default=10,
                         help="number of updates between two saves (default: 10, 0 means no saving)")
     parser.add_argument("--capture-interval", type=int, default=10,
@@ -41,7 +41,12 @@ def get_train_args():
     parser.add_argument("--epsilon-decay", type=int, default=10000,
                         help="Controls the rate of the epsilon decay in order to shift from exploration to exploitation. The higher the value the slower epsilon decays. (default: 1000)")
     parser.add_argument("--target-update", type=int, default=1000,
-                        help="Steps (?) between updating the target network (default: 1000)")
+                        help="Frames between updating the target network, Needs to be smaller or equal to frames-per-proc! (default: 1000)")
+
+    parser.add_argument("--lr", type=float, default=0.001,
+                        help="learning rate (default: 0.001)")
+    parser.add_argument("--optim-eps", type=float, default=1e-8,
+                        help="Adam and RMSprop optimizer epsilon (default: 1e-8)")
 
     args = parser.parse_args()
 
