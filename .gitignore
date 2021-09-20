@@ -16,3 +16,15 @@ eggs/
 .eggs/
 *.egg-info/
 *.egg
+
+# generated latex files that can be ignored 
+Thesis/text/indent.log
+Thesis/text/main.aux
+Thesis/text/main.bbl
+Thesis/text/main.blg
+Thesis/text/main.fdb_latexmk
+Thesis/text/main.fls
+Thesis/text/main.lof
+Thesis/text/main.log
+Thesis/text/main.synctex.gz
+Thesis/text/main.toc
