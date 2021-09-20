@@ -104,23 +104,16 @@ def prepare_csv_data(agents, logs, update, num_frames, start_time=None, txt_logg
               "duration_in_seconds", "fully_colored"]  # "FPS"
     data = [update, num_frames, duration, logs["fully_colored"]]  # fps
 
+    header, data = log_stats(logs, 'num_frames_per_episode', header, data)
     header, data = log_stats(logs, 'num_reset_fields', header, data)
     header, data = log_stats(logs, 'grid_coloration_percentage', header, data)
-    # if "trades" in logs:
     header, data = log_stats(logs, 'trades', header, data)
 
     if "huber_loss" in logs:
         header, data = log_stats(logs, "huber_loss", header, data)
 
-    all_rewards_per_episode = {}
-    for key, value in logs.items():
-        if("reward_agent_" in key):
-            all_rewards_per_episode[key] = value
-
     # agent specific data
     for agent in range(agents):
-        header, data = log_stats(all_rewards_per_episode,
-                                 "reward_agent_" + str(agent), header, data)
         if "entropy" in logs:
             header += ["entropy_agent_" + str(agent)]
             data += [logs["entropy"][agent]]
@@ -133,6 +126,16 @@ def prepare_csv_data(agents, logs, update, num_frames, start_time=None, txt_logg
         if "grad_norm" in logs:
             header += ["grad_norm_agent_" + str(agent)]
             data += [logs["grad_norm"][agent]]
+
+    # log rewards at the end for overview and easy comparison!
+    all_rewards_per_episode = {}
+    for key, value in logs.items():
+        if("reward_agent_" in key):
+            all_rewards_per_episode[key] = value
+
+    for agent in range(agents):
+        header, data = log_stats(all_rewards_per_episode,
+                                 "reward_agent_" + str(agent), header, data)
 
     if txt_logger:
         print_logs(txt_logger, header, data)

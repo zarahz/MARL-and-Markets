@@ -700,7 +700,7 @@ class GridEnv(gym.Env):
 
         if agent_reset_field:
             # agent reset a field here so return a penalty!
-            reward[agent] -= 0.1
+            reward[agent] -= 0.2  # 0.15
             # if agent reset the field save it to info in order to (possibly) restrict market transactions
             if agent not in reset_fields_by:
                 reset_fields_by.append(agent)

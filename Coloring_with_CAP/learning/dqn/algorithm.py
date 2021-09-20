@@ -13,13 +13,13 @@ class DQN():
     """The Proximal Policy Optimization algorithm
     ([Schulman et al., 2015](https://arxiv.org/abs/1707.06347))."""
 
-    def __init__(self, envs, agents, memory, policy_nets, target_nets, device=None, num_frames_per_proc=None, gamma=0.99,  lr=0.001, batch_size=256, epsilon_start=1.0, epsilon_end=0.01, epsilon_decay=10000, target_update=1000, adam_eps=1e-8, action_space=1, preprocess_obss=None):
+    def __init__(self, envs, agents, memory, policy_nets, target_nets, device=None, num_frames_per_proc=None, gamma=0.99, lr=0.001, batch_size=256, initial_target_update=10000, epsilon_start=1.0, epsilon_end=0.01, epsilon_decay=10000, target_update=1000, adam_eps=1e-8, action_space=1, preprocess_obss=None):
         """
         Parameters:
         ----------
         envs : list
             a list of environments that will be run in parallel
-        models : list 
+        models : list
             model list of length agents, containing torch.Modules
         num_frames_per_proc : int
             the number of frames collected by every process for an update
@@ -34,7 +34,6 @@ class DQN():
             and converts them into the format that the model can handle
         """
         self.num_frames_per_proc = num_frames_per_proc or 128
-        assert target_update <= self.num_frames_per_proc, "target update needs to be smaller or equal to frames-per-proc!"
 
         self.action_space = action_space
         self.memory = memory
@@ -44,6 +43,7 @@ class DQN():
         self.device = device
 
         self.batch_size = batch_size
+        self.initial_target_update = initial_target_update
         self.agents = agents
 
         self.epsilon_start = epsilon_start
@@ -88,6 +88,9 @@ class DQN():
         self.log_episode_reset_fields = torch.zeros(
             shape, dtype=torch.int)
 
+        # var to log all loss values
+        self.log_huber_loss = torch.zeros(
+            (self.num_frames_per_proc, agents), device=self.device, dtype=torch.float)
         # variable to sum up all executed trades
         self.log_trades = torch.zeros(shape[0], dtype=torch.int)
         # variable to save the trades for each episode
@@ -104,18 +107,19 @@ class DQN():
         self.log_return = []  # [[0]*agents] * self.num_procs
         self.log_num_frames = []  # [0] * self.num_procs
         self.log_coloration_percentage = []
+        # count all episodes that finish with a fully colored grid
+        self.log_fully_colored = 0
 
     def train(self, frames_to_capture):
         # save rgb frames for gif creation
         capture_frames = []
 
-        # count all episodes that finish with a fully colored grid
-        log_fully_colored = 0
-
         # frames-per-proc = 128 that means 128 times the (16) parallel envs are played through and logged.
         # If worst case and all environments are played until max_steps (25) are reached it can at least finish
         # 5 times and log its rewards (that means there are at least 5*16=80 rewards in log_return)
         for i in range(self.num_frames_per_proc):
+            # update steps to decay epsilon
+            self.steps_done += 1
             # agent variables
             joint_actions = []
 
@@ -171,9 +175,20 @@ class DQN():
             self.memory.push(
                 self.obss[i], joint_actions, next_state, reward)
 
-            huber_loss = []
-            for agent in range(self.agents):
-                huber_loss.append(self.optimize_model(agent))
+            agents_huber_loss = []
+            if self.steps_done > self.initial_target_update:
+                for agent in range(self.agents):
+                    agents_huber_loss.append(self.optimize_model(agent))
+
+                    if self.steps_done % self.target_update == 0:
+                        # Update the target networks
+                        # TARGET_UPDATE = giving your network more time to consider many
+                        # actions that have taken place recently instead of updating all the time
+                        # episode % args.target_update == 0:
+                        self.target_nets[agent].load_state_dict(
+                            self.policy_nets[agent].state_dict())
+            if agents_huber_loss:
+                self.log_huber_loss[i] = torch.tensor(agents_huber_loss)
 
             for done_index, done_ in enumerate(done):
                 if done_:
@@ -182,10 +197,9 @@ class DQN():
                         self.log_episode_return[done_index].tolist())
                     self.log_num_frames.append(
                         self.log_episode_num_frames[done_index].item())
-                    self.log_coloration_percentage.extend(
-                        [env_info['coloration_percentage'] for env_info in info])
-                    log_fully_colored += sum([env_info['fully_colored']
-                                             for env_info in info])
+                    self.log_coloration_percentage.append(
+                        info[done_index]['coloration_percentage'])
+                    self.log_fully_colored += info[done_index]['fully_colored']
 
             # transpose rewards to [agent, processes] to multiplicate a mask of [processes] with it
             log_episode_return_transposed = self.log_episode_return.transpose(
@@ -194,15 +208,6 @@ class DQN():
             self.log_episode_return *= log_episode_return_transposed.transpose(
                 0, 1)
             self.log_episode_num_frames *= self.mask
-
-            # Update the target networks
-            # TARGET_UPDATE = giving your network more time to consider many
-            # actions that have taken place recently instead of updating all the time
-            # episode % args.target_update == 0:
-            if i > 0 and i % self.target_update == 0:
-                for agent in range(self.agents):
-                    self.target_nets[agent].load_state_dict(
-                        self.policy_nets[agent].state_dict())
 
         # logs for all agents
         self.log_num_reset_fields = torch.sum(
@@ -213,12 +218,25 @@ class DQN():
 
         logs = {
             "num_frames": self.num_frames,
+            "num_frames_per_episode": self.log_num_frames,
             "capture_frames": capture_frames,
-            "reward_agent_"+str(agent): [episode_log_return[agent] for episode_log_return in self.log_return[-keep:]],
+            "reward_agent_"+str(agent): [episode_log_return[agent] for episode_log_return in self.log_return],
             "trades": self.log_trades[-keep:].tolist(),
+            "huber_loss": self.log_huber_loss[-keep:].tolist(),
             "num_reset_fields": self.log_num_reset_fields[-keep:].tolist(),
             "grid_coloration_percentage": self.log_coloration_percentage,
-            "fully_colored": log_fully_colored}
+            "fully_colored": self.log_fully_colored
+        }
+
+        # reset values?
+        self.log_return = self.log_return[-self.num_procs:]
+        self.log_num_frames = self.log_num_frames[-self.num_procs:]
+        # reset all values
+        # count all episodes that finish with a fully colored grid
+        self.log_fully_colored = 0
+        self.log_coloration_percentage = []
+        self.log_return = []  # [[0]*agents] * self.num_procs
+
         return logs
 
     def select_action(self, agent, state):
@@ -228,7 +246,6 @@ class DQN():
         The probability of choosing a random action will start at EPS_START
         and will decay exponentially towards EPS_END. EPS_DECAY controls the rate of the decay.
         """
-        self.steps_done += 1
         sample = random.random()
         eps_threshold = self.epsilon_end + (self.epsilon_start - self.epsilon_end) * \
             math.exp(-1. * self.steps_done / self.epsilon_decay)
@@ -318,20 +335,12 @@ class DQN():
 
         # Compute the expected Q values
         expected_state_action_values = (
-            next_state_values * self.gamma) + reward_batch[0:].T
-
-        # calculate mean squared error -> Q learning is lowering the estimated from actual value!
-        # squared, so that large errors have more relevance!
-        # downside -> large values would change target drastically on big error!
-        # mse = (next_state_values - expected_state_action_values)**2
-        # alternative is absolute mean error -> calculates big and small errors
-        # downside -> large errors don't have much relevance!
-        # mae = abs(next_state_values - expected_state_action_values)
+            next_state_values * self.gamma) + reward_batch[:, agent]
 
         # Compute Huber loss
         # huber loss combines errors with condition to value big errors while preventing drastic changes
         loss = F.smooth_l1_loss(state_action_values,
-                                expected_state_action_values.transpose(0, 1))  # .unsqueeze(1)
+                                expected_state_action_values.unsqueeze(1))  # .unsqueeze(1)
 
         # Optimize the model
         self.optimizers[agent].zero_grad()

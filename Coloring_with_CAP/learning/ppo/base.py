@@ -73,6 +73,7 @@ class BaseAlgo(ABC):
         self.log_done_counter = 0
         self.log_return = []  # [[0]*agents] * self.num_procs
         self.log_num_frames = []  # [0] * self.num_procs
+        self.log_fully_colored = 0
         self.log_coloration_percentage = []
 
     def prepare_experiences(self, frames_to_capture):
@@ -95,9 +96,6 @@ class BaseAlgo(ABC):
         """
         # save rgb frames for gif creation
         capture_frames = []
-
-        # count all episodes that finish with a fully colored grid
-        log_fully_colored = 0
 
         # frames-per-proc = 128 that means 128 times the (16) parallel envs are played through and logged.
         # If worst case and all environments are played until max_steps (25) are reached it can at least finish
@@ -168,10 +166,9 @@ class BaseAlgo(ABC):
                         self.log_episode_return[done_index].tolist())
                     self.log_num_frames.append(
                         self.log_episode_num_frames[done_index].item())
-                    self.log_coloration_percentage.extend(
-                        [env_info['coloration_percentage'] for env_info in info])
-                    log_fully_colored += sum([env_info['fully_colored']
-                                             for env_info in info])
+                    self.log_coloration_percentage.append(
+                        info[done_index]['coloration_percentage'])
+                    self.log_fully_colored += info[done_index]['fully_colored']
             # transpose rewards to [agent, processes] to multiplicate a mask of [processes] with it
             log_episode_return_transposed = self.log_episode_return.transpose(
                 0, 1) * self.mask
@@ -216,7 +213,7 @@ class BaseAlgo(ABC):
             "trades": self.log_trades[-keep:].tolist(),
             "num_reset_fields": self.log_num_reset_fields[-keep:].tolist(),
             "grid_coloration_percentage": self.log_coloration_percentage,
-            "fully_colored": log_fully_colored}
+            "fully_colored": self.log_fully_colored}
         return logs
 
     def collect_experience(self, agent):
@@ -252,20 +249,21 @@ class BaseAlgo(ABC):
         exps.obs = self.preprocess_obss(exps.obs, device=self.device)
 
         # Log some values
-
-        keep = max(self.log_done_counter, self.num_procs)
-
         logs = {
-            "reward_agent_"+str(agent): [episode_log_return[agent] for episode_log_return in self.log_return[-keep:]],
+            "reward_agent_"+str(agent): [episode_log_return[agent] for episode_log_return in self.log_return],
             "num_frames_per_episode": self.log_num_frames,
             "num_frames": self.num_frames
         }
 
         if self.agents == agent+1:
             # reset values?
-            self.log_done_counter = 0
             self.log_return = self.log_return[-self.num_procs:]
             self.log_num_frames = self.log_num_frames[-self.num_procs:]
+            # reset all values
+            # count all episodes that finish with a fully colored grid
+            self.log_fully_colored = 0
+            self.log_coloration_percentage = []
+            self.log_return = []  # [[0]*agents] * self.num_procs
 
         return exps, logs
 

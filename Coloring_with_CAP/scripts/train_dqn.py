@@ -21,7 +21,6 @@ from learning.utils.other import seed
 
 from learning.utils.storage import *
 
-# TODO fix bug, algorithm never stops!
 # TODO increase memory buffer (agent cannot learn if it is very forgetfull)
 # TODO implement multi agents
 
@@ -108,8 +107,7 @@ for agent in range(agents):
 
 txt_logger.info("Models loaded\n")
 
-memory = ReplayMemory(args.target_update, agents,
-                      args.agent_view_size, args.procs, device)
+memory = ReplayMemory(args.target_update)
 
 
 # Load dqn
@@ -126,6 +124,7 @@ if __name__ == '__main__':
               epsilon_decay=args.epsilon_decay,
               adam_eps=args.optim_eps,
               target_update=args.target_update,
+              initial_target_update=args.initial_target_update,
               preprocess_obss=preprocess_obss,
               action_space=action_space)
 
