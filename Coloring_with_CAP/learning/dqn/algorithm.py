@@ -118,8 +118,6 @@ class DQN():
         # If worst case and all environments are played until max_steps (25) are reached it can at least finish
         # 5 times and log its rewards (that means there are at least 5*16=80 rewards in log_return)
         for i in range(self.num_frames_per_proc):
-            # update steps to decay epsilon
-            self.steps_done += 1
             # agent variables
             joint_actions = []
 
@@ -140,6 +138,9 @@ class DQN():
             tensor_actions = torch.stack(joint_actions[:])
             obs, reward, done, info = self.env.step(
                 [action.cpu().numpy() for action in joint_actions])
+
+            # update steps to decay epsilon
+            self.steps_done += 16  # in each env a step is made!
 
             # capture the last n enviroment steps
             if(i > self.num_frames_per_proc-frames_to_capture):

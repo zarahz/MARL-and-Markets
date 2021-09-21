@@ -145,6 +145,10 @@ if __name__ == '__main__':
         num_frames += logs["num_frames"]
         update += 1
 
+        eps_threshold = args.epsilon_end + (args.epsilon_start - args.epsilon_end) * \
+            math.exp(-1. * num_frames / args.epsilon_decay)
+        txt_logger.info("(EPSILON: " + str(eps_threshold) + ")")
+
         if update % args.log_interval == 0:
             header, data, reward_data = prepare_csv_data(
                 agents, logs, update, num_frames, start_time=start_time, txt_logger=txt_logger)
