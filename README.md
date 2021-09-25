@@ -92,7 +92,7 @@ done:
 First clone this repository and navigate into the domain Folder
 ```
 git clone https://github.com/zarahz/CMARL-CAP-and-Markets.git
-cd CMARL-CAP-and-Markets/Coloring_with_CAP
+cd CMARL-CAP-and-Markets/Coloring
 pip install -e .
 ```
 
@@ -102,33 +102,33 @@ Now you can run the domain with the following algorithms
 ### Q Learning 
 For a very basic Q Learning algorithm you can execute
 ```
-> python .\Coloring_with_CAP\scripts\q_learning.py --env "Empty-Grid-v0" --agents 2 --agent_view_size 5 --max_steps 10 --episodes 5 --size 5
+> python .\Coloring\scripts\q_learning.py --env "Empty-Grid-v0" --agents 2 --agent_view_size 5 --max_steps 10 --episodes 5 --size 5
 ```
 required arguments are `--env` and `--agents`
 
 ### PPO (Fine tuning of parameters is still in process, so learning is not optimal)
 To train the model first execute the corresponding script:
 ```
-> python -m Coloring_with_CAP.scripts.train --algo ppo --model "EmptyGrid" --save-interval 10 --frames 80000
+> python -m Coloring.scripts.train --algo ppo --model "EmptyGrid" --save-interval 10 --frames 80000
 ```
 required argument is `--algo`.
 
 Visualization of the environment based on the trained model can be achieved with:
 ```
-> python -m Coloring_with_CAP.scripts.train --model "EmptyGrid"
+> python -m Coloring.scripts.train --model "EmptyGrid"
 ```
 required argument is `--model`.
 
 
 # Current Observations
 For a run of 100 Episodes with max steps of 25 each, here are the current observations: 
-![plot](./Coloring_with_CAP/visualization/plots/Rewards_per_episode.png)
+![plot](./Coloring/visualization/plots/Rewards_per_episode.png)
 
 Number of times the environment was solved, counted with reward=1 feedback.
-![plot](./Coloring_with_CAP/visualization/plots/Goal_achievements_per_setting.png)
+![plot](./Coloring/visualization/plots/Goal_achievements_per_setting.png)
 
 Number of times cells were reset.
-![plot](./Coloring_with_CAP/visualization/plots/Reset_fields_per_setting.png)
+![plot](./Coloring/visualization/plots/Reset_fields_per_setting.png)
 
 # Untersuchung der Auswirkungen von Märkten auf das Belohnungs-Zuweisungsproblem in kooperativen Multiagenten-Umgebungen
 

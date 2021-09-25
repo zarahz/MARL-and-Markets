@@ -17,7 +17,7 @@
             "name": "OLD DQN train one",
             "type": "python",
             "request": "launch",
-            "module": "Coloring_with_CAP.scripts.old_train_dqn",
+            "module": "Coloring.scripts.old_train_dqn",
             "console": "integratedTerminal",
             "args": [
                 "--model",
@@ -49,7 +49,7 @@
             "name": "DQN train one",
             "type": "python",
             "request": "launch",
-            "module": "Coloring_with_CAP.scripts.train_dqn",
+            "module": "Coloring.scripts.train_dqn",
             "console": "integratedTerminal",
             "args": [
                 "--model",
@@ -80,7 +80,7 @@
             "name": "small DQN train one",
             "type": "python",
             "request": "launch",
-            "module": "Coloring_with_CAP.scripts.train_dqn",
+            "module": "Coloring.scripts.train_dqn",
             "console": "integratedTerminal",
             "args": [
                 "--model",
@@ -112,7 +112,7 @@
             "name": "small PPO train one",
             "type": "python",
             "request": "launch",
-            "module": "Coloring_with_CAP.scripts.train",
+            "module": "Coloring.scripts.train",
             "console": "integratedTerminal",
             "args": [
                 "--model",
@@ -137,7 +137,7 @@
             "name": "PPO train",
             "type": "python",
             "request": "launch",
-            "module": "Coloring_with_CAP.scripts.train",
+            "module": "Coloring.scripts.train",
             "console": "integratedTerminal",
             "args": [
                 "--model",
@@ -175,7 +175,7 @@
             "name": "PPO train one rooms env",
             "type": "python",
             "request": "launch",
-            "module": "Coloring_with_CAP.scripts.train",
+            "module": "Coloring.scripts.train",
             "console": "integratedTerminal",
             "args": [
                 "--model",
@@ -204,7 +204,7 @@
             "name": "Q-Learning",
             "type": "python",
             "request": "launch",
-            "program": "Coloring_with_CAP\\scripts\\q_learning.py",
+            "program": "Coloring\\scripts\\q_learning.py",
             "console": "integratedTerminal",
             "args": [
                 "--model",
@@ -242,7 +242,7 @@
             "name": "PPO test",
             "type": "python",
             "request": "launch",
-            "module": "Coloring_with_CAP.scripts.train",
+            "module": "Coloring.scripts.train",
             "console": "integratedTerminal",
             "args": [
                 "--agents",
@@ -262,7 +262,7 @@
             "name": "PPO visualize",
             "type": "python",
             "request": "launch",
-            "module": "Coloring_with_CAP.scripts.visualize",
+            "module": "Coloring.scripts.visualize",
             "console": "integratedTerminal",
             "args": [
                 "--agents",
@@ -287,7 +287,7 @@
             "name": "PPO eval",
             "type": "python",
             "request": "launch",
-            "module": "Coloring_with_CAP.scripts.evaluate",
+            "module": "Coloring.scripts.evaluate",
             "console": "integratedTerminal",
             "args": [
                 "--env",

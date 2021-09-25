@@ -1,7 +1,7 @@
 #----------------------------------------------------------------------------------------
 # 1 PPO Room Settings
 #----------------------------------------------------------------------------------------
-pipenv run python -m Coloring_with_CAP.scripts.train --agents 1 --model 1-ppo-rooms `
+pipenv run python -m Coloring.scripts.train --agents 1 --model 1-ppo-rooms `
     --env FourRooms-Grid-v0 `
     --max-steps 400 `
     --capture-interval 20 `
@@ -10,7 +10,7 @@ pipenv run python -m Coloring_with_CAP.scripts.train --agents 1 --model 1-ppo-ro
 #----------------------------------------------------------------------------------------
 # 3 PPO Room Settings
 #----------------------------------------------------------------------------------------
-pipenv run python -m Coloring_with_CAP.scripts.train --agents 3 --model 3-ppo-rooms-percentage `
+pipenv run python -m Coloring.scripts.train --agents 3 --model 3-ppo-rooms-percentage `
     --env FourRooms-Grid-v0 `
     --max-steps 400 `
     --capture-interval 20 `

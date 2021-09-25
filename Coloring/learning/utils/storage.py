@@ -18,7 +18,7 @@ def create_folders_if_necessary(path):
 
 
 def get_storage_dir():
-    return "Coloring_with_CAP\\" + get_storage_folder()
+    return "Coloring\\" + get_storage_folder()
 
 
 def get_storage_folder():
