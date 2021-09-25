@@ -2,9 +2,11 @@ from abc import ABC, abstractmethod
 import torch
 import numpy as np
 
-# from learning.ppo.utils import
-from learning.ppo.utils import DictList, ParallelEnv
-import learning.utils
+
+# from Coloring.learning.ppo.utils import
+from Coloring.learning.utils import DictList
+from Coloring.learning.utils.penv import ParallelEnv
+from Coloring.learning.utils.format import default_preprocess_obss
 
 
 class BaseAlgo(ABC):
@@ -21,7 +23,7 @@ class BaseAlgo(ABC):
         self.num_frames_per_proc = num_frames_per_proc
         self.gamma = gamma
         self.gae_lambda = gae_lambda
-        self.preprocess_obss = preprocess_obss or learning.utils.default_preprocess_obss
+        self.preprocess_obss = preprocess_obss or default_preprocess_obss
 
         # Configure all models
         for agent in range(agents):

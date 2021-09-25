@@ -6,7 +6,7 @@ import argparse
 import numpy as np
 import math
 
-from learning.ppo.utils.arguments import get_train_args
+from Coloring.learning.ppo.utils.arguments import get_train_args
 
 # --------- Settings
 args = get_train_args()

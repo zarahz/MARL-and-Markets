@@ -1,38 +1,13 @@
 import argparse
 
-from learning.utils.arguments import base_args
+from Coloring.learning.utils.arguments import base_args, base_training_args
 
 
 def get_train_args():
     parser = argparse.ArgumentParser()
     parser = base_args(parser)
+    parser = base_training_args(parser)
 
-    parser.add_argument("--frames", type=int, default=1000000,
-                        help="number of frames of training (default: 1.000.000)")
-    # a Number that defines how often a (random) action is chosen for the batch/experience
-    # i.e. frames-per-proc = 128 that means 128 times the (16) parallel envs are played through and logged (in func prepare_experiences).
-    # If max_steps = 25 the environment can at least finish 5 times (done if max step is reached)
-    # and save its rewards that means there are at least 5*16=80 rewards
-    parser.add_argument("--frames-per-proc", type=int, default=1024,
-                        help="number of frames per process before update (default: 1024)")
-    parser.add_argument("--procs", type=int, default=16,
-                        help="[ONLY needed for logging similar data with ppo] number of processes (default: 16)")
-    parser.add_argument("--log-interval", type=int, default=1,
-                        help="number of frames between two logs (default: 1)")
-    parser.add_argument("--save-interval", type=int, default=10,
-                        help="number of updates between two saves (default: 10, 0 means no saving)")
-    parser.add_argument("--capture-interval", type=int, default=10,
-                        help="number of gif caputures of episodes (default: 10, 0 means no capturing)")
-    parser.add_argument("--capture-frames", type=int, default=50,
-                        help="number of frames in caputure (default: 50, 0 means no capturing)")
-
-    # gamma = discount range(0.88,0.99) most common is 0.99
-    parser.add_argument("--gamma", type=float, default=0.99,
-                        help="discount factor (default: 0.99)")
-    # batch range(4, 4096) -> 256 insgesamt erhält man frames-per-proc*procs (128*16=2048) batch elemente / Transitions
-    # und davon erhält man 2048/256 = 8 mini batches
-    parser.add_argument("--batch-size", type=int, default=128,
-                        help="batch size for dqn (default: 128)")
     # epsilon for action selection
     parser.add_argument("--epsilon-start", type=float, default=1.0,
                         help="starting value of epsilon, used for action selection (default: 0.9 -> high exploration)")
@@ -41,15 +16,11 @@ def get_train_args():
     parser.add_argument("--epsilon-decay", type=int, default=10000,
                         help="Controls the rate of the epsilon decay in order to shift from exploration to exploitation. The higher the value the slower epsilon decays. (default: 1000)")
 
+    # memory settings
     parser.add_argument("--initial-target-update", type=int, default=10000,
                         help="Frames until the target network is updated, Needs to be smaller than target update! (default: 10000)")
     parser.add_argument("--target-update", type=int, default=10*10000,
                         help="Frames between updating the target network, Needs to be smaller or equal to frames-per-proc and bigger than initial target update! (default: 100000 - 10 times the initial memory!)")
-
-    parser.add_argument("--lr", type=float, default=0.001,
-                        help="learning rate (default: 0.001)")
-    parser.add_argument("--optim-eps", type=float, default=1e-8,
-                        help="Adam and RMSprop optimizer epsilon (default: 1e-8)")
 
     args = parser.parse_args()
 

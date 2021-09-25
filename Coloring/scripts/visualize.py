@@ -1,10 +1,11 @@
 import numpy as np
 import torch
 
-from learning.ppo.utils import *
-from learning.ppo.utils.arguments import get_vis_args
-from learning.utils.other import seed
-
+from Coloring.learning.ppo.utils import *
+from Coloring.learning.ppo.utils.arguments import get_vis_args
+from Coloring.learning.utils.other import seed
+from Coloring.learning.utils.storage import get_model_dir
+from Coloring.learning.utils.env import make_env
 
 # Parse arguments
 args = get_vis_args()
@@ -20,7 +21,7 @@ print(f"Device: {device}\n")
 
 # Load environment
 
-env = learning.utils.make_env(
+env = make_env(
     args.env, args.agents, grid_size=args.grid_size, agent_view_size=args.agent_view_size, setting=args.setting, market=args.market, seed=args.seed)
 # for _ in range(args.shift):
 #     env.reset()
@@ -28,15 +29,15 @@ print("Environment loaded\n")
 
 # Load agent
 
-model_dir = learning.utils.get_model_dir(args.model)
+model_dir = get_model_dir(args.model)
 agents = []
 if args.market:
     action_space = env.action_space.nvec.prod()
 else:
     action_space = env.action_space.n
 for agent in range(args.agents):
-    agents.append(learning.ppo.utils.Agent(agent, env.observation_space, action_space, model_dir,
-                                           device=device, argmax=args.argmax))
+    agents.append(Agent(agent, env.observation_space, action_space, model_dir,
+                        device=device, argmax=args.argmax))
 print("Agents loaded\n")
 
 # Run the agent

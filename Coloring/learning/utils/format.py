@@ -1,7 +1,8 @@
 import numpy
 import torch
 import gym
-from learning.ppo.utils.dictlist import DictList
+
+from Coloring.learning.utils.dictlist import DictList
 
 
 def get_obss_preprocessor(obs_space):

@@ -1,11 +1,13 @@
 import argparse
 import time
 import torch
-from learning.ppo.utils.penv import ParallelEnv
 
-import learning.ppo.utils
-from learning.utils.other import seed
+from Coloring.learning.utils.penv import ParallelEnv
+from Coloring.learning.utils.storage import get_model_dir
+from Coloring.learning.utils.env import make_env
+from Coloring.learning.utils.other import seed, synthesize
 
+from Coloring.learning.ppo.utils.agent import Agent
 
 # Parse arguments
 
@@ -42,7 +44,7 @@ print("NAME:________________________  ", __name__)
 if __name__ == '__main__':
     envs = []
     for i in range(args.procs):
-        env = learning.utils.make_env(
+        env = make_env(
             args.env, args.agents, seed=args.seed + 10000 * i)
         envs.append(env)
     env = ParallelEnv(envs)
@@ -50,11 +52,11 @@ if __name__ == '__main__':
 
     # Load agent
 
-    model_dir = learning.utils.get_model_dir(args.model)
+    model_dir = get_model_dir(args.model)
     agents = []
     for agent in range(args.agents):
-        agents.append(learning.ppo.utils.Agent(agent, env.observation_space, env.action_space, model_dir,
-                                               device=device))
+        agents.append(Agent(agent, env.observation_space, env.action_space, model_dir,
+                            device=device))
     print("Agent loaded\n")
 
     # Initialize logs
@@ -103,9 +105,9 @@ if __name__ == '__main__':
     num_frames = sum(logs["num_frames_per_episode"])
     fps = num_frames/(end_time - start_time)
     duration = int(end_time - start_time)
-    return_per_episode = learning.utils.synthesize(
+    return_per_episode = synthesize(
         logs["return_per_episode"])
-    num_frames_per_episode = learning.utils.synthesize(
+    num_frames_per_episode = synthesize(
         logs["num_frames_per_episode"])
 
     print("F {} | FPS {:.0f} | D {} | R:μσmM {:.2f} {:.2f} {:.2f} {:.2f} | F:μσmM {:.1f} {:.1f} {} {}"

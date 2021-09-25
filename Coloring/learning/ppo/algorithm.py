@@ -1,8 +1,7 @@
 import numpy
 import torch
-import torch.nn.functional as F
 
-from learning.ppo.base import BaseAlgo
+from Coloring.learning.ppo.base import BaseAlgo
 
 
 class PPO(BaseAlgo):

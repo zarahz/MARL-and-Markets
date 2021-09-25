@@ -6,9 +6,9 @@ import torch
 import logging
 import sys
 
-from learning.utils.other import synthesize
+from Coloring.learning.utils.other import synthesize
 
-# import learning.ppo.utils
+# import Coloring.learning.ppo.utils
 
 
 def create_folders_if_necessary(path):

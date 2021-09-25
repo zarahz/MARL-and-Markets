@@ -1,12 +1,7 @@
-import matplotlib.pyplot as plt
 from collections import namedtuple
 from PIL import Image
 
-import torch
-from environment.wrappers import MultiagentWrapper
 import torchvision.transforms as T
-
-from learning.utils.env import make_env
 
 
 # a named tuple representing a single transition in our environment

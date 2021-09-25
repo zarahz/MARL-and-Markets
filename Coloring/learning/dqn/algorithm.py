@@ -4,9 +4,9 @@ import torch
 import torch.nn.functional as F
 import math
 
-from learning.utils.format import default_preprocess_obss
-from learning.dqn.utils import Transition
-from learning.ppo.utils.penv import ParallelEnv
+from Coloring.learning.utils.format import default_preprocess_obss
+from Coloring.learning.dqn.utils import Transition
+from Coloring.learning.utils.penv import ParallelEnv
 
 
 class DQN():

@@ -1,45 +1,40 @@
-
-import os
-import time
 import datetime
+import math
 import numpy as np
-import torch
-# import learning
-# cd into storage and call either
-# tensorboard --logdir ./ --host localhost --port 8888
-# or
-# python -m tensorboard.main --logdir ./ --host localhost --port 8888
+
 import tensorboardX
-import sys
-from learning.ppo.algorithm import PPO
+import torch
 
-import learning.ppo.utils
-from learning.ppo.utils.arguments import get_train_args
-import learning.utils
-from learning.ppo.model import ACModel
-from learning.utils.other import seed
-from learning.utils.storage import prepare_csv_data, save_capture, update_csv_file
+# general imports
+from Coloring.learning.utils.env import make_env
+from Coloring.learning.utils.format import get_obss_preprocessor
+from Coloring.learning.utils.other import seed
+from Coloring.learning.utils.storage import *
 
-# to show large tensors without truncation uncomment the next line
-# torch.set_printoptions(threshold=10_000)
+# ppo
+from Coloring.learning.ppo.algorithm import PPO
+from Coloring.learning.ppo.model import ACModel
+
+# dqn
+from Coloring.learning.dqn.algorithm import DQN
+from Coloring.learning.dqn.model import DQNModel
+from Coloring.learning.dqn.utils.replay import ReplayMemory
+from Coloring.learning.dqn.utils.arguments import get_train_args
+
 
 args = get_train_args()
 agents = args.agents
-
-# Set run dir
 
 date = datetime.datetime.now().strftime("%y-%m-%d-%H-%M-%S")
 default_model_name = f"{args.env}_ppo_seed{args.seed}_{date}"
 
 model_name = args.model or default_model_name
-model_dir = learning.utils.get_model_dir(model_name)
+model_dir = get_model_dir(model_name)
 
 # Load loggers and Tensorboard writer
 
-txt_logger = learning.utils.get_txt_logger(model_dir)
-csv_file, csv_logger = learning.utils.get_csv_logger(model_dir, "log")
-csv_rewards_file, csv_rewards_logger = learning.utils.get_csv_logger(
-    model_dir, "rewards")
+txt_logger = get_txt_logger(model_dir)
+csv_file, csv_logger = get_csv_logger(model_dir, "log")
 tb_writer = tensorboardX.SummaryWriter(model_dir)
 
 # Log command and all script arguments
@@ -60,7 +55,7 @@ txt_logger.info(f"Device: {device}\n")
 
 envs = []
 for i in range(args.procs):
-    envs.append(learning.utils.make_env(
+    envs.append(make_env(
         args.env, args.agents,
         grid_size=args.grid_size,
         agent_view_size=args.agent_view_size,
@@ -68,84 +63,125 @@ for i in range(args.procs):
         setting=args.setting,
         market=args.market,
         trading_fee=args.trading_fee,
-        seed=args.seed + 10000 * i))
-txt_logger.info("Environments loaded\n")
+        seed=args.seed + 10000))
+txt_logger.info("Environment loaded\n")
 
 # Load training status
 
 try:
-    status = learning.utils.get_status(model_dir)
+    status = get_status(model_dir)
 except OSError:
     status = {"num_frames": 0, "update": 0}
 txt_logger.info("Training status loaded\n")
 
 # Load observations preprocessor
 
-obs_space, preprocess_obss = learning.utils.get_obss_preprocessor(
+obs_space, preprocess_obss = get_obss_preprocessor(
     envs[0].observation_space)
 txt_logger.info("Observations preprocessor loaded")
 
-# Load model
-models = []
+if args.market:
+    action_space = envs[0].action_space.nvec.prod()
+else:
+    action_space = envs[0].action_space.n
+
+# Load models
+ppo_models = []
+dqn_policy_nets = []
+dqn_target_nets = []
+
 for agent in range(agents):
-    if args.market:
-        action_space = envs[0].action_space.nvec.prod()
-    else:
-        action_space = envs[0].action_space.n
-    model = ACModel(obs_space, action_space)
-    if "model_state" in status:
-        model.load_state_dict(status["model_state"][agent])
-    model.to(device)
-    models.append(model)
+    if args.algo == "ppo":
+        model = ACModel(obs_space, action_space)
+        if "model_state" in status:
+            model.load_state_dict(status["model_state"][agent])
+        model.to(device)
+        ppo_models.append(model)
+    elif args.algo == "dqn":
+        policy_net = DQNModel(obs_space, action_space)
+        target_net = DQNModel(obs_space, action_space)
+        if "policy_state" in status:
+            policy_net.load_state_dict(status["policy_state"][agent])
+        if "target_state" in status:
+            target_net.load_state_dict(status["target_state"][agent])
+        target_net.load_state_dict(policy_net.state_dict())
+        policy_net.to(device)
+        target_net.to(device)
+        dqn_policy_nets.append(policy_net)
+        dqn_target_nets.append(target_net)
 
-txt_logger.info("Model loaded\n")
+txt_logger.info("Models loaded\n")
 
-
-# Load ppo
+# Load dqn
 print("NAME:________________________  ", __name__)
 if __name__ == '__main__':
-    ppo = PPO(envs, agents, models, device, args.frames_per_proc,
-              args.gamma, args.lr, args.gae_lambda, args.entropy_coef, args.value_loss_coef,
-              args.max_grad_norm, args.recurrence, args.optim_eps, args.clip_eps, args.epochs,
-              args.batch_size, preprocess_obss)
+    if args.algo == "ppo":
+        ppo = PPO(envs, agents, ppo_models, device, args.frames_per_proc,
+                  args.gamma, args.lr, args.gae_lambda, args.entropy_coef, args.value_loss_coef,
+                  args.max_grad_norm, args.recurrence, args.optim_eps, args.clip_eps, args.epochs,
+                  args.batch_size, preprocess_obss)
+        if "optimizer_state" in status:
+            for agent in range(agents):
+                ppo.optimizers[agent].load_state_dict(
+                    status["optimizer_state"][agent])
 
-    if "optimizer_state" in status:  # TODO
-        for agent in range(agents):
-            ppo.optimizers[agent].load_state_dict(
-                status["optimizer_state"][agent])
+    elif args.algo == "dqn":
+        memory = ReplayMemory(args.target_update)
+        dqn = DQN(envs, agents, memory, dqn_policy_nets, dqn_target_nets,
+                  device=device,
+                  num_frames_per_proc=args.frames_per_proc,
+                  gamma=args.gamma,
+                  lr=args.lr,
+                  batch_size=args.batch_size,
+                  epsilon_start=args.epsilon_start,
+                  epsilon_end=args.epsilon_end,
+                  epsilon_decay=args.epsilon_decay,
+                  adam_eps=args.optim_eps,
+                  target_update=args.target_update,
+                  initial_target_update=args.initial_target_update,
+                  preprocess_obss=preprocess_obss,
+                  action_space=action_space)
+
+        if "optimizer_state" in status:
+            for agent in range(agents):
+                dqn.optimizers[agent].load_state_dict(
+                    status["optimizer_state"][agent])
 
     txt_logger.info("Optimizer loaded\n")
-
-    # Train model
 
     num_frames = status["num_frames"]
     update = status["update"]
     start_time = time.time()
 
     while num_frames < args.frames:
-        # Update model parameters
 
-        # Log some values
-        ppo_logs = {
-            "entropy": [],
-            "value": [],
-            "policy_loss": [],
-            "value_loss": [],
-            "grad_norm": []
-        }
+        # execute training and get logs
+        if args.algo == "ppo":
+            ppo_logs = {
+                "entropy": [],
+                "value": [],
+                "policy_loss": [],
+                "value_loss": [],
+                "grad_norm": []
+            }
 
-        logs = ppo.prepare_experiences(args.capture_frames)
-        # logs = {}
-        for agent in range(agents):
-            exps = ppo.collect_experience(agent)
-            ppo_logs = ppo.update_parameters(exps, agent, ppo_logs)
-        logs.update(ppo_logs)
-        # update_end_time = time.time()
+            logs = ppo.prepare_experiences(args.capture_frames)
+            for agent in range(agents):
+                exps = ppo.collect_experience(agent)
+                ppo_logs = ppo.update_parameters(exps, agent, ppo_logs)
+            logs.update(ppo_logs)
+
+        elif args.algo == "dqn":
+            logs = dqn.train(args.capture_frames)
+
+            # log epsilon
+            updated_frames = num_frames + logs["num_frames"]
+            eps_threshold = args.epsilon_end + (args.epsilon_start - args.epsilon_end) * \
+                math.exp(-1. * updated_frames / args.epsilon_decay)
+            txt_logger.info("(EPSILON: " + str(eps_threshold) + ")")
 
         num_frames += logs["num_frames"]
         update += 1
-
-        # Print logs
 
         if update % args.log_interval == 0:
             header, data, reward_data = prepare_csv_data(
@@ -153,8 +189,6 @@ if __name__ == '__main__':
 
             update_csv_file(csv_file, csv_logger, update,
                             dict(zip(header, data)))
-            # update_csv_file(csv_rewards_file,
-            #                 csv_rewards_logger, update, reward_data)
 
             for field, value in zip(header, data):
                 tb_writer.add_scalar(field, value, num_frames)
@@ -162,10 +196,17 @@ if __name__ == '__main__':
         # Save status
 
         if args.save_interval > 0 and update % args.save_interval == 0:
-            status = {"num_frames": num_frames, "update": update,
-                      "model_state": [models[agent].state_dict() for agent in range(agents)],
-                      "optimizer_state": [ppo.optimizers[agent].state_dict() for agent in range(agents)]}
-            learning.utils.save_status(status, model_dir)
+            if args.algo == "ppo":
+                status = {"num_frames": num_frames, "update": update,
+                          "model_state": [ppo_models[agent].state_dict() for agent in range(agents)],
+                          "optimizer_state": [ppo.optimizers[agent].state_dict() for agent in range(agents)]}
+            elif args.algo == "dqn":
+                status = {"num_frames": num_frames, "update": update,
+                          "policy_state": [dqn_policy_nets[agent].state_dict() for agent in range(agents)],
+                          "target_state": [dqn_target_nets[agent].state_dict() for agent in range(agents)],
+                          "optimizer_state": [dqn.optimizers[agent].state_dict() for agent in range(agents)]}
+
+            save_status(status, model_dir)
             txt_logger.info("Status saved")
 
         if args.capture_interval > 0 and update % args.capture_interval == 0 or num_frames > args.frames:

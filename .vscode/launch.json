@@ -83,6 +83,8 @@
             "module": "Coloring.scripts.train_dqn",
             "console": "integratedTerminal",
             "args": [
+                "--algo",
+                "dqn",
                 "--model",
                 "dqn-30000-tupdate-45000-edecay-128-bs",
                 "--agents",
@@ -112,7 +114,7 @@
             "name": "small PPO train one",
             "type": "python",
             "request": "launch",
-            "module": "Coloring.scripts.train",
+            "module": "Coloring.scripts.train_dqn",
             "console": "integratedTerminal",
             "args": [
                 "--model",
@@ -140,6 +142,8 @@
             "module": "Coloring.scripts.train",
             "console": "integratedTerminal",
             "args": [
+                "--algo",
+                "ppo",
                 "--model",
                 "testing",
                 "--agents",
@@ -268,7 +272,7 @@
                 "--agents",
                 "1",
                 "--agent-view-size",
-                "5",
+                "7",
                 // "--env",
                 // "FourRooms-Grid-v0",
                 "--grid-size",
@@ -280,7 +284,7 @@
                 // "mixed-motive",
                 // "mixed-motive-competitive",
                 "--model",
-                "one-agent"
+                "1-ppo"
             ]
         },
         {
