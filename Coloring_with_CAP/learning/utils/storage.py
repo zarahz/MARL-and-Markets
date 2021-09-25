@@ -86,8 +86,7 @@ def get_csv_logger(model_dir, name):
 
 
 def log_stats(logs, key, header, data):
-    stats = synthesize(
-        logs[key])
+    stats = synthesize(logs[key])
     if stats:
         header += [calculation_key + "_" +
                    key for calculation_key in stats.keys()]

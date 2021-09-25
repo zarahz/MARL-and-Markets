@@ -126,7 +126,7 @@ if __name__ == '__main__':
         # Update model parameters
 
         # Log some values
-        log_per_agent = {
+        ppo_logs = {
             "entropy": [],
             "value": [],
             "policy_loss": [],
@@ -137,10 +137,9 @@ if __name__ == '__main__':
         logs = ppo.prepare_experiences(args.capture_frames)
         # logs = {}
         for agent in range(agents):
-            exps, logs1 = ppo.collect_experience(agent)
-            logs.update(logs1)
-            log_per_agent = ppo.update_parameters(exps, agent, log_per_agent)
-        logs.update(log_per_agent)
+            exps = ppo.collect_experience(agent)
+            ppo_logs = ppo.update_parameters(exps, agent, ppo_logs)
+        logs.update(ppo_logs)
         # update_end_time = time.time()
 
         num_frames += logs["num_frames"]

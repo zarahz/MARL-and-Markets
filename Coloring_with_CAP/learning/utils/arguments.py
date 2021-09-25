@@ -18,8 +18,8 @@ def base_args(parser):
                         help="name of the environment to train on (default: empty grid)")
     parser.add_argument("--agent-view-size", default=7, type=int,
                         help="grid size the agent can see, while standing in the middle (default: 5, so agent sees the 5x5 grid around him)")
-    parser.add_argument("--grid-size", default=5, type=int,
-                        help="size of the playing area (default: 5)")
+    parser.add_argument("--grid-size", default=9, type=int,
+                        help="size of the playing area (default: 9)")
     parser.add_argument("--max-steps", default=None, type=int,
                         help="max steps in environment to reach a goal")
     parser.add_argument("--setting", default="",

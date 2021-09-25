@@ -8,13 +8,13 @@ def get_train_args():
     parser = base_args(parser)
 
     parser.add_argument("--frames", type=int, default=1000000,
-                        help="number of frames of training (default: 1000000)")
+                        help="number of frames of training (default: 1.000.000)")
     # a Number that defines how often a (random) action is chosen for the batch/experience
     # i.e. frames-per-proc = 128 that means 128 times the (16) parallel envs are played through and logged (in func prepare_experiences).
     # If max_steps = 25 the environment can at least finish 5 times (done if max step is reached)
     # and save its rewards that means there are at least 5*16=80 rewards
     parser.add_argument("--frames-per-proc", type=int, default=1024,
-                        help="number of frames per process before update (default: 5 for A2C and 128 for PPO)")
+                        help="number of frames per process before update (default: 1024)")
     parser.add_argument("--procs", type=int, default=16,
                         help="[ONLY needed for logging similar data with ppo] number of processes (default: 16)")
     parser.add_argument("--log-interval", type=int, default=1,

@@ -6,24 +6,10 @@ import argparse
 import numpy as np
 import math
 
+from learning.ppo.utils.arguments import get_train_args
+
 # --------- Settings
-parser = argparse.ArgumentParser()
-parser.add_argument("--env", required=True,
-                    help="name of the environment(REQUIRED)")
-parser.add_argument("--agents", required=True, type=int,
-                    help="number of agents (REQUIRED)")
-parser.add_argument("--setting", default="",
-                    help="If set to mixed-motive the reward is not shared which enables a competitive environment (one vs. all). Another setting is percentage-reward, where the reward is shared (coop) and is based on the percanted of the grid coloration. The last option is mixed-motive-competitive which extends the normal mixed-motive setting by removing the field reset option. When agents run over already colored fields the field immidiatly change the color the one of the agent instead of resetting the color. (default: empty string - coop reward of one if the whole grid is colored)")
-# optional
-parser.add_argument("--agent_view_size", type=int, default=5,
-                    help="partial view size of the agents, needs to be an odd number! (default: 5)")
-parser.add_argument("--max_steps", type=int, default=10,
-                    help="max. steps of the agents per episode (default: 100)")
-parser.add_argument("--episodes", type=int, default=100,
-                    help="iterations of the game (default: 100)")
-parser.add_argument("--size", type=int, default=8,
-                    help="size of the grid (default: 8)")
-args = parser.parse_args()
+args = get_train_args()
 # --------- Hyperparams
 epsilon = 0.2  # 0.01
 tau = 0.75
@@ -78,13 +64,16 @@ def softmax():
 #######################
 # conduct experiment
 #######################
-market = ""  # "sm-no-reset-goal"
+market = args.market  # "sm-no-reset-goal"
 trading_fee = 0.05
 competitive = "competitive" in args.setting
-env = gym.make(id=args.env, agents=args.agents,
-               agent_view_size=args.agent_view_size, max_steps=args.max_steps, competitive=competitive, market=market, trading_fee=trading_fee, size=args.size)
+# env = gym.make(id=args.env, agents=args.agents,
+#                agent_view_size=args.agent_view_size, max_steps=args.max_steps, competitive=competitive, market=market, trading_fee=trading_fee, size=args.size)
+env = gym.make(id=args.env, agents=args.agents, size=args.grid_size, competitive=competitive, agent_view_size=args.agent_view_size,
+               market=args.market, trading_fee=args.trading_fee, max_steps=args.max_steps)
 # wrapper for environment adjustments
 env = MultiagentWrapper(env, args.setting)
+env.seed(args.seed)
 
 window = Window(args.env)
 
@@ -100,7 +89,7 @@ else:
     Q = np.zeros(len(action_count))
 
 reset()
-for episode in range(args.episodes):
+for episode in range(100):
     s = 0
     for s in range(args.max_steps):
         joint_actions = []

@@ -1,6 +1,7 @@
 
 import numpy as np
 import torch
+import copy
 
 
 class Market:
@@ -94,14 +95,14 @@ class Market:
 
     def apply_no_reset_market(self, agents_that_reset_fields, reciever):
         '''
-        prevent agents to be rewarded/traded with if it reset fields in the current step 
+        prevent agents to be rewarded/traded with if it reset fields in the current step
         (only applied when market type contains setting "no-reset")
         '''
         return "no-reset" in self.type and reciever in agents_that_reset_fields
 
     def not_waiting_or_acting_on_self(self, recierver, actor):
         '''
-        check if the agent (actor) is trying to trade with itself and also 
+        check if the agent (actor) is trying to trade with itself and also
         checking if the reciever is in agent count, else the agent does not execute a market action but waits
 
         '''
@@ -126,24 +127,31 @@ class Market:
         return buying_matrix, selling_matrix
 
     def calculate_traded_reward(self, rewards, env_goal):
+        if ("am" in self.type and not "goal" in self.type) or ("goal" in self.type and not env_goal):
+            # in this case no market trades will be executed since goal was set but not reached
+            # or normal action market was already executed
+            return rewards
+
         trading_rewards = [0]*len(rewards)
+
         for agent in range(len(rewards)):
-            for a, trade in enumerate(self.trading_matrix[agent]):
-                if "goal" in self.type:
-                    if not env_goal:
-                        # in this case no market trades will be executed since goal was set but not reached
-                        return rewards
-                    elif "am" in self.type and env_goal:
-                        # only in this am scenario change rewards at the end
-                        trading_rewards[agent] += (rewards[a] + trade).item()
-
-                if("sm" in self.type and rewards[a] > 0):
-                    # only share positive reward with buyers
-                    trading_rewards[agent] += (rewards[a] * trade).item()
-
-                # elif("am" in self.type):
-                #     trading_rewards[agent] += (rewards[a] + trade).item()
-
+            if "am" in self.type:
+                # only in this am scenario change rewards at the end
+                trading_rewards[agent] = rewards[agent] + \
+                    sum(self.trading_matrix[agent])
+            else:  # shareholder market
+                # iterate all trading matrix rows and env rewards
+                for index, (trade, reward) in enumerate(zip(self.trading_matrix[agent], rewards)):
+                    # agents are in dept?
+                    if reward <= 0:
+                        if index != agent:
+                            # in this case trading agent has dept so do nothing!
+                            continue
+                        else:
+                            # here the receiving agent has dept so that should stay
+                            trading_rewards[agent] += reward
+                    else:
+                        trading_rewards[agent] += (trade * reward).item()
         return trading_rewards
 
     def reset(self):
@@ -152,5 +160,3 @@ class Market:
         if "sm" in self.type:
             # fill trading matrix diagonal with ones as overall share of each agent
             self.trading_matrix.fill_diagonal_(1, wrap=False)
-        # else:
-        #     self.balance = [0]*agents

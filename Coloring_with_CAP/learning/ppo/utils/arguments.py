@@ -17,8 +17,8 @@ def get_train_args():
                         help="number of updates between two saves (default: 10, 0 means no saving)")
     parser.add_argument("--procs", type=int, default=16,
                         help="number of processes (default: 16)")
-    parser.add_argument("--frames", type=int, default=10**7,
-                        help="number of frames of training (default: 1e7)")
+    parser.add_argument("--frames", type=int, default=1000000,
+                        help="number of frames of training (default: 1.000.000)")
 
     # Parameters for main algorithm
     # epochs range(3,30), wie oft anhand der experience gelernt wird?
@@ -32,8 +32,8 @@ def get_train_args():
     # i.e. frames-per-proc = 128 that means 128 times the (16) parallel envs are played through and logged (in func prepare_experiences).
     # If max_steps = 25 the environment can at least finish 5 times (done if max step is reached)
     # and save its rewards that means there are at least 5*16=80 rewards
-    parser.add_argument("--frames-per-proc", type=int, default=128,
-                        help="number of frames per process before update (default: 5 for A2C and 128 for PPO)")
+    parser.add_argument("--frames-per-proc", type=int, default=1024,
+                        help="number of frames per process before update (default: 1024)")
     # gamma = discount range(0.88,0.99) most common is 0.99
     parser.add_argument("--gamma", type=float, default=0.99,
                         help="discount factor (default: 0.99)")

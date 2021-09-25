@@ -28,16 +28,25 @@ class MultiagentWrapper(gym.core.ObservationWrapper):
             # ------------------------------------------------------------
             actions = self.env.decode_actions(actions)  # TODO! uncomment
             # ------------------------------------------------------------
-            # always take the first action, since the following are only relevant for the market
+            # split environment actions from market actions
+            # i.e. agent 1 action: [env_action, market_action1, market_action2]
             market_actions = actions[:, 1:]
             actions = actions[:, 0]
 
         observation, reward, done, info = self.env.step(actions)
 
-        if not "mixed-motive" in self.setting:
+        if not "mixed" in self.setting:
             # assign all agents the same reward since here the reward is containig positive values for agents
             # that have colored a field!
-            reward = [sum(reward)]*len(self.env.agents)
+            coop_reward = sum(reward)
+
+            # in coop case prevent reward getting too big/small
+            if coop_reward >= 0.1:
+                reward = [0.1]*len(self.env.agents)
+            elif coop_reward <= -0.1:
+                reward = [-0.1]*len(self.env.agents)
+            else:
+                reward = [coop_reward]*len(self.env.agents)
 
         if(self.market):
             # is_last_step = (self.env.step_count+1 >= self.env.max_steps)

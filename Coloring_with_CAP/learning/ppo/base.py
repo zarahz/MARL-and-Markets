@@ -64,9 +64,6 @@ class BaseAlgo(ABC):
         self.log_episode_trades = torch.zeros(
             shape, dtype=torch.int)
 
-        self.log_episode_return = torch.zeros(
-            (self.num_procs, agents), device=self.device)
-
         self.log_episode_num_frames = torch.zeros(
             self.num_procs, device=self.device)
 
@@ -150,31 +147,21 @@ class BaseAlgo(ABC):
             # Update log values
             self.log_episode_reset_fields[i] = torch.tensor(
                 [env_info['reset_fields'] for env_info in info], device=self.device)
-
             if any('trades' in env_info for env_info in info):
                 self.log_episode_trades[i] = torch.tensor(
                     [env_info['trades'] for env_info in info], device=self.device)
-            self.log_episode_return += torch.tensor(
-                reward, device=self.device, dtype=torch.float)
             self.log_episode_num_frames += torch.ones(
                 self.num_procs, device=self.device)
 
             for done_index, done_ in enumerate(done):
                 if done_:
                     self.log_done_counter += 1
-                    self.log_return.append(
-                        self.log_episode_return[done_index].tolist())
+                    self.log_return.append(reward[done_index])
                     self.log_num_frames.append(
                         self.log_episode_num_frames[done_index].item())
                     self.log_coloration_percentage.append(
                         info[done_index]['coloration_percentage'])
                     self.log_fully_colored += info[done_index]['fully_colored']
-            # transpose rewards to [agent, processes] to multiplicate a mask of [processes] with it
-            log_episode_return_transposed = self.log_episode_return.transpose(
-                0, 1) * self.mask
-            # then transpose back to tensor shape (processes, reward_of_agent)
-            self.log_episode_return *= log_episode_return_transposed.transpose(
-                0, 1)
             self.log_episode_num_frames *= self.mask
 
         # --- all environment actions are now done -> Add advantage and return to experiences
@@ -213,7 +200,23 @@ class BaseAlgo(ABC):
             "trades": self.log_trades[-keep:].tolist(),
             "num_reset_fields": self.log_num_reset_fields[-keep:].tolist(),
             "grid_coloration_percentage": self.log_coloration_percentage,
-            "fully_colored": self.log_fully_colored}
+            "fully_colored": self.log_fully_colored,
+            "num_frames_per_episode": self.log_num_frames,
+            "num_frames": self.num_frames
+        }
+
+        for agent in range(self.agents):
+            logs.update({
+                "reward_agent_"+str(agent): [episode_log_return[agent] for episode_log_return in self.log_return]
+            })
+
+        # reset values
+        self.log_done_counter = 0
+        self.log_num_frames = []
+        self.log_fully_colored = 0
+        self.log_coloration_percentage = []
+        self.log_return = []
+
         return logs
 
     def collect_experience(self, agent):
@@ -248,24 +251,7 @@ class BaseAlgo(ABC):
 
         exps.obs = self.preprocess_obss(exps.obs, device=self.device)
 
-        # Log some values
-        logs = {
-            "reward_agent_"+str(agent): [episode_log_return[agent] for episode_log_return in self.log_return],
-            "num_frames_per_episode": self.log_num_frames,
-            "num_frames": self.num_frames
-        }
-
-        if self.agents == agent+1:
-            # reset values?
-            self.log_return = self.log_return[-self.num_procs:]
-            self.log_num_frames = self.log_num_frames[-self.num_procs:]
-            # reset all values
-            # count all episodes that finish with a fully colored grid
-            self.log_fully_colored = 0
-            self.log_coloration_percentage = []
-            self.log_return = []  # [[0]*agents] * self.num_procs
-
-        return exps, logs
+        return exps
 
     @abstractmethod
     def update_parameters(self):
