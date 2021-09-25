@@ -1,3 +1,8 @@
+FRAGEN:
+1) dqn hyperparameter tuning - was kann man verbessern/verändern
+2) meinung zu plots
+3) kurzes feedback zu ausarbeitung
+
 TODO:
 - DQN implementation
 - Basic Difference reward (each step reward compared with waiting action) 
