@@ -1,14 +1,21 @@
-def base_args(parser):
+import argparse
+
+from Coloring.learning import dqn, ppo
+
+
+def base_args():
     '''
     Basic arguments that are always needed for the environment and training/visualization
     '''
+    parser = argparse.ArgumentParser()
+
     # General parameters
     parser.add_argument("--seed", type=int, default=1,
                         help="random seed (default: 1)")
     parser.add_argument("--agents", default=1, type=int,
                         help="amount of agents")
-    parser.add_argument("--model", required=True,
-                        help="name of the (trained) model")
+    parser.add_argument("--model", default=None,
+                        help="Name of the (trained) model, if none is given then a name is generated. (default: None)")
 
     parser.add_argument("--capture", type=bool, default=True,
                         help="Boolean to enable capturing of environment and save as gif (default: True)")
@@ -32,10 +39,19 @@ def base_args(parser):
     return parser
 
 
-def base_training_args(parser):
+def training_args():
     '''
-    Basic training arguments that are currently needed for the two algorithms (ppo & dqn)
+    Define all training arguments that are currently needed to configure the two algorithms (ppo & dqn)
     '''
+
+    # --------------------------------------------------
+    # Basic arguments needed by both learning algorithms (environment settings etc.)
+    # --------------------------------------------------
+    parser = base_args()
+
+    # --------------------------------------------------
+    # arguments needed by both learning algorithms
+    # --------------------------------------------------
     # TODO Move to base_args to be used for visualization as well!
     parser.add_argument("--algo", required=True,
                         help="Algorithm to use for training. Choose between 'ppo' and 'dqn'.")
@@ -56,7 +72,7 @@ def base_training_args(parser):
     # i.e. batch_size = 256: insgesamt erhält man frames-per-proc*procs (128*16=2048) batch elemente / Transitions
     # und davon erhält man 2048/256 = 8 mini batches
     parser.add_argument("--batch-size", type=int, default=256,
-                        help="batch size for dqn (default: 256)")
+                        help="batch size for dqn (default: ppo 256, dqn 128)")
 
     # gamma = discount range(0.88,0.99) most common is 0.99
     parser.add_argument("--gamma", type=float, default=0.99,
@@ -80,4 +96,54 @@ def base_training_args(parser):
 
     # parser.add_argument("--optim-alpha", type=float, default=0.99,
     #                     help="RMSprop optimizer alpha (default: 0.99)")
-    return parser
+
+    # --------------------------------------------------
+    # Expand parser with specific arguments for each algorithm
+    # --------------------------------------------------
+    parser = ppo.utils.arguments.get_train_args(parser)
+
+    parser = dqn.utils.arguments.get_train_args(parser)
+
+    args = parser.parse_args()
+
+    return args
+
+
+def vis_args():
+    '''
+    Define all visualization arguments that are currently needed to configure the two algorithms (ppo & dqn)
+    '''
+
+    # --------------------------------------------------
+    # Basic arguments needed by both learning algorithms (environment settings etc.)
+    # --------------------------------------------------
+    parser = base_args()
+
+    # --------------------------------------------------
+    # arguments needed by both learning algorithms
+    # --------------------------------------------------
+    # TODO Move to base_args to be used for visualization as well!
+    # parser.add_argument("--algo", required=True,
+    #                     help="Algorithm to use for training. Choose between 'ppo' and 'dqn'.")
+
+    parser.add_argument("--shift", type=int, default=0,
+                        help="number of times the environment is reset at the beginning (default: 0)")
+    parser.add_argument("--argmax", action="store_true", default=False,
+                        help="select the action with highest probability (default: False)")
+    parser.add_argument("--pause", type=float, default=0.1,
+                        help="pause duration between two consequent actions of the agent (default: 0.1)")
+    parser.add_argument("--gif", type=str, default=None,
+                        help="store output as gif with the given filename")
+    parser.add_argument("--episodes", type=int, default=100,
+                        help="number of episodes to visualize")
+
+    # --------------------------------------------------
+    # Expand parser with specific arguments for each algorithm
+    # --------------------------------------------------
+    # parser = ppo.utils.arguments.get_train_args(parser)
+
+    # parser = dqn.utils.arguments.get_train_args(parser)
+
+    args = parser.parse_args()
+
+    return args

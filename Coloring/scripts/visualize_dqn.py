@@ -1,14 +1,15 @@
+
 import numpy
 import torch
 
 from Coloring.learning.ppo.utils import *
-from Coloring.learning.utils.storage import get_model_dir
 
-from Coloring.learning.dqn.utils.arguments import get_vis_args
+from Coloring.learning.utils.storage import get_model_dir
+from Coloring.learning.utils.arguments import vis_args
 from Coloring.learning.utils.env import make_env
 
 # Set device
-args = get_vis_args
+args = vis_args()
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Device: {device}\n")

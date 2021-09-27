@@ -19,14 +19,14 @@ from Coloring.learning.ppo.model import ACModel
 from Coloring.learning.dqn.algorithm import DQN
 from Coloring.learning.dqn.model import DQNModel
 from Coloring.learning.dqn.utils.replay import ReplayMemory
-from Coloring.learning.dqn.utils.arguments import get_train_args
 
+from Coloring.learning.utils.arguments import training_args
 
-args = get_train_args()
+args = training_args()
 agents = args.agents
 
 date = datetime.datetime.now().strftime("%y-%m-%d-%H-%M-%S")
-default_model_name = f"{args.env}_ppo_seed{args.seed}_{date}"
+default_model_name = f"{args.env}_{args.algo}_seed{args.seed}_{date}"
 
 model_name = args.model or default_model_name
 model_dir = get_model_dir(model_name)

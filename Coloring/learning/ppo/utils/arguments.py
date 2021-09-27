@@ -1,12 +1,10 @@
 import argparse
 
-from Coloring.learning.utils.arguments import base_args, base_training_args
 
-
-def get_train_args():
-    parser = argparse.ArgumentParser()
-    parser = base_args(parser)
-    parser = base_training_args(parser)
+def get_train_args(parser):
+    '''
+    Add PPO relevant training arguments to the parser.
+    '''
 
     # epochs range(3,30), wie oft anhand der experience gelernt wird
     parser.add_argument("--epochs", type=int, default=4,
@@ -34,25 +32,4 @@ def get_train_args():
     parser.add_argument("--clip-eps", type=float, default=0.2,
                         help="clipping epsilon for PPO (default: 0.2)")
 
-    args = parser.parse_args()
-
-    return args
-
-
-def get_vis_args():
-    parser = argparse.ArgumentParser()
-    parser = base_args(parser)
-
-    parser.add_argument("--shift", type=int, default=0,
-                        help="number of times the environment is reset at the beginning (default: 0)")
-    parser.add_argument("--argmax", action="store_true", default=False,
-                        help="select the action with highest probability (default: False)")
-    parser.add_argument("--pause", type=float, default=0.1,
-                        help="pause duration between two consequent actions of the agent (default: 0.1)")
-    parser.add_argument("--gif", type=str, default=None,
-                        help="store output as gif with the given filename")
-    parser.add_argument("--episodes", type=int, default=100,
-                        help="number of episodes to visualize")
-
-    args = parser.parse_args()
-    return args
+    return parser

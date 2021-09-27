@@ -2,13 +2,13 @@ import numpy as np
 import torch
 
 from Coloring.learning.ppo.utils import *
-from Coloring.learning.ppo.utils.arguments import get_vis_args
+from Coloring.learning.utils.arguments import vis_args
 from Coloring.learning.utils.other import seed
 from Coloring.learning.utils.storage import get_model_dir
 from Coloring.learning.utils.env import make_env
 
 # Parse arguments
-args = get_vis_args()
+args = vis_args()
 
 # Set seed for all randomness sources
 

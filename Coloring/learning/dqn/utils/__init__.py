@@ -3,6 +3,8 @@ from PIL import Image
 
 import torchvision.transforms as T
 
+from .arguments import *
+
 
 # a named tuple representing a single transition in our environment
 Transition = namedtuple(
