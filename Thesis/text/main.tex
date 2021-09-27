@@ -77,14 +77,14 @@
 \usepackage{cmap}                                 % to produce searchable PDF
 \usepackage[T1]{fontenc}                          % split german words with umlaut
 \usepackage{lmodern}
-\usepackage[english]{babel}               % for german toc, ...
+\usepackage[english]{babel}                       % for german toc, ...
 \usepackage{bibgerm}                              % for german bibliography index
 \usepackage{tabularx}                             % more flexible table environment
 \usepackage{booktabs}                             % high quality tables
 \usepackage{rotating}                             % for generation of landscape tables
 \usepackage{multirow}                             % for multirow cells inside tables
 \usepackage{amssymb,amsmath}                      % powerful math package
-\usepackage[hidelinks]{hyperref}                             % for hyperlinks
+\usepackage[hidelinks]{hyperref}                  % for hyperlinks
 \lmuhypersetup                                    % write some pdf properties
 \usepackage{flafter}                              % force floats to appear after their reference
 \usepackage{subfig}                               % to allow for side by side graphics (subfloats)
@@ -96,6 +96,8 @@
 %\usepackage{...}                                 % add additional packages here
 \usepackage{geometry}
 \usepackage{marginnote}
+
+\usepackage[ruled,linesnumbered]{algorithm2e}                            % needed for pseudo code
 
 \setcounter{tocdepth}{3}                          % sectioning depth in toc
 \setcounter{secnumdepth}{3}                       % sectioning depth in text
@@ -130,7 +132,7 @@
 \input{text/Background}
 \input{text/RelatedWork}
 \input{text/Concept}
-\input{text/Implementation}
+% \input{text/Implementation}
 \input{text/Results}
 \input{text/Discussion}
 \input{text/Conclusion}
