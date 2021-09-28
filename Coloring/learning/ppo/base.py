@@ -3,10 +3,10 @@ import torch
 import numpy as np
 
 
-# from Coloring.learning.ppo.utils import
-from Coloring.learning.utils import DictList
-from Coloring.learning.utils.penv import ParallelEnv
-from Coloring.learning.utils.format import default_preprocess_obss
+# from learning.ppo.utils import
+from learning.utils import DictList
+from learning.utils.penv import ParallelEnv
+from learning.utils.format import default_preprocess_obss
 
 
 class BaseAlgo(ABC):
@@ -54,28 +54,26 @@ class BaseAlgo(ABC):
 
         # Initialize log values
 
-        # variable to sum up all reset fields
-        self.log_num_reset_fields = torch.zeros(shape[0], dtype=torch.int)
-        # variable to save the reset fields for each episode
+        # variable to save the reset fields for each process
         self.log_episode_reset_fields = torch.zeros(
-            shape, dtype=torch.int)
-
-        # variable to sum up all executed trades
-        self.log_trades = torch.zeros(shape[0], dtype=torch.int)
-        # variable to save the trades for each episode
+            self.num_procs, device=self.device)
+        # variable to save the trades for each process
         self.log_episode_trades = torch.zeros(
-            shape, dtype=torch.int)
-
+            self.num_procs, device=self.device)
+        # variable to save the steps for each process
         self.log_episode_num_frames = torch.zeros(
             self.num_procs, device=self.device)
 
         self.log_done_counter = 0
         self.log_return = []  # [[0]*agents] * self.num_procs
         self.log_num_frames = []  # [0] * self.num_procs
+        self.log_trades = []
+        self.log_reset_fields = []
         self.log_fully_colored = 0
+        self.log_not_fully_colored = 0
         self.log_coloration_percentage = []
 
-    def prepare_experiences(self, frames_to_capture):
+    def collect_experiences(self, frames_to_capture):
         """Collects rollouts and computes advantages.
         Runs several environments concurrently. The next actions are computed
         in a batch mode for all environments at the same time. The rollouts
@@ -147,10 +145,10 @@ class BaseAlgo(ABC):
                 tensor_actions[agent]) for agent in range(self.agents)])
 
             # Update log values
-            self.log_episode_reset_fields[i] = torch.tensor(
+            self.log_episode_reset_fields += torch.tensor(
                 [env_info['reset_fields'] for env_info in info], device=self.device)
             if any('trades' in env_info for env_info in info):
-                self.log_episode_trades[i] = torch.tensor(
+                self.log_episode_trades += torch.tensor(
                     [env_info['trades'] for env_info in info], device=self.device)
             self.log_episode_num_frames += torch.ones(
                 self.num_procs, device=self.device)
@@ -159,12 +157,19 @@ class BaseAlgo(ABC):
                 if done_:
                     self.log_done_counter += 1
                     self.log_return.append(reward[done_index])
+                    self.log_reset_fields.append(
+                        self.log_episode_reset_fields[done_index].item())
+                    self.log_trades.append(
+                        self.log_episode_trades[done_index].item())
                     self.log_num_frames.append(
                         self.log_episode_num_frames[done_index].item())
                     self.log_coloration_percentage.append(
                         info[done_index]['coloration_percentage'])
                     self.log_fully_colored += info[done_index]['fully_colored']
+
             self.log_episode_num_frames *= self.mask
+            self.log_episode_reset_fields *= self.mask
+            self.log_episode_trades *= self.mask
 
         # --- all environment actions are now done -> Add advantage and return to experiences
         for agent in range(self.agents):
@@ -191,22 +196,18 @@ class BaseAlgo(ABC):
                     self.gae_lambda * next_advantage * next_mask
 
         # logs for all agents
-        self.log_num_reset_fields = torch.sum(
-            self.log_episode_reset_fields, dim=1)
-        self.log_trades = torch.sum(
-            self.log_episode_trades, dim=1)
-        keep = max(self.log_done_counter, self.num_procs)
-
         logs = {
             "capture_frames": capture_frames,
-            "trades": self.log_trades[-keep:].tolist(),
-            "num_reset_fields": self.log_num_reset_fields[-keep:].tolist(),
+            "trades": self.log_trades,
+            "num_reset_fields": self.log_reset_fields,
             "grid_coloration_percentage": self.log_coloration_percentage,
             "fully_colored": self.log_fully_colored,
+            "episodes": self.log_done_counter,
             "num_frames_per_episode": self.log_num_frames,
             "num_frames": self.num_frames
         }
 
+        # agent specific logs
         for agent in range(self.agents):
             logs.update({
                 "reward_agent_"+str(agent): [episode_log_return[agent] for episode_log_return in self.log_return]
@@ -218,10 +219,12 @@ class BaseAlgo(ABC):
         self.log_fully_colored = 0
         self.log_coloration_percentage = []
         self.log_return = []
+        self.log_trades = []
+        self.log_reset_fields = []
 
         return logs
 
-    def collect_experience(self, agent):
+    def fill_and_reshape_experiences(self, agent):
         # Define experience:
         #   the whole experience is the concatenation of the experience
         #   of each process.

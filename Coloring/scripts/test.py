@@ -2,14 +2,13 @@ import gym
 from environment.wrappers import *
 from environment.window import Window
 from environment.colors import *
-import argparse
 import numpy as np
 import math
 
-from Coloring.learning.ppo.utils.arguments import get_train_args
+from learning.utils.arguments import training_args
 
 # --------- Settings
-args = get_train_args()
+args = training_args()
 # --------- Hyperparams
 epsilon = 0.2  # 0.01
 tau = 0.75

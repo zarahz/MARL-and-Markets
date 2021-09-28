@@ -1,1 +1,1 @@
-from Coloring.learning.utils import *
+from learning.utils import *

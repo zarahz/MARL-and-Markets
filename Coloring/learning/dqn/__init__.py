@@ -1,1 +1,1 @@
-from Coloring.learning.dqn.utils import *
+from learning.dqn.utils import *

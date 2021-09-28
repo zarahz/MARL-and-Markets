@@ -2,12 +2,11 @@ import argparse
 import time
 import torch
 
-from Coloring.learning.utils.penv import ParallelEnv
-from Coloring.learning.utils.storage import get_model_dir
-from Coloring.learning.utils.env import make_env
-from Coloring.learning.utils.other import seed, synthesize
-
-from Coloring.learning.ppo.utils.agent import Agent
+from learning.utils.penv import ParallelEnv
+from learning.utils.storage import get_model_dir
+from learning.utils.env import make_env
+from learning.utils.other import seed, synthesize
+from learning.ppo.utils.agent import Agent
 
 # Parse arguments
 

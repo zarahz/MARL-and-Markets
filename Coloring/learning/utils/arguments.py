@@ -1,6 +1,6 @@
 import argparse
 
-from Coloring.learning import dqn, ppo
+from learning import dqn, ppo
 
 
 def base_args():

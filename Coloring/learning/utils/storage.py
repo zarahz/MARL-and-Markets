@@ -6,7 +6,7 @@ import torch
 import logging
 import sys
 
-from Coloring.learning.utils.other import synthesize
+from learning.utils.other import synthesize
 
 # import Coloring.learning.ppo.utils
 
@@ -100,8 +100,9 @@ def prepare_csv_data(agents, logs, update, num_frames, start_time=None, txt_logg
     duration = int(time.time() - start_time)
 
     header = ["update_count", "frames",
-              "duration_in_seconds", "fully_colored"]  # "FPS"
-    data = [update, num_frames, duration, logs["fully_colored"]]  # fps
+              "duration_in_seconds", "episodes", "fully_colored"]  # "FPS"
+    data = [update, num_frames, duration,
+            logs["episodes"], logs["fully_colored"]]  # fps
 
     header, data = log_stats(logs, 'num_frames_per_episode', header, data)
     header, data = log_stats(logs, 'num_reset_fields', header, data)

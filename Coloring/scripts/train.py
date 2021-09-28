@@ -165,9 +165,9 @@ if __name__ == '__main__':
                 "grad_norm": []
             }
 
-            logs = ppo.prepare_experiences(args.capture_frames)
+            logs = ppo.collect_experiences(args.capture_frames)
             for agent in range(agents):
-                exps = ppo.collect_experience(agent)
+                exps = ppo.fill_and_reshape_experiences(agent)
                 ppo_logs = ppo.update_parameters(exps, agent, ppo_logs)
             logs.update(ppo_logs)
 
@@ -213,5 +213,18 @@ if __name__ == '__main__':
             # ensure saving of last round
             gif_name = str(update) + "_" + str(num_frames) + ".gif"
             save_capture(model_dir, gif_name, np.array(logs["capture_frames"]))
+
+    # calculate how many episodes are max and min possible for the optimal and worst steps
+    walkable_cells = len(envs[0].env.walkable_cells())
+    best_case_steps = math.ceil(walkable_cells/args.agents)
+
+    max_episodes = (
+        int(args.frames_per_proc / best_case_steps) * args.procs) * args.log_interval
+    min_episodes = (
+        int(args.frames_per_proc / args.max_steps) * args.procs) * args.log_interval
+    txt_logger.info(
+        f"Best case step use - count of episodes (per update): {max_episodes} \n")
+    txt_logger.info(
+        f"Worst case step use - count of episodes (per update): {min_episodes} \n")
 
     os._exit(1)

@@ -1,8 +1,8 @@
 import torch
 
-from Coloring.learning.ppo.model import ACModel
-from Coloring.learning.utils.storage import get_model_state
-from Coloring.learning.utils.format import get_obss_preprocessor
+from learning.ppo.model import ACModel
+from learning.utils.storage import get_model_state
+from learning.utils.format import get_obss_preprocessor
 
 
 class Agent:

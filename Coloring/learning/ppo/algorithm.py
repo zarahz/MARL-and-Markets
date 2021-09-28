@@ -1,7 +1,7 @@
 import numpy
 import torch
 
-from Coloring.learning.ppo.base import BaseAlgo
+from learning.ppo.base import BaseAlgo
 
 
 class PPO(BaseAlgo):

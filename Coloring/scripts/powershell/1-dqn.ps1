@@ -1,7 +1,7 @@
 #----------------------------------------------------------------------------------------
 # 1 DQN Settings
 #----------------------------------------------------------------------------------------
-pipenv run python -m Coloring.scripts.train_dqn --agents 1 --model 1-dqn `
+pipenv run python -m Coloring.scripts.train_dqn --algo dqn --agents 1 --model 1-dqn `
     --max-steps 300 `
     --capture-interval 20 `
     --initial-target-update 35000 `
@@ -11,7 +11,7 @@ pipenv run python -m Coloring.scripts.train_dqn --agents 1 --model 1-dqn `
 #----------------------------------------------------------------------------------------
 # 1 DQN Room Settings
 #----------------------------------------------------------------------------------------
-# pipenv run python -m Coloring.scripts.train --agents 1 --model 1-dqn-rooms `
+# pipenv run python -m Coloring.scripts.train --algo dqn --agents 1 --model 1-dqn-rooms `
 #     --env FourRooms-Grid-v0 `
 #     --max-steps 400 `
 #     --capture-interval 20 `
