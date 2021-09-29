@@ -66,16 +66,14 @@
                 "300",
                 "--capture-interval",
                 "20",
-                "--save-interval",
-                "10",
-                "--frames-per-proc",
-                "1024",
+                "--batch-size",
+                "32",
                 "--initial-target-update",
-                "45000",
+                "100",
                 "--target-update",
-                "450000", //(frames/2)-(0.1*(frames/2))=500.000-50.000
+                "1000", //(frames/2)-(0.1*(frames/2))=500.000-50.000
                 "--epsilon-decay",
-                "30000",
+                "500000",
                 "--frames",
                 "1000000"
             ]

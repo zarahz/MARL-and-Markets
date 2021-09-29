@@ -95,7 +95,6 @@ for agent in range(agents):
         model = ACModel(obs_space, action_space)
         if "model_state" in status:
             model.load_state_dict(status["model_state"][agent])
-        model.to(device)
         ppo_models.append(model)
     elif args.algo == "dqn":
         policy_net = DQNModel(obs_space, action_space)
@@ -105,8 +104,6 @@ for agent in range(agents):
         if "target_state" in status:
             target_net.load_state_dict(status["target_state"][agent])
         target_net.load_state_dict(policy_net.state_dict())
-        policy_net.to(device)
-        target_net.to(device)
         dqn_policy_nets.append(policy_net)
         dqn_target_nets.append(target_net)
 
@@ -126,7 +123,7 @@ if __name__ == '__main__':
                     status["optimizer_state"][agent])
 
     elif args.algo == "dqn":
-        memory = ReplayMemory(args.target_update)
+        memory = ReplayMemory(args.replay_size)
         dqn = DQN(envs, agents, memory, dqn_policy_nets, dqn_target_nets,
                   device=device,
                   num_frames_per_proc=args.frames_per_proc,
@@ -165,14 +162,14 @@ if __name__ == '__main__':
                 "grad_norm": []
             }
 
-            logs = ppo.collect_experiences(args.capture_frames)
+            logs = ppo.run_and_log_parallel_envs(args.capture_frames)
             for agent in range(agents):
                 exps = ppo.fill_and_reshape_experiences(agent)
-                ppo_logs = ppo.update_parameters(exps, agent, ppo_logs)
+                ppo_logs = ppo.optimize_model(exps, agent, ppo_logs)
             logs.update(ppo_logs)
 
         elif args.algo == "dqn":
-            logs = dqn.train(args.capture_frames)
+            logs = dqn.run_and_log_parallel_envs(args.capture_frames)
 
             # log epsilon
             updated_frames = num_frames + logs["num_frames"]

@@ -12,23 +12,15 @@ from learning.utils.format import default_preprocess_obss
 class BaseAlgo(ABC):
     """The base class for RL algorithms."""
 
-    def __init__(self, envs, agents, models, device, num_frames_per_proc, gamma, gae_lambda, preprocess_obss):
+    def __init__(self, envs, agents, device, num_frames_per_proc, preprocess_obss):
 
         # Store parameters
 
         self.env = ParallelEnv(envs)
         self.agents = agents
-        self.models = models
         self.device = device
         self.num_frames_per_proc = num_frames_per_proc
-        self.gamma = gamma
-        self.gae_lambda = gae_lambda
         self.preprocess_obss = preprocess_obss or default_preprocess_obss
-
-        # Configure all models
-        for agent in range(agents):
-            self.models[agent].to(self.device)
-            self.models[agent].train()
 
         # Store helpers values
 
@@ -45,12 +37,9 @@ class BaseAlgo(ABC):
         self.masks = torch.zeros(*shape, device=self.device)
         self.actions = torch.zeros(
             *multi_shape, device=self.device, dtype=torch.int)  # multi_shape, device=self.device, dtype=torch.int)
-        self.values = torch.zeros(*multi_shape, device=self.device)
         self.rewards = torch.zeros(
             (self.num_frames_per_proc, self.num_procs, agents), device=self.device)
         self.advantages = torch.zeros(*multi_shape, device=self.device)
-        self.log_probs = torch.zeros(
-            *multi_shape, device=self.device, dtype=torch.int)  # multi_shape, device=self.device, dtype=torch.int)
 
         # Initialize log values
 
@@ -64,6 +53,7 @@ class BaseAlgo(ABC):
         self.log_episode_num_frames = torch.zeros(
             self.num_procs, device=self.device)
 
+        self.steps_done = 0
         self.log_done_counter = 0
         self.log_return = []  # [[0]*agents] * self.num_procs
         self.log_num_frames = []  # [0] * self.num_procs
@@ -73,7 +63,7 @@ class BaseAlgo(ABC):
         self.log_not_fully_colored = 0
         self.log_coloration_percentage = []
 
-    def collect_experiences(self, frames_to_capture):
+    def run_and_log_parallel_envs(self, frames_to_capture):
         """Collects rollouts and computes advantages.
         Runs several environments concurrently. The next actions are computed
         in a batch mode for all environments at the same time. The rollouts
@@ -99,8 +89,8 @@ class BaseAlgo(ABC):
         # 5 times and log its rewards (that means there are at least 5*16=80 rewards in log_return)
         for i in range(self.num_frames_per_proc):
             # agent variables
-            dists = []
-            values = []
+            self.reset_algo_logs_each_frame()
+
             joint_actions = []
             for agent in range(self.agents):
                 agent_obs = [None]*len(self.obs)
@@ -111,14 +101,8 @@ class BaseAlgo(ABC):
                 preprocessed_obs = self.preprocess_obss(
                     agent_obs, device=self.device)
 
-                # reduce memory consumption for computations
-                with torch.no_grad():
-                    dist, value = self.models[agent](preprocessed_obs)
-                    dists.append(dist)
-                    values.append(value)
+                action = self.select_action(agent, preprocessed_obs)
 
-                # create joint actions
-                action = dist.sample()  # shape torch.Size([16])
                 joint_actions.append(action)
 
             # convert agentList(actionTensor) into tensor of
@@ -126,6 +110,9 @@ class BaseAlgo(ABC):
             tensor_actions = torch.stack(joint_actions[:])
             obs, reward, done, info = self.env.step(
                 [action.cpu().numpy() for action in joint_actions])
+
+            # update steps to decay epsilon
+            self.steps_done += 16  # in each env a step is made!
 
             # capture the last n enviroment steps
             if(i > self.num_frames_per_proc-frames_to_capture):
@@ -139,10 +126,9 @@ class BaseAlgo(ABC):
                 torch.tensor(done, device=self.device, dtype=torch.float)
 
             self.actions[i] = tensor_actions
-            self.values[i] = torch.stack(values)
             self.rewards[i] = torch.tensor(reward, device=self.device)
-            self.log_probs[i] = torch.stack([dists[agent].log_prob(
-                tensor_actions[agent]) for agent in range(self.agents)])
+
+            self.algo_specific_updates(i, tensor_actions, done, reward)
 
             # Update log values
             self.log_episode_reset_fields += torch.tensor(
@@ -171,30 +157,6 @@ class BaseAlgo(ABC):
             self.log_episode_reset_fields *= self.mask
             self.log_episode_trades *= self.mask
 
-        # --- all environment actions are now done -> Add advantage and return to experiences
-        for agent in range(self.agents):
-            agent_obs = [None]*len(self.obs)
-            for index in range(len(self.obs)):
-                agent_obs[index] = self.obs[index][agent]
-            preprocessed_obs = self.preprocess_obss(
-                agent_obs, device=self.device)
-            with torch.no_grad():
-                _, next_value = self.models[agent](preprocessed_obs)
-
-            for i in reversed(range(self.num_frames_per_proc)):
-                next_mask = self.masks[i +
-                                       1] if i < self.num_frames_per_proc - 1 else self.mask
-                next_value = self.values[i +
-                                         1][agent] if i < self.num_frames_per_proc - 1 else next_value
-                next_advantage = self.advantages[i +
-                                                 1][agent] if i < self.num_frames_per_proc - 1 else 0
-
-                delta = self.rewards[i][:, agent] + self.gamma * \
-                    next_value * next_mask - self.values[i][agent]
-                # advantage function is calculated here!
-                self.advantages[i][agent] = delta + self.gamma * \
-                    self.gae_lambda * next_advantage * next_mask
-
         # logs for all agents
         logs = {
             "capture_frames": capture_frames,
@@ -207,6 +169,11 @@ class BaseAlgo(ABC):
             "num_frames": self.num_frames
         }
 
+        additional_logs = self.get_additional_logs()
+
+        if additional_logs:
+            logs.update(additional_logs)
+
         # agent specific logs
         for agent in range(self.agents):
             logs.update({
@@ -214,50 +181,35 @@ class BaseAlgo(ABC):
             })
 
         # reset values
-        self.log_done_counter = 0
-        self.log_num_frames = []
-        self.log_fully_colored = 0
-        self.log_coloration_percentage = []
-        self.log_return = []
-        self.log_trades = []
-        self.log_reset_fields = []
+        self.reset_values()
 
         return logs
 
-    def fill_and_reshape_experiences(self, agent):
-        # Define experience:
-        #   the whole experience is the concatenation of the experience
-        #   of each process.
-        # In comments below:
-        #   - T is self.num_frames_per_proc, 128
-        #   - P is self.num_procs, 16
-        #   - D is the dimensionality.
-
-        exps = DictList()
-        # obs length is 2048 = 16*128
-        exps.obs = [self.obss[i][j][agent]
-                    for j in range(self.num_procs)
-                    for i in range(self.num_frames_per_proc)]
-        if self.models[0].recurrent:
-            # T x P -> P x T -> (P * T) x 1
-            exps.mask = self.masks.transpose(0, 1).reshape(-1).unsqueeze(1)
-        # for all tensors below, T x P -> P x T -> P * T
-        # self.agents, self.num_frames_per_proc*self.num_procs)
-        exps.actions = self.actions[:, agent, :].transpose(0, 1).reshape(-1)
-        exps.value = self.values[:, agent, :].transpose(0, 1).reshape(-1)
-        exps.reward = self.rewards[:, :, agent].transpose(0, 1).reshape(-1)
-        exps.advantage = self.advantages[:,
-                                         agent, :].transpose(0, 1).reshape(-1)
-        exps.returnn = exps.value + exps.advantage
-        exps.log_probs = self.log_probs[:,
-                                        agent, :].transpose(0, 1).reshape(-1)
-
-        # Preprocess experiences
-
-        exps.obs = self.preprocess_obss(exps.obs, device=self.device)
-
-        return exps
+    def reset_values(self):
+        self.log_done_counter = 0
+        self.log_fully_colored = 0
+        self.log_num_frames = []
+        self.log_return = []
+        self.log_trades = []
+        self.log_reset_fields = []
+        self.log_coloration_percentage = []
 
     @abstractmethod
-    def update_parameters(self):
+    def optimize_model(self):
+        pass
+
+    @abstractmethod
+    def select_action(self, agent, obs):
+        pass
+
+    @abstractmethod
+    def algo_specific_updates(self, index, tensor_actions, done=None, reward=None):
+        pass
+
+    @abstractmethod
+    def reset_algo_logs_each_frame(self):
+        pass
+
+    @abstractmethod
+    def get_additional_logs(self):
         pass

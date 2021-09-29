@@ -3,8 +3,8 @@ Set-Location -Path "C:\Users\Zarah\Documents\workspace\MA\"
 
 & C:/Users/Zarah/.virtualenvs/Coloring_with_CAP-xNNGJax5/Scripts/Activate.ps1
 
-& .\Coloring\scripts\powershell\1-ppo.ps1
-# & .\Coloring\scripts\powershell\1-dqn.ps1
+# & .\Coloring\scripts\powershell\1-ppo.ps1
+& .\Coloring\scripts\powershell\1-dqn.ps1
 # & .\Coloring\scripts\powershell\3-ppo.ps1
 # & .\Coloring\scripts\powershell\3-ppo-mixed.ps1
 # & .\Coloring\scripts\powershell\3-ppo-mixed-competitive.ps1

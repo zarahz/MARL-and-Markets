@@ -13,6 +13,8 @@ def get_train_args(parser):
                         help="Controls the rate of the epsilon decay in order to shift from exploration to exploitation. The higher the value the slower epsilon decays. (default: 1000)")
 
     # memory settings
+    parser.add_argument("--replay-size", type=int, default=100000,
+                        help="Size of the replay memory (default: 100000)")
     parser.add_argument("--initial-target-update", type=int, default=10000,
                         help="Frames until the target network is updated, Needs to be smaller than target update! (default: 10000)")
     parser.add_argument("--target-update", type=int, default=10*10000,

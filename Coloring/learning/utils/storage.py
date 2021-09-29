@@ -109,9 +109,6 @@ def prepare_csv_data(agents, logs, update, num_frames, start_time=None, txt_logg
     header, data = log_stats(logs, 'grid_coloration_percentage', header, data)
     header, data = log_stats(logs, 'trades', header, data)
 
-    if "huber_loss" in logs:
-        header, data = log_stats(logs, "huber_loss", header, data)
-
     # agent specific data
     for agent in range(agents):
         if "entropy" in logs:
@@ -126,6 +123,9 @@ def prepare_csv_data(agents, logs, update, num_frames, start_time=None, txt_logg
         if "grad_norm" in logs:
             header += ["grad_norm_agent_" + str(agent)]
             data += [logs["grad_norm"][agent]]
+        if "huber_loss" in logs:
+            header += ["huber_loss_agent_" + str(agent)]
+            data += [logs["huber_loss"][agent]]
 
     # log rewards at the end for overview and easy comparison!
     all_rewards_per_episode = {}
@@ -149,7 +149,7 @@ def print_logs(txt_logger, header, data):
         formatted_value = "{:.2f}".format(
             value) if isinstance(value, float) else str(value)
         info += "| " + header + ": " + formatted_value
-        if "fully_colored" in header or "max" in header or "grad_norm" in header:
+        if "fully_colored" in header or "max" in header or "grad_norm" in header or "huber_loss" in header:
             info += "\n"
     txt_logger.info(info)
     # txt_logger.info(  # FPS {:04.0f} | Frames/Episode : [mean, std, min, Max] {:.1f} {:.1f} {} {}
