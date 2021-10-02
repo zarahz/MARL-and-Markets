@@ -91,14 +91,14 @@
 #     --replay-size 700000 `
 #     --epsilon-decay 400000 `
 
-pipenv run python -m Coloring.scripts.train --algo dqn --agents 1 --model 1-dqn-11 `
-    --max-steps 300 `
-    --capture-interval 20 `
-    --batch-size 64 `
-    --initial-target-update 1000 `
-    --target-update 400000 `
-    --replay-size 700000 `
-    --epsilon-decay 400000 `
+# pipenv run python -m Coloring.scripts.train --algo dqn --agents 1 --model 1-dqn-11 `
+#     --max-steps 300 `
+#     --capture-interval 20 `
+#     --batch-size 64 `
+#     --initial-target-update 1000 `
+#     --target-update 400000 `
+#     --replay-size 700000 `
+#     --epsilon-decay 400000 `
 
 pipenv run python -m Coloring.scripts.train --algo dqn --agents 1 --model 1-dqn-12 `
     --max-steps 300 `
