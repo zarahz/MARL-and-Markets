@@ -38,7 +38,7 @@ class WorldObj:
 
     def __init__(self, type, is_colored, color, opacity=1):
         assert type in OBJECT_TO_IDX, type
-        assert color in IDX_TO_COLOR, color
+        # assert color in IDX_TO_COLOR, color
         self.type = type
         self.color = color
         self.is_colored = is_colored
@@ -83,7 +83,9 @@ class WorldObj:
         if obj_type == 'wall':
             v = Wall(color)
         elif obj_type == 'floor':
-            v = Floor(color)
+            v = Floor(is_colored, color)
+        elif obj_type == 'agent':
+            v = Agent(is_colored, color)
         else:
             assert False, "unknown object type in decode '%s'" % obj_type
 
@@ -110,7 +112,8 @@ class Floor(WorldObj):
 
     def render(self, img):
         # Give the floor a pale color
-        color = list(COLORS.values())[self.color]
+        color = COLORS[self.color] if type(
+            self.color) == str else list(COLORS.values())[self.color]
         fill_coords(img, point_in_rect(0.031, 1, 0.031, 1),
                     0.8 * np.array(color, dtype=np.uint8))
 
@@ -129,7 +132,8 @@ class Agent(WorldObj):
         # return False
 
     def render(self, img):
-        color = list(COLORS.values())[self.color]
+        color = COLORS[self.color] if type(
+            self.color) == str else list(COLORS.values())[self.color]
         if self.is_colored:
             # rendered pale Floor (0.8 alpha)
             fill_coords(img, point_in_rect(0.031, 1, 0.031, 1),
@@ -142,13 +146,16 @@ class Wall(WorldObj):
     def __init__(self, color=0):
         # is_colored status 1 to make it easier to check if the whole grid is colored
         super().__init__('wall', 1, color)
+        self.color = color
 
     def see_behind(self):
         return False
 
     def render(self, img):
+        color = COLORS[self.color] if type(
+            self.color) == str else list(COLORS.values())[self.color]
         fill_coords(img, point_in_rect(0, 1, 0, 1),
-                    list(COLORS.values())[self.color])
+                    color)
 
 
 class Grid:
@@ -1046,7 +1053,7 @@ class GridEnv(gym.Env):
             self.window = environment.window.Window('grid coloring')
             self.window.show(block=False)
 
-        # # Mask of which cells to highlight
+        # Mask of which cells to highlight
         highlight_mask = np.zeros(
             shape=(self.width, self.height), dtype=np.bool)
 

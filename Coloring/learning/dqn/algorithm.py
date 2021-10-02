@@ -94,7 +94,7 @@ class DQN(BaseAlgo):
 
             return torch.tensor(action)
 
-    def algo_specific_updates(self, i, tensor_actions, done, reward):
+    def mid_frame_updates(self, i, tensor_actions, done, reward):
         # Store the transition in memory (old obs, actions, new obs, reward)
         next_state = []
         for index, env_done in enumerate(done):
@@ -214,5 +214,11 @@ class DQN(BaseAlgo):
                 np.mean(np.array([huber_loss[agent] for huber_loss in self.log_huber_loss])))
         return {"huber_loss": huber_loss_values}
 
-    def reset_algo_logs_each_frame(self):
+    def start_of_frame(self):
+        pass
+
+    def before_frame_starts(self):
+        pass
+
+    def on_after_reset(self):
         pass

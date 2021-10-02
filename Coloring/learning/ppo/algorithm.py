@@ -89,12 +89,12 @@ class PPO(BaseAlgo):
         action = dist.sample()
         return action
 
-    def algo_specific_updates(self, index, actions, done=None, reward=None):
+    def mid_frame_updates(self, index, actions, done=None, reward=None):
         self.values[index] = torch.stack(self.agent_values)
         self.log_probs[index] = torch.stack([self.agent_dists[agent].log_prob(
             actions[agent]) for agent in range(self.agents)])
 
-    def reset_algo_logs_each_frame(self):
+    def start_of_frame(self):
         self.agent_dists = []
         self.agent_values = []
 
@@ -281,4 +281,10 @@ class PPO(BaseAlgo):
         return batches_starting_indexes
 
     def get_additional_logs(self):
+        pass
+
+    def on_after_reset(self):
+        pass
+
+    def before_frame_starts(self):
         pass

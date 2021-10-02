@@ -28,10 +28,11 @@ class BaseAlgo(ABC):
         self.num_frames = self.num_frames_per_proc * self.num_procs
 
         # Initialize experience values
+        self.obs = self.env.reset()
+        self.on_after_reset()
 
         shape = (self.num_frames_per_proc, self.num_procs)
         multi_shape = (self.num_frames_per_proc, agents, self.num_procs)
-        self.obs = self.env.reset()
         self.obss = [None]*(shape[0])
         self.mask = torch.ones(shape[1], device=self.device)
         self.masks = torch.zeros(*shape, device=self.device)
@@ -83,13 +84,13 @@ class BaseAlgo(ABC):
         """
         # save rgb frames for gif creation
         capture_frames = []
-
+        self.before_frame_starts()
         # frames-per-proc = 128 that means 128 times the (16) parallel envs are played through and logged.
         # If worst case and all environments are played until max_steps (25) are reached it can at least finish
         # 5 times and log its rewards (that means there are at least 5*16=80 rewards in log_return)
         for i in range(self.num_frames_per_proc):
-            # agent variables
-            self.reset_algo_logs_each_frame()
+            # can be used to reset/change agent variables
+            self.start_of_frame()
 
             joint_actions = []
             for agent in range(self.agents):
@@ -128,7 +129,7 @@ class BaseAlgo(ABC):
             self.actions[i] = tensor_actions
             self.rewards[i] = torch.tensor(reward, device=self.device)
 
-            self.algo_specific_updates(i, tensor_actions, done, reward)
+            self.mid_frame_updates(i, tensor_actions, done, reward)
 
             # Update log values
             self.log_episode_reset_fields += torch.tensor(
@@ -203,13 +204,21 @@ class BaseAlgo(ABC):
         pass
 
     @abstractmethod
-    def algo_specific_updates(self, index, tensor_actions, done=None, reward=None):
+    def mid_frame_updates(self, index, tensor_actions, done=None, reward=None):
         pass
 
     @abstractmethod
-    def reset_algo_logs_each_frame(self):
+    def start_of_frame(self):
+        pass
+
+    @abstractmethod
+    def before_frame_starts(self):
         pass
 
     @abstractmethod
     def get_additional_logs(self):
+        pass
+
+    @abstractmethod
+    def on_after_reset(self):
         pass
