@@ -11,43 +11,111 @@
 %                             - Use the same commands (`chapter', `section', ...) as in main text
 % -------------------------------------------------------------------------------------------------
 %
-\chapter{Beispiel Anhang}
+\chapter{Training Parameters}\label{ax:training_params}
 \small{
-\begin{verbatim}
-/*
-* This code serves the initialization of an auxiliary probability array.
-* The array holds at each position a pre-calculated probability for the index
-* of that position. The probability reflects the Zipf-distribution for the
-* corresponding indexes
-*/
-Set zipfExponent to 1.4
-Set sum to 0
-Set maxInteger to 65535
-FOR i = 0 to maxInteger
-probArray[i] = 1/pow(i + 1, zipfExponent)
-Set sum = sum + probArray[i]
-END FOR
-FOR i = 0 to maxInteger
-Set probArray[i] = probArray[i]/sum
-END FOR
-FOR i = 1 to maxInteger
-Set probArray[i] = probArray[i] + probArray[i] = probArray[i-1]
-END FOR
+    % \begin{python}
+    % train.py [-h] [--seed SEED] [--agents AGENTS] [--model MODEL] [--capture CAPTURE]
+    % [--env ENV] [--agent-view-size AGENT_VIEW_SIZE] [--grid-size GRID_SIZE]
+    % [--max-steps MAX_STEPS] [--setting SETTING] [--market MARKET]
+    % [--trading-fee TRADING_FEE] --algo ALGO [--frames FRAMES]
+    %     [--frames-per-proc FRAMES_PER_PROC] [--procs PROCS] [--recurrence RECURRENCE]
+    %     [--batch-size BATCH_SIZE] [--gamma GAMMA] [--log-interval LOG_INTERVAL]
+    %     [--save-interval SAVE_INTERVAL] [--capture-interval CAPTURE_INTERVAL]
+    %     [--capture-frames CAPTURE_FRAMES] [--lr LR] [--optim-eps OPTIM_EPS]
+    %     [--epochs EPOCHS] [--gae-lambda GAE_LAMBDA] [--entropy-coef ENTROPY_COEF]
+    %     [--value-loss-coef VALUE_LOSS_COEF] [--max-grad-norm MAX_GRAD_NORM]
+    %     [--clip-eps CLIP_EPS] [--epsilon-start EPSILON_START] [--epsilon-end EPSILON_END]
+    %     [--epsilon-decay EPSILON_DECAY] [--replay-size REPLAY_SIZE]
+    %     [--initial-target-update INITIAL_TARGET_UPDATE] [--target-update TARGET_UPDATE]
 
-/*
-* This code gets called in case a Zipf-distributed number is required. It
-* iterates over the probability array until the chosen random number v
-* is less than the value stored at the current array position i. The value of
-* the array position will be returned as the calculated Zipf-distributed
-* number
-*/
-Set v to a random number between 0 and 1
-FOR i = 0 to maxInteger
-IF v < probArray[i] THEN
-RETURN i
-END IF
-END FOR
-RETURN 0
+    \begin{verbatim}
+required arguments:
+--algo ALGO           Algorithm to use for training. Choose between 'ppo' and 'dqn'.
 
-\end{verbatim}
+optional arguments:
+-h, --help            show this help message and exit
+--seed SEED           random seed (default: 1)
+--agents AGENTS       amount of agents
+--model MODEL         Name of the (trained) model, if none is given then a name is 
+                      generated. (default: None)
+--capture CAPTURE     Boolean to enable capturing of environment and save as gif 
+                      (default: True)
+--env ENV             name of the environment to train on (default: empty grid)
+--agent-view-size AGENT_VIEW_SIZE
+                      grid size the agent can see, while standing in the middle (default: 
+                      5, so agent sees the 5x5 grid around him)
+--grid-size GRID_SIZE
+                      size of the playing area (default: 9)
+--max-steps MAX_STEPS
+                      max steps in environment to reach a goal
+--setting SETTING     If set to mixed-motive the reward is not shared which enables a
+                      competitive environment (one vs. all). Another setting is 
+                      percentage-reward, where the reward is shared (coop) and is based 
+                      on the percanted of the grid coloration. The last option is 
+                      mixed-motive-competitive which extends the normal mixed-motive 
+                      setting by removing the field reset
+                      option. When agents run over already colored fields the field 
+                      immidiatly change the color the one of the agent instead of 
+                      resetting the color. (default: empty string - coop reward of one if 
+                      the whole grid is colored)
+--market MARKET       There are three options 'sm', 'am' and '' for none. SM =       
+                      Shareholder Market where agents can auction actions similar to 
+                      stocks. AM = Action Market where agents can buy specific actions 
+                      from others. (Default = '')
+--trading-fee TRADING_FEE
+                      If a trade is executed, this value determens the price (market type 
+                      am) / share (market type sm) the agents exchange (Default: 0.05)
+--frames FRAMES       number of frames of training (default: 1.000.000)
+--frames-per-proc FRAMES_PER_PROC
+                      number of frames per process before update (default: 1024)
+--procs PROCS         Number of processes/environments running parallel (default: 16)
+--recurrence RECURRENCE
+                      number of time-steps gradient is backpropagated (default: 1). If > 
+                      1, a LSTM is added to the model to have memory.
+--batch-size BATCH_SIZE
+                      batch size for dqn (default: ppo 256, dqn 128)
+--gamma GAMMA         discount factor (default: 0.99)
+--log-interval LOG_INTERVAL
+                      number of frames between two logs (default: 1)
+--save-interval SAVE_INTERVAL
+                      number of updates between two saves (default: 10, 0 means no saving)
+--capture-interval CAPTURE_INTERVAL
+                      number of gif caputures of episodes (default: 10, 0 means no 
+                      capturing)
+--capture-frames CAPTURE_FRAMES
+                      number of frames in caputure (default: 50, 0 means no capturing)
+--lr LR               learning rate (default: 0.001)
+--optim-eps OPTIM_EPS
+                      Adam and RMSprop optimizer epsilon (default: 1e-8)
+--epochs EPOCHS       number of epochs for PPO (default: 4)
+--gae-lambda GAE_LAMBDA
+                      lambda coefficient in GAE formula (default: 0.95, 1 means no gae)
+--entropy-coef ENTROPY_COEF
+                      entropy term coefficient (default: 0.01)
+--value-loss-coef VALUE_LOSS_COEF
+                      value loss term coefficient (default: 0.5)
+--max-grad-norm MAX_GRAD_NORM
+                      maximum norm of gradient (default: 0.5)
+--clip-eps CLIP_EPS   clipping epsilon for PPO (default: 0.2)
+--epsilon-start EPSILON_START
+                      starting value of epsilon, used for action selection (default: 0.9 
+                      -> high exploration)
+--epsilon-end EPSILON_END
+                      ending value of epsilon, used for action selection (default: 0.05 
+                      -> high exploitation)
+--epsilon-decay EPSILON_DECAY
+                      Controls the rate of the epsilon decay in order to shift from 
+                      exploration to exploitation. The higher the value the slower 
+                      epsilon decays. (default: 1000)
+--replay-size REPLAY_SIZE
+                      Size of the replay memory (default: 100000)
+--initial-target-update INITIAL_TARGET_UPDATE
+                      Frames until the target network is updated, Needs to be smaller 
+                      than target update! (default: 10000)
+--target-update TARGET_UPDATE
+                      Frames between updating the target network, Needs to be smaller or 
+                      equal to frames-per-proc and bigger than initial target update! 
+                      (default: 100000 - 10 times the initial memory!)
+    \end{verbatim}
+    % \end{python}
 }

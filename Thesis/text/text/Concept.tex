@@ -65,7 +65,7 @@ $ python -m Coloring.scripts.train
 \end{lstlisting}
 
 \marginpar{command algo and model}
-The ``algo'' parameter can be either ``ppo'' or ``dqn'' to choose a learning algorithm. This argument is the only required setting for training. All other configurations, including those not listed in \ref{lst:command}, have default values and are discussed in the sections \ref{learning_algos} and \ref{market_settings}. The model defines the name for a destination folder, in which all logs, recordings and status updates are stored.
+The ``algo'' parameter can be either ``ppo'' or ``dqn'' to choose a learning algorithm. This argument is the only required setting for training. All other configurations, including those not listed in \ref{lst:command}, have default values and are discussed in the sections \ref{learning_process} and \ref{market_settings}. An overview of all training parameters and their default values is listed in Appendix \ref{ax:training_params}. The model defines the name for a destination folder, in which all logs, recordings and status updates are stored.
 
 \marginpar{command env}
 Line 4 and 5 configures the environment. Alternatively to the empty grid option of ``env'', as shown in figure \ref{fig:env}, four homogeneous rooms can be generated with ``FourRooms-Grid-v0'' to increase the difficulty. The rooms are of the same size and each room is accessible to all adjoining neighbors by one opening, which is random and changes in each episode. The overall size of the grid is set in Line 5, however all grids in every layout options have outer walls that narrow the area in which agents can move.
@@ -123,7 +123,34 @@ Lastly, the final reward is calculated when done is set to true. That is the cas
 \end{algorithm}
 
 
-\section{Learning Algorithms}\label{learning_algos}
+\section{Learning Process}\label{learning_process}
+% \subsection{Base Class}
+\marginpar{Independent learning}
+In order to compare different settings and agent compositions easily, each agent manages its own learning improvement, observation and action selection. Therefore all calculations and estimations are executed independently, for instance policy updates and value estimations. They also set up their own neural networks and optimizers and update them only with their own values. However, observations still connect the agent experiences, by including the positions of all agents on the grid and reacting to their joint actions in each step.
+
+\marginpar{process structure}
+Depending on the learning algorithm the corresponding class is instantiated by the training script, as shown in Figure \ref{fig:training}. PPO and DQN both extend a base class that provides some abstract methods and a multiprocessing operation to execute actions on several environments at once. If specified, the base class returns data, allowing the training script to create recordings and log files to enable evaluation.
+
+\begin{figure}[hpbt]
+    \centering
+    \includegraphics[width=0.9\textwidth]{pictures/training}\\
+    \caption[The training structure]{The training structure}\label{fig:training}
+\end{figure}
+
+\marginpar{training setup}
+First, the training begins by creating n environments based on the \verb|--procs| setting of the training command, see Appendix \ref{ax:training_params} for the parameter list. Each environment has the same configurations, set through the arguments, for example \verb|--grid-size|, \verb|--agents| and \verb|--agent-view-size|. Second, the amount of \verb|--frames| is taken from the parameters, defining a loop until that number is reached. In this case frames are equivalent to agent steps. During the loop, the defined training algorithm \verb|--algo| is executed.
+
+\marginpar{base class}
+Since both, DQN and PPO have similar procedures, they share a function in the base class. In it experiences are gathered through a certain amount of actions which are executed on parallel environments. The action amount is set with \verb|--frames-per-procs|. During that period details like gained rewards, environment observations, actions and more are stored in base class variables that are accessible by the learning algorithms. When all experience actions are executed, the base variables are reset and log values are returned, as shown in Figure \ref{fig:training}. Afterwards the frame counter in the training script is updated. The training loop ends when the frames counter is greater than the argument frames. Otherwise more experience batches are gathered.
+
+\marginpar{action selection}
+Both learning algorithms implement their own action selection method. The PPO implementation relies on an actor-critic neural network, letting the actor part calculate a probability distribution of the action space. In case of DQN a linear neural network assigns Q values to actions, choosing the maximum value with an epsilon greedy practice. In both variants the action selection results in one action for each agent and for each environment. The environments finally receives a joint action array that merged the agents action.
+
+\marginpar{dqn learning}
+After the action selection, in a DQN training, the target network is updated with a transition, saving observation, action, reward and the observation that followed. With \verb|--initial-target-update| a value is set, stating how many transitions are saved before the model is optimized the first time. Afterwards an update occurs every frame. In the update a batch of size \verb|--batch-size| is randomly selected out of the saved transitions to calculate the Huber Loss. After \verb|--target-update| steps the target network is update with a new policy.
+
+5. berechnung ppo + parameter
+6. berechnung dqn + parameter
 Independent learning! each agent has own actor/critic or complete network
 agent observation explanation
 PARAMETERS!
