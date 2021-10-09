@@ -1,12 +1,10 @@
-FRAGEN:
-1) dqn hyperparameter tuning - was kann man verbessern/verändern
-2) meinung zu plots
-3) kurzes feedback zu ausarbeitung
+
 
 TODO:
-- DQN implementation
+- DQN implementation runs (parameter tuning?)
 - Basic Difference reward (each step reward compared with waiting action) 
-- plots refinement: plot matrix where each row is a setting with 4 columns 1) reward 2) grid coloration 3) trades 4) reset fields
+- plots refinement/beautify!: plot matrix where each row is a setting with 4 columns 1) reward 2) grid coloration 3) trades 4) reset fields
+- mixed environment always saves reward of 1
 
 --------------------------------------------------
 - AM: statt aktion vllt state? 

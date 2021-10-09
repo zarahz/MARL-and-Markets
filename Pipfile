@@ -6,7 +6,6 @@ name = "pypi"
 [packages]
 
 [dev-packages]
-torch-tb-profiler = "*"
 
 [requires]
 python_version = "3.8"
