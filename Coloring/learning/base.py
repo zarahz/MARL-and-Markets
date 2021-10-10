@@ -7,6 +7,7 @@ import numpy as np
 from learning.utils import DictList
 from learning.utils.penv import ParallelEnv
 from learning.utils.format import default_preprocess_obss
+from torch._C import dtype
 
 
 class BaseAlgo(ABC):
@@ -39,7 +40,7 @@ class BaseAlgo(ABC):
         self.actions = torch.zeros(
             *multi_shape, device=self.device, dtype=torch.int)  # multi_shape, device=self.device, dtype=torch.int)
         self.rewards = torch.zeros(
-            (self.num_frames_per_proc, self.num_procs, agents), device=self.device)
+            (self.num_frames_per_proc, self.num_procs, agents), device=self.device, dtype=torch.float)
         self.advantages = torch.zeros(*multi_shape, device=self.device)
 
         # Initialize log values

@@ -33,8 +33,8 @@ def base_args():
                         help="If set to mixed-motive the reward is not shared which enables a competitive environment (one vs. all). Another setting is percentage-reward, where the reward is shared (coop) and is based on the percanted of the grid coloration. The last option is mixed-motive-competitive which extends the normal mixed-motive setting by removing the field reset option. When agents run over already colored fields the field immidiatly change the color the one of the agent instead of resetting the color. (default: empty string - coop reward of one if the whole grid is colored)")
     parser.add_argument("--market", default='',
                         help="There are three options 'sm', 'am' and '' for none. SM = Shareholder Market where agents can auction actions similar to stocks. AM = Action Market where agents can buy specific actions from others. (Default = '')")
-    parser.add_argument("--trading-fee", default=0.05, type=float,
-                        help="If a trade is executed, this value determens the price (market type am) / share (market type sm) the agents exchange (Default: 0.05)")
+    parser.add_argument("--trading-fee", default=0.1, type=float,
+                        help="If a trade is executed, this value determens the price (market type am) / share (market type sm) the agents exchange (Default: 0.1)")
 
     return parser
 
@@ -69,8 +69,8 @@ def training_args():
     parser.add_argument("--recurrence", type=int, default=1,
                         help="number of time-steps gradient is backpropagated (default: 1). If > 1, a LSTM is added to the model to have memory.")
 
-    # i.e. batch_size = 256: insgesamt erhält man frames-per-proc*procs (128*16=2048) batch elemente / Transitions
-    # und davon erhält man 2048/256 = 8 mini batches
+    # i.e. batch_size = 256: overall one run contains frames-per-proc*procs (128*16=2048) batch elements / Transitions
+    # and out of that 2048/256 = 8 mini batches can be drawn
     parser.add_argument("--batch-size", type=int, default=256,
                         help="batch size for dqn (default: ppo 256, dqn 128)")
 
@@ -93,9 +93,6 @@ def training_args():
                         help="learning rate (default: 0.001)")
     parser.add_argument("--optim-eps", type=float, default=1e-8,
                         help="Adam and RMSprop optimizer epsilon (default: 1e-8)")
-
-    # parser.add_argument("--optim-alpha", type=float, default=0.99,
-    #                     help="RMSprop optimizer alpha (default: 0.99)")
 
     # --------------------------------------------------
     # Expand parser with specific arguments for each algorithm

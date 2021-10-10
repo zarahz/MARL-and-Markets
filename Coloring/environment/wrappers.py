@@ -33,7 +33,8 @@ class MultiagentWrapper(gym.core.ObservationWrapper):
             market_actions = actions[:, 1:]
             actions = actions[:, 0]
 
-        observation, reward, done, info = self.env.step(actions)
+        observation, reward, done, info = self.env.step(
+            actions, "difference-reward" in self.setting)
 
         if not "mixed" in self.setting:
             # assign all agents the same reward since here the reward is containig positive values for agents
@@ -51,18 +52,21 @@ class MultiagentWrapper(gym.core.ObservationWrapper):
         if(self.market):
             # is_last_step = (self.env.step_count+1 >= self.env.max_steps)
             trades, trading_reward = self.market.execute_market_actions(actions,
-                                                                        market_actions, info["reset_fields_by"])
+                                                                        market_actions, reward, info["reset_fields_by"])
             info.update(trades)
             reward = [r + tr for r, tr in zip(reward, trading_reward)]
 
         if done:
-            reward = self.calculate_reward(reward)
+            reward = self.calculate_reward(reward, info)
+        else:
+            # prevent applying dr twice
+            self.calculate_difference_reward(reward, info)
 
         return observation, reward, done, info
 
-    def calculate_reward(self, reward):
+    def calculate_reward(self, reward, info):
         agents = self.env.agents
-        env_goal_reached = self.env.whole_grid_colored()
+        env_goal_reached = self.env.whole_grid_colored(self.env.grid)
         if env_goal_reached:
             print('---- GRID FULLY COLORED! ---- steps', self.env.step_count)
 
@@ -83,15 +87,24 @@ class MultiagentWrapper(gym.core.ObservationWrapper):
             if env_goal_reached:
                 reward = [r + one for r, one in zip(reward, [1]*len(agents))]
 
-            # coop reward based on coloring percentage
-            elif "percentage-reward" in self.setting:
-                percentage_reward = [
-                    1 * self.env.grid_colored_percentage()]*len(agents)
-                reward = [r + percentage for r,
-                          percentage in zip(reward, percentage_reward)]
+            # coop reward with difference calculation to solve CAP
+            reward = self.calculate_difference_reward(
+                reward, info)
 
         # execute market calculations too
         if self.market:
             reward = self.market.calculate_traded_reward(
                 reward, env_goal_reached)
+        return reward
+
+    def calculate_difference_reward(self, reward, info):
+        if "difference-reward" in self.setting:
+            for agent, agent_reward in enumerate(reward):
+                default_action_reward = info['difference_reward'][agent]['reward']
+                if info['difference_reward'][agent]["fully_colored"]:
+                    # harsh penalty if environment would have been colored! otherwise just subtract a smaller value
+                    goal_reward = 1  # if env_colored == False else 0.5
+                    default_action_reward = [r + goal_r for r,
+                                             goal_r in zip(default_action_reward, [goal_reward]*len(reward))]
+                reward[agent] = agent_reward - default_action_reward[agent]
         return reward

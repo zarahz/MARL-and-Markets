@@ -8,6 +8,7 @@ from gym import spaces
 from gym.utils import seeding
 from .rendering import *
 from environment.colors import *
+import copy
 
 # Size in pixels of a tile in the full-scale human view
 TILE_PIXELS = 32
@@ -546,10 +547,8 @@ class GridEnv(gym.Env):
         self.see_through_walls = see_through_walls
 
         self.agents = {}
-        self.reward = []
         for agent in range(agents):
             self.agents[agent] = {'pos': None, 'color': agent+2}
-            self.reward.append(0)
         # Initialize the RNG
         self.seed(seed=seed)
 
@@ -560,7 +559,6 @@ class GridEnv(gym.Env):
         for agent in self.agents:
             # Current position of the agent
             self.agents[agent] = {**self.agents[agent], 'pos': None}
-            self.reward[agent] = 0
 
         if not IDX_TO_COLOR:
             # ensure colors are generated
@@ -830,7 +828,7 @@ class GridEnv(gym.Env):
             break
 
         if obj is None:  # placing agent
-            self.toggle_is_colored(self.grid.get(
+            self.toggle_is_colored(self.grid, self.grid.get(
                 *pos), self.agents[agent]['color'], pos, None)
         else:
             self.grid.set(*pos, obj)
@@ -839,12 +837,12 @@ class GridEnv(gym.Env):
 
         return pos
 
-    def put_obj(self, obj, i, j):
+    def put_obj(self, grid, obj, i, j):
         """
         Put an object at a specific position in the grid
         """
 
-        self.grid.set(i, j, obj)
+        grid.set(i, j, obj)
         obj.init_pos = (i, j)
         obj.cur_pos = (i, j)
 
@@ -877,9 +875,12 @@ class GridEnv(gym.Env):
         botY = topY + self.agent_view_size-1
         return (topX, topY, botX, botY)
 
-    def step(self, actions):
+    def step(self, actions, calc_difference_reward=False):
+        if calc_difference_reward:
+            dr_agent_grids = [copy.deepcopy(self.grid) for _ in self.agents]
+            all_old_pos = []
         self.step_count += 1
-        self.reward = [0]*len(self.agents)
+        reward = [0]*len(self.agents)
         done = False
         obs = {}
         reset_fields = 0
@@ -895,42 +896,81 @@ class GridEnv(gym.Env):
                 new_pos = np.array([x-1, y])
             elif action == self.actions.right:
                 new_pos = np.array([x+1, y])
-            elif action == self.actions.up:
-                new_pos = np.array([x, y+1])
             elif action == self.actions.down:
+                new_pos = np.array([x, y+1])
+            elif action == self.actions.up:
                 new_pos = np.array([x, y-1])
             elif action != self.actions.wait:
                 assert False, "unknown action"
 
+            if calc_difference_reward:
+                all_old_pos.append(old_pos)
+
             # move to new position if possible
             if new_pos is not None:
-                new_pos_cell = self.grid.get(*new_pos)
-                if new_pos_cell == None or new_pos_cell.can_overlap():
-                    cell_status = new_pos_cell
-                    self.agents[agent]['pos'] = new_pos
-                    agent_reset_field = self.toggle_is_colored(
-                        new_pos_cell, self.agents[agent]['color'], new_pos, old_pos)
-                    reset_fields += agent_reset_field
-                    updated_new_pos_cell = self.grid.get(*new_pos)
-                    # cell status change needs two conditions since new pos contains agent which could have the same color as prev!
-                    cell_status_changed = cell_status.color != updated_new_pos_cell.color or cell_status.is_colored != updated_new_pos_cell.is_colored
-                    self.reward, reset_fields_by = self._reward(agent, cell_status_changed, self.reward,
-                                                                agent_reset_field, reset_fields_by)
+                reset_field, cell_status_changed = self.move_agent(self.grid,
+                                                                   agent, old_pos, new_pos)
+                # update reset counter
+                reset_fields += reset_field
+                # calculate env reward
+                reward, reset_fields_by = self._reward(agent, cell_status_changed, reward,
+                                                       reset_field, reset_fields_by)
 
             obs[agent] = self.gen_obs(agent)
 
         info = {"reset_fields": reset_fields, "reset_fields_by": reset_fields_by,
                 "coloration_percentage": round(self.grid_colored_percentage(), 2), "fully_colored": 0}
 
-        if self.whole_grid_colored() or self.step_count >= self.max_steps:
-            info["fully_colored"] = 1 if self.whole_grid_colored() else 0
+        if self.whole_grid_colored(self.grid) or self.step_count >= self.max_steps:
+            info["fully_colored"] = 1 if self.whole_grid_colored(
+                self.grid) else 0
             done = True
             # reward = [1]*len(self.agents)
 
-        return obs, self.reward, done, info
+        if calc_difference_reward:
+            dr_info = self.calculate_difference_rewards(
+                dr_agent_grids, all_old_pos)
+            info.update({"difference_reward": dr_info})
 
-    def whole_grid_colored(self):
-        return all(self.grid.encode_grid_objects()[:, :, 1].ravel())
+        return obs, reward, done, info
+
+    def calculate_difference_rewards(self, grids, all_old_pos):
+        info = []
+        for agent in self.agents:
+            reward = [0]*len(self.agents)
+            for moving_agent, old_pos in enumerate(all_old_pos):
+                if old_pos is not None:
+                    # the current agent executes default "waiting" action -> stays in old position
+                    new_pos = old_pos if moving_agent == agent else self.agents[moving_agent]["pos"]
+                    if tuple(new_pos) == old_pos:
+                        continue
+                    reset_field, cell_status_changed = self.move_agent(grids[agent],
+                                                                       moving_agent, old_pos, new_pos, calc_difference_reward=True)
+                    reward, _ = self._reward(moving_agent, cell_status_changed, reward,
+                                             reset_field, [])
+                    reward[agent] = 0
+            grid_done = self.whole_grid_colored(grids[agent])
+            info.append({"fully_colored": grid_done, "reward": reward})
+        return info
+
+    def move_agent(self, grid, agent, old_pos, new_pos, calc_difference_reward=False):
+        new_pos_cell = grid.get(*new_pos)
+        if new_pos_cell == None or new_pos_cell.can_overlap():
+            cell_status = new_pos_cell
+            if not calc_difference_reward:
+                self.agents[agent]['pos'] = new_pos
+            agent_reset_field = self.toggle_is_colored(grid,
+                                                       new_pos_cell, self.agents[agent]['color'], new_pos, old_pos)
+            updated_new_pos_cell = grid.get(*new_pos)
+            # cell status change needs two conditions since new pos contains agent which could have the same color as prev!
+            cell_status_changed = cell_status.color != updated_new_pos_cell.color or cell_status.is_colored != updated_new_pos_cell.is_colored
+
+            return agent_reset_field, cell_status_changed
+
+        return 0, False
+
+    def whole_grid_colored(self, grid):
+        return all(grid.encode_grid_objects()[:, :, 1].ravel())
 
     def grid_colored_percentage(self):
         # walkable_cells include agent and floor objects
@@ -954,24 +994,24 @@ class GridEnv(gym.Env):
             (encoded_grid[:, :, 0] == 4) & (encoded_grid[:, :, 1] == 1))]
         return np.concatenate((colored_floor_cells, colored_agent_cells))
 
-    def toggle_is_colored(self, obj, color, new_pos, old_pos):
+    def toggle_is_colored(self, grid, obj, color, new_pos, old_pos):
         field_reset = False
         is_colored = 1
         if obj is not None and obj.is_colored and not self.competitive:
             is_colored = 0
             field_reset = True
 
-        self.put_obj(Agent(is_colored, color), *new_pos)
+        self.put_obj(grid, Agent(is_colored, color), *new_pos)
         if old_pos:
             old_pos_attr = self.grid.get(*old_pos)
             for agent in self.agents:
                 if (self.agents[agent]['pos'] == old_pos).all():
                     # in this case the acting agent moves away from a field where another
                     # agent was also standing -> render the staying agent here
-                    self.put_obj(Agent(is_colored=old_pos_attr.is_colored,
-                                       color=old_pos_attr.color), *old_pos)
+                    self.put_obj(grid, Agent(is_colored=old_pos_attr.is_colored,
+                                             color=old_pos_attr.color), *old_pos)
             # render the old position without an agent on it
-            self.put_obj(Floor(is_colored=old_pos_attr.is_colored,
+            self.put_obj(grid, Floor(is_colored=old_pos_attr.is_colored,
                          color=old_pos_attr.color), *old_pos)
 
         return field_reset
@@ -1038,7 +1078,7 @@ class GridEnv(gym.Env):
 
         return img
 
-    def render(self, mode='human', close=False, highlight=True, tile_size=TILE_PIXELS):
+    def render(self, mode='human', reward=[], close=False, highlight=True, tile_size=TILE_PIXELS):
         """
         Render the whole-grid human view
         """
@@ -1091,7 +1131,7 @@ class GridEnv(gym.Env):
         if mode == 'human':
             coloration_percentage = self.grid_colored_percentage()
             self.window.set_caption(
-                self.mission, coloration_percentage, self.step_count, self.max_steps, self.reward)
+                self.mission, coloration_percentage, self.step_count, self.max_steps, rewards=reward)
             self.window.show_img(img)
 
         return img

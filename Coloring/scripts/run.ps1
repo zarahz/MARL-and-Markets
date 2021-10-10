@@ -3,14 +3,27 @@ Set-Location -Path "C:\Users\Zarah\Documents\workspace\MA\"
 
 & C:/Users/Zarah/.virtualenvs/Coloring_with_CAP-xNNGJax5/Scripts/Activate.ps1
 
-# & .\Coloring\scripts\powershell\1-ppo.ps1
-& .\Coloring\scripts\powershell\1-dqn.ps1
-# & .\Coloring\scripts\powershell\3-ppo.ps1
-# & .\Coloring\scripts\powershell\3-ppo-mixed.ps1
-# & .\Coloring\scripts\powershell\3-ppo-mixed-competitive.ps1
-# & .\Coloring\scripts\powershell\3-ppo-percentage.ps1
-# & .\Coloring\scripts\powershell\3-ppo-rooms.ps1
+#EASY
+# & .\Coloring\scripts\powershell\easy\1-ppo.ps1
+# & .\Coloring\scripts\powershell\easy\1-dqn.ps1
+& .\Coloring\scripts\powershell\easy\dqn_comparisons.ps1
+# & .\Coloring\scripts\powershell\easy\3-ppo.ps1
+# & .\Coloring\scripts\powershell\easy\3-ppo-mixed.ps1
+# & .\Coloring\scripts\powershell\easy\3-ppo-mixed-competitive.ps1
 #TODO call other scripts!
+# & .\Coloring\scripts\powershell\easy\3-ppo-percentage.ps1
+# & .\Coloring\scripts\powershell\easy\3-ppo-rooms.ps1
+
+
+# HARD
+# & .\Coloring\scripts\powershell\hard\1-ppo.ps1
+# & .\Coloring\scripts\powershell\hard\1-dqn.ps1
+# & .\Coloring\scripts\powershell\hard\3-ppo.ps1
+# & .\Coloring\scripts\powershell\hard\3-ppo-mixed.ps1
+# & .\Coloring\scripts\powershell\hard\3-ppo-mixed-competitive.ps1
+#TODO call other scripts!
+# & .\Coloring\scripts\powershell\hard\3-ppo-percentage.ps1
+# & .\Coloring\scripts\powershell\hard\3-ppo-rooms.ps1
 
 Set-Location -Path "C:\Users\Zarah\Documents\workspace\MA\Coloring\scripts\"
 

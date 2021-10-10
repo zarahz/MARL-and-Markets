@@ -218,7 +218,7 @@ if __name__ == '__main__':
     max_episodes = (
         int(args.frames_per_proc / best_case_steps) * args.procs) * args.log_interval
     min_episodes = (
-        int(args.frames_per_proc / args.max_steps) * args.procs) * args.log_interval
+        int(args.frames_per_proc / envs[0].env.max_steps) * args.procs) * args.log_interval
     txt_logger.info(
         f"Best case step use - count of episodes (per update): {max_episodes} \n")
     txt_logger.info(
