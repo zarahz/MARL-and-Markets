@@ -87,7 +87,7 @@ The third encoding signalizes the color of a cell. To better distinguish the typ
 \marginpar{activation line}
 The allocation of rewards is closely related to the composition of the agents, which can be specified by the user in training or visualization runs. In addition the environment shape can be set, a number of agents placed and more. A basic example command for a training run is shown in listing \ref{lst:command}.
 
-\begin{lstlisting}[float=htp,caption=Exemplary command to execute training with three agents in a coloring environment with PPO as algorithm,label=lst:command,language=bash, numbers=left, numberstyle=\tiny, numbersep=8pt, escapeinside={//@}{@//},xleftmargin=3ex,xrightmargin=1ex]
+\begin{lstlisting}[float=htp,caption=Exemplary command to execute training with three agents in a coloring environment using PPO as algorithm,label=lst:command,language=bash, numbers=left, numberstyle=\tiny, numbersep=8pt, escapeinside={//@}{@//},xleftmargin=3ex,xrightmargin=1ex]
 $ python -m Coloring.scripts.train
     --algo ppo
     --model ppo-training
@@ -99,13 +99,13 @@ $ python -m Coloring.scripts.train
 \end{lstlisting}
 
 \marginpar{command algo and model}
-The ``algo'' parameter can be either ``ppo'' or ``dqn'' to choose a learning algorithm. This argument is the only required setting for training. All other configurations, including those not listed in \ref{lst:command}, have default values and are discussed in the sections \ref{learning_process} and \ref{market_settings}. An overview of all training parameters and their default values is listed in Appendix \ref{ax:training_params}. The model defines the name for a destination folder, in which all logs, recordings and status updates are stored.
+The \verb|--algo| parameter can be either ``ppo'' or ``dqn'' to choose a learning algorithm. This argument is the only required setting for training. All other configurations, including those not listed in \ref{lst:command}, have default values and are discussed in the sections \ref{learning_process} and \ref{market_settings}. An overview of all training parameters and their default values is listed in Appendix \ref{ax:training_params}. The model defines the name for a destination folder, in which all logs, recordings and status updates are stored.
 
 \marginpar{command env}
-Line 4 and 5 configures the environment. Alternatively to the empty grid option of ``env'', as shown in figure \ref{fig:env}, four homogeneous rooms can be generated with ``FourRooms-Grid-v0'' to increase the difficulty. The rooms are of the same size and each room is accessible to all adjoining neighbors by one opening, which is random and changes in each episode. The overall size of the grid is set in Line 5, however all grids in every layout option have outer walls that narrow the area in which agents can move.
+Line 4 and 5 configures the environment. Alternatively to the empty grid option of \verb|--env|, as shown in figure \ref{fig:env}, four homogeneous rooms can be generated with ``FourRooms-Grid-v0'' to increase the difficulty. The rooms are of the same size and each room is accessible to all adjoining neighbors by one opening, which is random and changes in each episode. The overall size of the grid is set in Line 5, however all grids in every layout option have outer walls that narrow the area in which agents can move.
 
 \marginpar{settings}
-The amount of agents that act in the environment is set through the argument ``agents'' and the maximum quantity of steps they can execute is defined with ``max-steps''. To gain the maximum reward, the agents need to color the whole field before they run out of steps. Lastly, the argument ``setting'' specifies the composition of the agents. If no setting is set the agents work cooperatively. In the example of \ref{lst:command} the setting ``mixed-motive'' is chosen. The last option here is ``mixed-motive-competitive''. % and ``percentage''.
+The amount of agents that act in the environment is set through the argument \verb|--agents| and the maximum quantity of steps they can execute is defined with \verb|--max-steps|. To gain the maximum reward, the agents need to color the whole field before they run out of steps. Lastly, the argument \verb|--setting| specifies the composition of the agents. If no setting is set the agents work cooperatively. In the example of \ref{lst:command} the setting ``mixed-motive'' is chosen. The last option here is ``mixed-motive-competitive''. % and ``percentage''.
 
 \marginpar{environment reward}
 In each step agents get separate environment rewards based on their coloration. Agents that color a field receive a reward of 0.1, whereas agents that reset a field get a penalty of -0.1. In the competitive mode agents can not reset fields and therefore receive no penalty. In this case the contrary happens, capturing cells of other agents, yield a positive reward of 0.1. Agents that just wait get a reward of 0. All rewards are written into a list and returned by the environment. The position in the list indicates the receiving agent. In algorithm \ref{algo:step_reward} the process of adapting the initial environment rewards with the specified training arguments is summarized.
@@ -130,7 +130,7 @@ In each step agents get separate environment rewards based on their coloration. 
 First, for a cooperative setting a new homogeneous reward needs to be calculated out of the environment rewards. The calculation for that is summing up all list values and checking if they exceed an upper or lower bound. If that is the case then the new reward is set to the corresponding limit, otherwise the sum is taken as is. This step is necessary, due to more participating agents possibly leading to a really big or really small sum. This in turn could decrease the importance of the final reward for reaching the environment goal. For settings that contain ``mixed-motive'' this calculation is skipped, since here each agent is responsible for its own environment reward.
 
 \marginpar{market actions}
-Second, the market transactions are executed, if a shareholder or action market is specified. The market details are discussed in Section \ref{market_settings}. One thing to note here is that agents can execute transactions in each step, spending their current reward on items for sale or receive the purchase price from buyers. Therefore the rewards change in this step too.
+Second, the market transactions are executed, if a SM or AM is specified. The market details are discussed in Section \ref{market_settings}. One thing to note here is that agents can execute transactions in each step, spending their current reward on items for sale or receive the purchase price from buyers. Therefore the rewards change in this step too.
 
 \marginpar{done calculations}
 Lastly, the final reward is calculated when done is set to true. That is the case when the environment goal is reached or all steps are used up. Algorithm \ref{algo:final_reward} shows the executed calculations of that case. Again the first thing to check is whether the agents work together. If not, each agents' grid coloration percentage, based on their color presence, is added to the individual reward. Otherwise the environment goal condition is checked for the cooperation mode. If the grid is fully colored the value one is added to each agent reward, since everyone gets the same feedback. Finally, the last market calculations are included into the rewards, see chapter \ref{market_settings} for details.
@@ -198,7 +198,7 @@ With that experience buffer the PPO model is now optimized. A small number of \v
 
 \section{Market Settings}\label{market_settings}
 \marginpar{initialization}
-To include a market into the training process, the \verb|--market| parameter can be set accordingly. The user has a choice to include an action market through the string ``am'' or a shareholder market with ``sm''. In either case, the environment needs to adjust the action space, since agents have the option to conduct market transactions.
+To include a market into the training process, the \verb|--market| parameter can be set accordingly. The user has a choice to include an AM through the string ``am'' or a SM with ``sm''. In either case, the environment needs to adjust the action space, since agents have the option to conduct market transactions.
 
 \marginpar{action space}
 Per default, the environment action space is discrete and only contains five elements: moving up, down, left, right or wait. Adding a market expands that discrete space into a multi discrete space. Hence, both markets require actions in form of arrays that contain three elements. However, they use different information in the action array slots. This and further distinctions and detailed procedures of each market are explained separately in the following.
@@ -207,7 +207,7 @@ Per default, the environment action space is discrete and only contains five ele
 
 \subsection{Shareholder Market}
 \marginpar{sm - action space}
-A coloring environment that includes a shareholder market constrains the first position of the action array to one of the five environment actions. The next position contains an agent index, towards which a buying offer will be made. Although, if this number is higher than the amount of agents in the game, the action intends no buying transaction. The last array position contains either a zero or a one, with one signalizing that the agent wants to sell its share. An abstract representation of a shareholder action array is: \verb|[environment_action, directed_buying_offer, sell_share]|.
+A coloring environment that includes a SM constrains the first position of the action array to one of the five environment actions. The next position contains an agent index, towards which a buying offer will be made. Although, if this number is higher than the amount of agents in the game, the action intends no buying transaction. The last array position contains either a zero or a one, with one signalizing that the agent wants to sell its share. An abstract representation of a shareholder action array is: \verb|[environment_action, agent_index, sell_share]|.
 
 \begin{figure}[hpbt]
     \centering
@@ -216,19 +216,22 @@ A coloring environment that includes a shareholder market constrains the first p
 \end{figure}
 
 \marginpar{shareholder market step}
-In Figure \ref{fig:market} market elements are visualized. On the left, the process that happens in each step is shown, as mentioned in Algorithm \ref{algo:step_reward}. Here, the market always receives an action array that is already divided in two parts, one part only containing the environment action and the other the buying and selling information. Since transactions alter the rewards, the current reward is also transmitted. Lastly, an array of agent indices that have recently reset cells is also given, since some transaction conditions make use of that information.
+In Figure \ref{fig:market} market elements are visualized. On the left, the process that happens in each step is shown, as mentioned in Algorithm \ref{algo:step_reward}. Here, the market always receives an action array that is already divided in two parts, one part only containing the environment action and the other the buying and selling information.
+% Since transactions alter the rewards, the current reward is also transmitted. Lastly, an array of agent indices that have recently reset cells is also given, since some transaction conditions make use of that information.
 
 \marginpar{trading matrix}
-In the course of the market calculations a trading matrix is altered. This matrix is quadratic with dimensions equal to the amount of agents. On the matrix diagonal each agent balance is saved. In a shareholder trading matrix, the diagonal contains ones, since every agent starts with the full ownership over their own shares. All other matrix slots are filled with zeros.
+In the course of the market calculations a trading matrix is altered. This matrix is quadratic with dimensions equal to the amount of agents. In a shareholder trading matrix, the diagonal contains ones, since every agent starts with the full ownership over their own shares. All other matrix slots are filled with zeros.
 
 \marginpar{execute market transactions}
-The first thing to check in a market step execution is the market type. If the shareholder market matches, the corresponding function is called. Since the environment actions are not of importance in this case, the function receives all other parameters instead. Inside the shareholder function two additional matrices are created from the environment actions, a buying matrix and a selling matrix.
+The first thing to check in a market step execution is the market type. If the SM matches, the corresponding function is called. In this case the environment actions are not of importance so the function receives all other parameters instead. Inside the shareholder function two additional matrices are created from the market actions, a buying matrix and a selling matrix.
 
 \marginpar{buying and selling matrix}
-Both matrices are initially filled with zeros, are quadratic, and their dimensions depend on the amount of agents, similar to the trading matrix. The buying matrix contains a one in the row of the acting agent and the column of the agent that the buying offer is directed to. Here, the diagonal stays zero, since agents are prohibited of buying from themselves. Each agent can only buy one share at a time, therefore the rows contain at maximum one entry. The selling matrix may contain ones only on the diagonal and only for the agent that wants to sell according to the market actions.
+Both matrices are initially filled with zeros, are quadratic, and their dimensions depend on the amount of agents, similar to the trading matrix. The buying matrix contains a one in the row of the buyer and the column of the agent that the offer is directed to.
+% Here, the diagonal stays zero, since agents are prohibited of buying from themselves. 
+Each agent can only buy one share at a time, therefore the rows contain at maximum one entry. The selling matrix may contain ones only on the diagonal and only for the agent that wants to sell according to the market actions.
 
 \marginpar{iteration}
-Inside the shareholder function both matrices are iterated, extracting buyer, seller and the corresponding matrix rows. A transaction takes place if the following conditions are met:
+Inside the shareholder function both matrices are now iterated, extracting buyer, seller and the corresponding matrix rows. A transaction takes place if the following conditions are met:
 \begin{itemize}
     \item the buyer is not equal to the seller
     \item all entries of the buyer and seller matrix rows match
@@ -236,29 +239,47 @@ Inside the shareholder function both matrices are iterated, extracting buyer, se
 \end{itemize}
 
 \marginpar{transaction}
-If that is the case, the rewards are updated by substracting a small price from the buying agent and adding that value to the selling agent. Similarly, the trading matrix is updated by changing the share of the selling agent, adding the subtracted amount to the buyer. During training the share size can be set with \verb|--trading-fee|. Lastly, the trading count is documented for evaluation purposes. At this point the market step calculations are done and the trade count and updated rewards are returned from the market.
-
-\marginpar{conditions}
-The \verb|--market| string can be extended to add more conditions for both market types, namely with ``no-reset'' and ``no-debt''. The ``no-reset'' string enables the check whether the buyer has recently reset a cell. If that is the case the buyer is punished by ignoring its market action. With the ``no-debt'' Flag, transactions only take place if buyers can afford to pay the price. Both additions can be used simultaneously.
-
-- sm
-
-- sm-goal
-
-- sm-no-reset
-
-- sm-no-dept
-
-- sm-goal-no-reset-no-dept
-
+If all conditions of the shareholder function are true, the rewards are updated by optionally substracting a small price from the buying agent and adding that value to the selling agent. Similarly, the trading matrix is updated by changing the share of the selling agent, adding the subtracted amount to the buyer. The amount can be set with \verb|--trading-fee|. Lastly, the trading count is documented for evaluation purposes. At this point the SM step transactions are done and the number of executed trades and the updated rewards are returned from the market.
 
 \subsection{Action Market}
-- am
+\marginpar{action space}
+The action shape of an AM environment is similar to the shareholder action array. Again an action has three slots, with the first being the environment execution and the second being the index of an agent a buying offer will be directed to. The difference to a shareholder action is the last array position. Instead of setting a bit here to signalize the willingness of selling shares, the agent chooses an environment action that is expected from the agent of position two. Hence, an abstract representation of an action in the AM is the following: \verb|[environment_action, agent_index, expected_action]|.
 
-- am-goal
+\marginpar{transaction}
+The market elements and general process of visualization \ref{fig:market} also apply to an AM setting. Here however, the trading matrix is initially filled with zeros. Furthermore, the AM function needs all parameters, including the environment actions. This information is crucial to the transaction conditions, which are:
+\begin{itemize}
+    \item the buyer differ from the receiving agent
+    \item the environment action of the receiving agent matches the expected action
+\end{itemize}
 
-- am-no-reset
+\marginpar{success}
+When all conditions are met a market transaction takes place. The \verb|--trading-fee| parameter decides the price the buyer pays the receiving agent. Both the rewards and trading matrix are altered here, by substracting the price from the buyer and adding it to the receiver. This concludes an AM step calculation, returning the number of transactions that took place and the new rewards.
 
-- am-no-dept
+\subsection{Additional Conditions}
+\marginpar{reset and debt}
+The AM or SM \verb|--market| string can be extended to add more conditions, namely with ``no-reset'', ``no-debt'' and ``goal''. The ``no-reset'' string enables the check whether the buyer has recently reset a cell. If that is the case, the corresponding buyers are punished by ignoring their market actions. With the ``no-debt'' Flag, transactions only take place if buyers can afford to pay the price. In AMs, this is solely the case if agents have colored a cell in that step. Waiting or misbehaving agents are excluded as buyers. For SM this depends on the presence of a transaction price. Per default the price is zero, similar to the approach of Schmid et al. \cite{scbe21}.
+% TODO kommt zu goal Both market conditions can be used simultaneously.
 
-- am-goal-no-reset-no-dept
+\marginpar{goal}
+The last addition, ``goal'', lets the market process run as usual, excluding the reward change of the SM or AM functions. Here, all transactions are just documented during an episode. The transactions are executed once the final reward is calculated, see Algorithm \ref{algo:final_reward}. As shown on the right side of Figure \ref{fig:market}, the market obtains the current final rewards and a Boolean describing whether or not the environment goal was reached.
+
+\marginpar{conditions}
+The rewards are updated with the trading matrix content when either of the two conditions is satisfied:
+\begin{itemize}
+    \item ``goal'' addition is present and environment goal was reached
+    \item no ``goal'' addition and market type is a SM
+\end{itemize}
+Otherwise the rewards are return as they are and will not be processed further. Since the goods of a SM are shares, naturally the payout takes place at the end of an episode. In an AM however, each step is self-contained in regards to transactions and payouts. Nonetheless, with the ``goal'' addition, the payout also shifts to the end of episodes. For goal oriented markets, regardless of the type, the final state needs to equal the environment aim. Thus, the whole grid has to be colored, to execute the final market transactions.
+
+\marginpar{trading matrix}
+If the first condition applies and an AM is present, each agent reward is iterated and added to the sum of the corresponding trading matrix row. For a SM either condition must be met in order to generate the final reward. Again, the trading matrix rows and rewards are iterated here. Each row element is multiplied with the reward of the same index and added to the new reward of that agent. An example of both operations is shown in Figure \ref{fig:market_rewards}.
+
+\begin{figure}[hpbt]
+    \centering
+    \includegraphics[width=0.9\textwidth]{pictures/market_rewards}\\
+    \caption[Exemplary Reward Redistribution Of Markets]{Exemplary reward redistribution of both market types}\label{fig:market_rewards}
+\end{figure}
+
+\marginpar{negative share rewards}
+An exception occurs in SMs, when agents received negative rewards. In this case their share will be skipped during the redistribution, since shares are used to participate in profits. After the reassignment of rewards the results are returned, as shown in Figure \ref{fig:market}, and the learning process can continue. The last thing to point out is that the additional market conditions can be used in combination, making ``sm-goal-no-reset-no-debt'' for example a valid \verb|--market| setting.
+
