@@ -1,19 +1,19 @@
 
-pipenv run python -m Coloring.scripts.train --algo ppo --agents 2 --model easy\\2-ppo-dr `
-    --setting difference-reward `
-    --max-steps 70  `
-    --grid-size 5 `
-    --frames-per-proc 128 `
-    --frames 100000
+# pipenv run python -m Coloring.scripts.train --algo ppo --agents 2 --model easy\\2-ppo-dr `
+#     --setting difference-reward `
+#     --max-steps 70  `
+#     --grid-size 5 `
+#     --frames-per-proc 128 `
+#     --frames 100000
 
 #----------------------------------------------------------------------------------------
 # 3 PPO Settings
 #----------------------------------------------------------------------------------------
-pipenv run python -m Coloring.scripts.train --algo ppo --agents 2 --model easy\\2-ppo `
-    --max-steps 70  `
-    --grid-size 5 `
-    --frames-per-proc 128 `
-    --frames 100000 `
+# pipenv run python -m Coloring.scripts.train --algo ppo --agents 2 --model easy\\2-ppo `
+#     --max-steps 70  `
+#     --grid-size 5 `
+#     --frames-per-proc 128 `
+#     --frames 100000 `
 
 #----------------------------------------------------------------------------------------
 # 3 PPO Settings with SHAREHOLDER Market
@@ -39,15 +39,15 @@ pipenv run python -m Coloring.scripts.train --algo ppo --agents 2 --model easy\\
     --frames-per-proc 128 `
     --frames 100000
 
-pipenv run python -m Coloring.scripts.train --algo ppo --agents 2 --model easy\\2-ppo-sm-no-dept `
-    --market sm-no-dept `
+pipenv run python -m Coloring.scripts.train --algo ppo --agents 2 --model easy\\2-ppo-sm-no-debt `
+    --market sm-no-debt `
     --max-steps 70  `
     --grid-size 5 `
     --frames-per-proc 128 `
     --frames 100000
 
-pipenv run python -m Coloring.scripts.train --algo ppo --agents 2 --model easy\\2-ppo-sm-goal-no-reset-no-dept `
-    --market sm-goal-no-reset-no-dept `
+pipenv run python -m Coloring.scripts.train --algo ppo --agents 2 --model easy\\2-ppo-sm-goal-no-reset-no-debt `
+    --market sm-goal-no-reset-no-debt `
     --max-steps 70  `
     --grid-size 5 `
     --frames-per-proc 128 `
@@ -63,40 +63,40 @@ pipenv run python -m Coloring.scripts.train --algo ppo --agents 2 --model easy\\
 #----------------------------------------------------------------------------------------
 # 3 PPO Settings with ACTION Market
 #----------------------------------------------------------------------------------------
-pipenv run python -m Coloring.scripts.train --algo ppo --agents 2 --model easy\\2-ppo-am `
-    --market am `
-    --max-steps 70  `
-    --grid-size 5 `
-    --frames-per-proc 128 `
-    --frames 100000 
+# pipenv run python -m Coloring.scripts.train --algo ppo --agents 2 --model easy\\2-ppo-am `
+#     --market am `
+#     --max-steps 70  `
+#     --grid-size 5 `
+#     --frames-per-proc 128 `
+#     --frames 100000 
 
-pipenv run python -m Coloring.scripts.train --algo ppo --agents 2 --model easy\\2-ppo-am-goal `
-    --market am-goal `
-    --max-steps 70  `
-    --grid-size 5 `
-    --frames-per-proc 128 `
-    --frames 100000
+# pipenv run python -m Coloring.scripts.train --algo ppo --agents 2 --model easy\\2-ppo-am-goal `
+#     --market am-goal `
+#     --max-steps 70  `
+#     --grid-size 5 `
+#     --frames-per-proc 128 `
+#     --frames 100000
     
-pipenv run python -m Coloring.scripts.train --algo ppo --agents 2 --model easy\\2-ppo-am-no-reset `
-    --market am-no-reset `
-    --max-steps 70  `
-    --grid-size 5 `
-    --frames-per-proc 128 `
-    --frames 100000
+# pipenv run python -m Coloring.scripts.train --algo ppo --agents 2 --model easy\\2-ppo-am-no-reset `
+#     --market am-no-reset `
+#     --max-steps 70  `
+#     --grid-size 5 `
+#     --frames-per-proc 128 `
+#     --frames 100000
 
-pipenv run python -m Coloring.scripts.train --algo ppo --agents 2 --model easy\\2-ppo-am-no-dept `
-    --market am-no-dept `
-    --max-steps 70  `
-    --grid-size 5 `
-    --frames-per-proc 128 `
-    --frames 100000
+# pipenv run python -m Coloring.scripts.train --algo ppo --agents 2 --model easy\\2-ppo-am-no-debt `
+#     --market am-no-debt `
+#     --max-steps 70  `
+#     --grid-size 5 `
+#     --frames-per-proc 128 `
+#     --frames 100000
 
-pipenv run python -m Coloring.scripts.train --algo ppo --agents 2 --model easy\\2-ppo-am-goal-no-reset-no-dept `
-    --market am-goal-no-reset-no-dept `
-    --max-steps 70  `
-    --grid-size 5 `
-    --frames-per-proc 128 `
-    --frames 100000
+# pipenv run python -m Coloring.scripts.train --algo ppo --agents 2 --model easy\\2-ppo-am-goal-no-reset-no-debt `
+#     --market am-goal-no-reset-no-debt `
+#     --max-steps 70  `
+#     --grid-size 5 `
+#     --frames-per-proc 128 `
+#     --frames 100000
 
 # pipenv run python -m Coloring.scripts.train --algo ppo --agents 2 --model easy\\2-ppo-am-goal-no-reset `
 #     --market am-goal-no-reset `

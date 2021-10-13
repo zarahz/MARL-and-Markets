@@ -1,8 +1,8 @@
 
 pipenv run python -m Coloring.scripts.train --algo ppo --agents 3 --model 3-ppo-dr `
---max-steps 350 `
---capture-interval 20 `
---setting difference-reward
+    --max-steps 350 `
+    --capture-interval 20 `
+    --setting difference-reward
 
 #----------------------------------------------------------------------------------------
 # 3 PPO Settings
@@ -29,13 +29,13 @@ pipenv run python -m Coloring.scripts.train --algo ppo --agents 3 --model 3-ppo-
     --max-steps 350 `
     --capture-interval 20
 
-pipenv run python -m Coloring.scripts.train --algo ppo --agents 3 --model 3-ppo-sm-no-dept `
-    --market sm-no-dept `
+pipenv run python -m Coloring.scripts.train --algo ppo --agents 3 --model 3-ppo-sm-no-debt `
+    --market sm-no-debt `
     --max-steps 350 `
     --capture-interval 20
 
-pipenv run python -m Coloring.scripts.train --algo ppo --agents 3 --model 3-ppo-sm-goal-no-reset-no-dept `
-    --market sm-goal-no-reset-no-dept `
+pipenv run python -m Coloring.scripts.train --algo ppo --agents 3 --model 3-ppo-sm-goal-no-reset-no-debt `
+    --market sm-goal-no-reset-no-debt `
     --max-steps 350 `
     --capture-interval 20
 
@@ -62,13 +62,13 @@ pipenv run python -m Coloring.scripts.train --algo ppo --agents 3 --model 3-ppo-
     --max-steps 350 `
     --capture-interval 20
 
-pipenv run python -m Coloring.scripts.train --algo ppo --agents 3 --model 3-ppo-am-no-dept `
-    --market am-no-dept `
+pipenv run python -m Coloring.scripts.train --algo ppo --agents 3 --model 3-ppo-am-no-debt `
+    --market am-no-debt `
     --max-steps 350 `
     --capture-interval 20
 
-pipenv run python -m Coloring.scripts.train --algo ppo --agents 3 --model 3-ppo-am-goal-no-reset-no-dept `
-    --market am-goal-no-reset-no-dept `
+pipenv run python -m Coloring.scripts.train --algo ppo --agents 3 --model 3-ppo-am-goal-no-reset-no-debt `
+    --market am-goal-no-reset-no-debt `
     --max-steps 350 `
     --capture-interval 20
 

@@ -27,15 +27,15 @@ pipenv run python -m Coloring.scripts.train --algo ppo --agents 3 --model 3-ppo-
     --max-steps 350 `
     --capture-interval 20
 
-pipenv run python -m Coloring.scripts.train --algo ppo --agents 3 --model 3-ppo-mixed-competitive-sm-no-dept `
+pipenv run python -m Coloring.scripts.train --algo ppo --agents 3 --model 3-ppo-mixed-competitive-sm-no-debt `
     --setting mixed-motive-competitive `
-    --market sm-no-dept `
+    --market sm-no-debt `
     --max-steps 350 `
     --capture-interval 20
 
-pipenv run python -m Coloring.scripts.train --algo ppo --agents 3 --model 3-ppo-mixed-competitive-sm-goal-no-reset-no-dept `
+pipenv run python -m Coloring.scripts.train --algo ppo --agents 3 --model 3-ppo-mixed-competitive-sm-goal-no-reset-no-debt `
     --setting mixed-motive-competitive `
-    --market sm-goal-no-reset-no-dept `
+    --market sm-goal-no-reset-no-debt `
     --max-steps 350 `
     --capture-interval 20
 
@@ -66,15 +66,15 @@ pipenv run python -m Coloring.scripts.train --algo ppo --agents 3 --model 3-ppo-
     --max-steps 350 `
     --capture-interval 20
 
-pipenv run python -m Coloring.scripts.train --algo ppo --agents 3 --model 3-ppo-mixed-competitive-am-no-dept `
+pipenv run python -m Coloring.scripts.train --algo ppo --agents 3 --model 3-ppo-mixed-competitive-am-no-debt `
     --setting mixed-motive-competitive `
-    --market am-no-dept `
+    --market am-no-debt `
     --max-steps 350 `
     --capture-interval 20
 
-pipenv run python -m Coloring.scripts.train --algo ppo --agents 3 --model 3-ppo-mixed-competitive-am-goal-no-reset-no-dept `
+pipenv run python -m Coloring.scripts.train --algo ppo --agents 3 --model 3-ppo-mixed-competitive-am-goal-no-reset-no-debt `
     --setting mixed-motive-competitive `
-    --market am-goal-no-reset-no-dept `
+    --market am-goal-no-reset-no-debt `
     --max-steps 350 `
     --capture-interval 20
 

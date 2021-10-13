@@ -1,7 +1,5 @@
 *.pyc
 *__pycache__
-*egg-info
-storage
 .DS_Store
 
 # PyPI
@@ -14,8 +12,12 @@ build/
 dist/
 eggs/
 .eggs/
+*egg-info
 *.egg-info/
 *.egg
+
+Coloring/storage/
+!Coloring/storage/easy/plot.ipynb
 
 # generated latex files that can be ignored 
 Thesis/text/indent.log
