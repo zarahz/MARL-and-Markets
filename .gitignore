@@ -16,8 +16,8 @@ eggs/
 *.egg-info/
 *.egg
 
-Coloring/storage/
-!Coloring/storage/easy/plot.ipynb
+Coloring/storage/*
+!Coloring/storage/easy
 
 # generated latex files that can be ignored 
 Thesis/text/indent.log
