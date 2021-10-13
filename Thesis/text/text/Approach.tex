@@ -197,6 +197,10 @@ In the DQN implementation learning happens during the base class batch creation,
 With that experience buffer the PPO model is now optimized. A small number of \verb|--epochs| are iterated and during each iteration random batch entries are selected. With those entries the entropies, values and losses are calculated. Afterwards the calculation results are used to update the policy and network, as suggested in the pseudo code of \ref{fig:ppo_algo_code}.
 
 \section{Market Settings}\label{market_settings}
+
+TODO: SHAREHOLDER CALCULATIONS CHANGED TO INCLUDE SHARE IN EVERY STEP!
+
+
 \marginpar{initialization}
 To include a market into the training process, the \verb|--market| parameter can be set accordingly. The user has a choice to include an AM through the string ``am'' or a SM with ``sm''. In either case, the environment needs to adjust the action space, since agents have the option to conduct market transactions.
 

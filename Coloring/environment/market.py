@@ -20,55 +20,61 @@ class Market:
         self.trading_fee = trading_fee
         self.agents = agents
 
-    def execute_market_actions(self, env_actions, market_actions, reset_fields_by=[], is_last_step=False):
+    def execute_market_actions(self, env_actions, market_actions, env_reward, done, reset_fields_by=[]):
         trading_info = {"trades": 0}
 
         # if not is_last_step:
         if "sm" in self.type:
-            trading_info["trades"], reward = self.execute_sm(
-                market_actions, reset_fields_by)
+            trading_info["trades"], trading_reward = self.execute_sm(
+                market_actions, env_reward, reset_fields_by)
         else:
-            trading_info["trades"], reward = self.execute_am(
-                market_actions, env_actions, reset_fields_by)
+            trading_info["trades"], trading_reward = self.execute_am(
+                market_actions, env_actions, env_reward, reset_fields_by)
 
+        reward = [r + tr for r, tr in zip(env_reward, trading_reward)]
+
+        # if done then the final reward calculation would trigger that function
+        if not done and "sm" in self.type:
+            reward = self.calculate_traded_reward(reward)
         return trading_info, reward
         # matrix cols need to equal 1, since total share is 100%
         # TODO float error 0.9999999999..
         # assert all(total_shares == 1 for total_shares in torch.sum(self.trading_matrix, dim=0).tolist())
 
-    def execute_sm(self, market_actions, reset_fields_by):
+    def execute_sm(self, market_actions, env_reward, reset_fields_by):
         shares = torch.diagonal(self.trading_matrix, 0)
         trades = 0
         rewards = [0]*self.agents
+        price = 0  # self.trading_fee/2
         buying_matrix, selling_matrix = self.extract_selling_buying_matrices(
             market_actions)
-        for selling_agent, selling_row in enumerate(selling_matrix):
-            for buying_agent, buying_row in enumerate(buying_matrix):
-                if not selling_row[selling_agent] or selling_agent == buying_agent:
+        for seller, selling_row in enumerate(selling_matrix):
+            for buyer, buying_row in enumerate(buying_matrix):
+                if not selling_row[seller] or seller == buyer:
                     continue
 
-                if self.apply_no_reset_market(reset_fields_by, buying_agent):
+                if self.no_reset_fields(reset_fields_by, buyer) and self.no_debt(price, env_reward[buyer]):
                     continue
 
                 # TODO shuffel buying_agents for fairness
-                if(torch.eq(selling_row, buying_row).all() and shares[selling_agent] >= self.trading_fee):
+                if(torch.eq(selling_row, buying_row).all() and shares[seller] > self.trading_fee):
                     trades += 1
                     # in case of share exchange fixed price of a third trading fee!
                     rewards = self.update_rewards(
-                        rewards, buying_agent, selling_agent, self.trading_fee/3)
+                        rewards, buyer, seller, price)
 
                     # trading fee is the share so the buying agent gets the share of the selling agent here!
-                    self.update_trading_matrix(buying_agent, selling_agent)
+                    self.update_trading_matrix(buyer, seller)
         return trades, rewards
 
-    def execute_am(self, market_actions, env_actions, reset_fields_by):
+    def execute_am(self, market_actions, env_actions, env_reward, reset_fields_by):
         trades = 0
         rewards = [0]*self.agents
 
         for buyer, offer in enumerate(market_actions):
             buy_from = offer[0]
 
-            if self.apply_no_reset_market(reset_fields_by, buy_from):
+            if self.no_reset_fields(reset_fields_by, buy_from) or self.no_debt(self.trading_fee, env_reward[buyer]):
                 continue
 
             if self.not_waiting_or_acting_on_self(buy_from, buyer) and env_actions[buy_from] == offer[1]:
@@ -93,12 +99,19 @@ class Market:
         self.trading_matrix[reciever][buyer] += self.trading_fee
         self.trading_matrix[buyer][buyer] -= self.trading_fee
 
-    def apply_no_reset_market(self, agents_that_reset_fields, reciever):
+    def no_reset_fields(self, agents_that_reset_fields, reciever):
         '''
         prevent agents to be rewarded/traded with if it reset fields in the current step
         (only applied when market type contains setting "no-reset")
         '''
         return "no-reset" in self.type and reciever in agents_that_reset_fields
+
+    def no_debt(self, price, balance):
+        '''
+        checks market setting and returns boolean  
+        False -> the price is in the budget otherwise true for debt!
+        '''
+        return "no-debt" in self.type and price <= balance
 
     def not_waiting_or_acting_on_self(self, recierver, actor):
         '''
@@ -126,7 +139,7 @@ class Market:
 
         return buying_matrix, selling_matrix
 
-    def calculate_traded_reward(self, rewards, env_goal):
+    def calculate_traded_reward(self, rewards, env_goal=False):
         if ("am" in self.type and not "goal" in self.type) or ("goal" in self.type and not env_goal):
             # in this case no market trades will be executed since goal was set but not reached
             # or normal action market was already executed
@@ -142,13 +155,13 @@ class Market:
             else:  # shareholder market
                 # iterate all trading matrix rows and env rewards
                 for index, (trade, reward) in enumerate(zip(self.trading_matrix[agent], rewards)):
-                    # agents are in dept?
+                    # agents are in debt?
                     if reward <= 0:
                         if index != agent:
-                            # in this case trading agent has dept so do nothing!
+                            # in this case trading agent has debt so do nothing!
                             continue
                         else:
-                            # here the receiving agent has dept so that should stay
+                            # here the receiving agent has debt so that should stay
                             trading_rewards[agent] += reward
                     else:
                         trading_rewards[agent] += (trade * reward).item()

@@ -138,32 +138,31 @@ class DQN(BaseAlgo):
         for next_state in batch.next_state:
             boolean_vals = tuple(map(lambda env_next_state: env_next_state is not None,
                                      next_state))
-            next_states.append(boolean_vals)
-            next_states_images.append([env_next_state[agent]["image"]
+            next_states.extend(boolean_vals)
+            next_states_images.extend([env_next_state[agent]["image"]
                                       for env_next_state in next_state if env_next_state is not None])
 
         states = []  # length = batch size
         for state in batch.state:
-            states.append([env_state[agent]["image"]
+            states.extend([env_state[agent]["image"]
                            for env_state in state if env_state is not None])
 
         agent_actions = []
         for actions in batch.action:
-            agent_actions.append(actions[agent])
+            agent_actions.extend(actions[agent])
 
         agent_rewards = []
         for rewards in batch.reward:
-            agent_reward = [item for sublist in rewards[agent:]
-                            for item in sublist]
-            agent_rewards.append(agent_reward)
+            sublist = [sublist[agent] for sublist in rewards]
+            agent_rewards.extend(sublist)
 
         # flatten lists
-        next_states = [item for sublist in next_states for item in sublist]
-        next_states_images = [
-            item for sublist in next_states_images for item in sublist]
-        states = [item for sublist in states for item in sublist]
-        agent_actions = [item for sublist in agent_actions for item in sublist]
-        agent_rewards = [item for sublist in agent_rewards for item in sublist]
+        # next_states = [item for sublist in next_states for item in sublist]
+        # next_states_images = [
+        #     item for sublist in next_states_images for item in sublist]
+        # states = [item for sublist in states for item in sublist]
+        # agent_actions = [item for sublist in agent_actions for item in sublist]
+        # agent_rewards = [item for sublist in agent_rewards for item in sublist]
 
         non_final_mask = torch.tensor(
             next_states, device=self.device, dtype=torch.bool)
@@ -180,8 +179,8 @@ class DQN(BaseAlgo):
 
         # Compute Q(s_t, a) - the networks computes Q(s_t), then we select the
         # columns of actions taken
-        state_action_values = self.policy_nets[agent](
-            state_batch).gather(1, action_batch)
+        state_action_values = (self.policy_nets[agent](
+            state_batch).gather(1, action_batch)).float()
 
         # Compute V(s_{t+1}) for all next states.
         next_state_values = torch.zeros(
@@ -190,13 +189,13 @@ class DQN(BaseAlgo):
             non_final_next_states).max(1)[0].detach()
 
         # Compute the expected Q values
-        expected_state_action_values = (
-            next_state_values * self.gamma) + reward_batch[:, agent]
+        expected_state_action_values = ((
+            next_state_values * self.gamma) + reward_batch).unsqueeze(1).float()
 
         # Compute Huber loss
         # huber loss combines errors with condition to value big errors while preventing drastic changes
-        loss = F.smooth_l1_loss(state_action_values,
-                                expected_state_action_values.unsqueeze(1))  # .unsqueeze(1)
+        loss = F.smooth_l1_loss(state_action_values.float(),
+                                expected_state_action_values)  # .unsqueeze(1)
 
         # Optimize the model
         self.optimizers[agent].zero_grad()

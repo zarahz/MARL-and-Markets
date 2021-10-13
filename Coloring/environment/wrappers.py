@@ -51,10 +51,9 @@ class MultiagentWrapper(gym.core.ObservationWrapper):
 
         if(self.market):
             # is_last_step = (self.env.step_count+1 >= self.env.max_steps)
-            trades, trading_reward = self.market.execute_market_actions(actions,
-                                                                        market_actions, reward, info["reset_fields_by"])
+            trades, reward = self.market.execute_market_actions(actions,
+                                                                market_actions, reward, done, info["reset_fields_by"])
             info.update(trades)
-            reward = [r + tr for r, tr in zip(reward, trading_reward)]
 
         if done:
             reward = self.calculate_reward(reward, info)
