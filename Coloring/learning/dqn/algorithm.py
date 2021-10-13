@@ -156,14 +156,6 @@ class DQN(BaseAlgo):
             sublist = [sublist[agent] for sublist in rewards]
             agent_rewards.extend(sublist)
 
-        # flatten lists
-        # next_states = [item for sublist in next_states for item in sublist]
-        # next_states_images = [
-        #     item for sublist in next_states_images for item in sublist]
-        # states = [item for sublist in states for item in sublist]
-        # agent_actions = [item for sublist in agent_actions for item in sublist]
-        # agent_rewards = [item for sublist in agent_rewards for item in sublist]
-
         non_final_mask = torch.tensor(
             next_states, device=self.device, dtype=torch.bool)
         non_final_next_states = torch.tensor(
