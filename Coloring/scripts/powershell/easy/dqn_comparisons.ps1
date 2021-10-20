@@ -51,15 +51,25 @@
 #     --replay-size 10000 `
 #     --epsilon-decay 30000 `
 
-pipenv run python -m Coloring.scripts.train --algo dqn --agents 1 --model comparisons\\1-dqn-6-no-float `
+# pipenv run python -m Coloring.scripts.train --algo dqn --agents 1 --model comparisons\\1-dqn-6-no-float `
+#     --grid-size 5 `
+#     --frames-per-proc 128 `
+#     --frames 50000 `
+#     --batch-size 64 `
+#     --initial-target-update 1 `
+#     --target-update 5000 `
+#     --replay-size 20000 `
+#     --epsilon-decay 30000 `
+
+pipenv run python -m Coloring.scripts.train --algo dqn --agents 1 --model comparisons\\1-dqn-6-OG `
     --grid-size 5 `
     --frames-per-proc 128 `
     --frames 50000 `
-    --batch-size 64 `
-    --initial-target-update 1 `
-    --target-update 5000 `
-    --replay-size 20000 `
-    --epsilon-decay 30000 `
+    --batch-size 32 `
+    --initial-target-update 1000 `
+    --target-update 20000 `
+    --replay-size 60000 `
+    --epsilon-decay 30000
 
 # pipenv run python -m Coloring.scripts.train --algo dqn --agents 1 --model comparisons\\1-dqn-7 `
 #     --grid-size 5 `

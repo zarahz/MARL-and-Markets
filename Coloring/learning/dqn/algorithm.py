@@ -167,7 +167,7 @@ class DQN(BaseAlgo):
         action_batch = torch.as_tensor(
             agent_actions).unsqueeze(0).T
         reward_batch = torch.as_tensor(
-            agent_rewards).unsqueeze(0).T
+            agent_rewards, dtype=torch.float)
 
         # Compute Q(s_t, a) - the networks computes Q(s_t), then we select the
         # columns of actions taken
