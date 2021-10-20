@@ -8,16 +8,15 @@ Set-Location -Path "C:\Users\Zarah\Documents\workspace\MA\"
 # & .\Coloring\scripts\powershell\easy\2-ppo.ps1
 # & .\Coloring\scripts\powershell\easy\2-ppo-mixed.ps1
 # & .\Coloring\scripts\powershell\easy\2-ppo-mixed-competitive.ps1
-# & .\Coloring\scripts\powershell\easy\1-dqn.ps1
-& .\Coloring\scripts\powershell\easy\2-dqn.ps1
-# CONTINUE HERE
-& .\Coloring\scripts\powershell\easy\2-dqn-mixed.ps1
-& .\Coloring\scripts\powershell\easy\2-dqn-mixed-competitive.ps1
 
-#TODO call other scripts!
-# & .\Coloring\scripts\powershell\easy\3-ppo-percentage.ps1
-# & .\Coloring\scripts\powershell\easy\3-ppo-rooms.ps1
-# & .\Coloring\scripts\powershell\easy\dqn_comparisons.ps1
+#TODO
+# & .\Coloring\scripts\powershell\easy\1-dqn.ps1
+# & .\Coloring\scripts\powershell\easy\2-dqn.ps1
+# & .\Coloring\scripts\powershell\easy\2-dqn-mixed.ps1
+# & .\Coloring\scripts\powershell\easy\2-dqn-mixed-competitive.ps1
+
+#other scripts
+& .\Coloring\scripts\powershell\easy\dqn_comparisons.ps1
 
 
 # HARD
@@ -26,9 +25,7 @@ Set-Location -Path "C:\Users\Zarah\Documents\workspace\MA\"
 # & .\Coloring\scripts\powershell\hard\3-ppo.ps1
 # & .\Coloring\scripts\powershell\hard\3-ppo-mixed.ps1
 # & .\Coloring\scripts\powershell\hard\3-ppo-mixed-competitive.ps1
-#TODO call other scripts!
-# & .\Coloring\scripts\powershell\hard\3-ppo-percentage.ps1
-# & .\Coloring\scripts\powershell\hard\3-ppo-rooms.ps1
+
 
 Set-Location -Path "C:\Users\Zarah\Documents\workspace\MA\Coloring\scripts\"
 
