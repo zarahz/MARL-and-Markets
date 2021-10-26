@@ -21,9 +21,9 @@ class FourRoomsEnv(GridEnv):
         trading_fee=0.05,
         size=19
     ):
-        if not max_steps:
-            # since env is pretty big and not easy to solve set steps to high number!
-            max_steps = size*size*2  # 19*19*2 = 722
+        # if not max_steps:
+        #     # since env is pretty big and not easy to solve set steps to high number!
+        #     max_steps = size*size*2  # 19*19*2 = 722
 
         super().__init__(
             grid_size=size,

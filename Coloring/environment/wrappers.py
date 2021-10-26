@@ -83,8 +83,13 @@ class MultiagentWrapper(gym.core.ObservationWrapper):
                 reward[agent] += color_percentage
         else:
             # coop reward based on completed coloring
-            if env_goal_reached:
-                reward = [r + one for r, one in zip(reward, [1]*len(agents))]
+            # if env_goal_reached:
+            #     reward = [r + one for r, one in zip(reward, [1]*len(agents))]
+
+            percentage_reward = [
+                1 * self.env.grid_colored_percentage()]*len(agents)
+            reward = [r + percentage for r,
+                      percentage in zip(reward, percentage_reward)]
 
             # coop reward with difference calculation to solve CAP
             reward = self.calculate_difference_reward(

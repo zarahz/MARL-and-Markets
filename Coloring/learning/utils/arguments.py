@@ -12,7 +12,7 @@ def base_args():
     # General parameters
     parser.add_argument("--seed", type=int, default=1,
                         help="random seed (default: 1)")
-    parser.add_argument("--agents", default=1, type=int,
+    parser.add_argument("--agents", default=2, type=int,
                         help="amount of agents")
     parser.add_argument("--model", default=None,
                         help="Name of the (trained) model, if none is given then a name is generated. (default: None)")
@@ -25,9 +25,9 @@ def base_args():
                         help="name of the environment to train on (default: empty grid)")
     parser.add_argument("--agent-view-size", default=7, type=int,
                         help="grid size the agent can see, while standing in the middle (default: 5, so agent sees the 5x5 grid around him)")
-    parser.add_argument("--grid-size", default=9, type=int,
+    parser.add_argument("--grid-size", default=5, type=int,
                         help="size of the playing area (default: 9)")
-    parser.add_argument("--max-steps", default=None, type=int,
+    parser.add_argument("--max-steps", default=8, type=int,
                         help="max steps in environment to reach a goal")
     parser.add_argument("--setting", default="",
                         help="If set to mixed-motive the reward is not shared which enables a competitive environment (one vs. all). Another setting is percentage-reward, where the reward is shared (coop) and is based on the percanted of the grid coloration. The last option is mixed-motive-competitive which extends the normal mixed-motive setting by removing the field reset option. When agents run over already colored fields the field immidiatly change the color the one of the agent instead of resetting the color. (default: empty string - coop reward of one if the whole grid is colored)")
@@ -56,13 +56,13 @@ def training_args():
     parser.add_argument("--algo", required=True,
                         help="Algorithm to use for training. Choose between 'ppo' and 'dqn'.")
 
-    parser.add_argument("--frames", type=int, default=1000000,
-                        help="number of frames of training (default: 1.000.000)")
+    parser.add_argument("--frames", type=int, default=80000,
+                        help="number of frames of training (default: 100.000)")
     # i.e. frames-per-proc = 128 that means 128 times the (--procs=16) parallel envs are played through and logged.
     # If max_steps = 25 the environment can at least finish 5 times (done if max step is reached)
     # and save its rewards, that means there are at least 5*16=80 rewards
-    parser.add_argument("--frames-per-proc", type=int, default=1024,
-                        help="number of frames per process before update (default: 1024)")
+    parser.add_argument("--frames-per-proc", type=int, default=128,
+                        help="number of frames per process before update (default: 128)")
     parser.add_argument("--procs", type=int, default=16,
                         help="Number of processes/environments running parallel (default: 16)")
 
@@ -72,7 +72,7 @@ def training_args():
     # i.e. batch_size = 256: overall one run contains frames-per-proc*procs (128*16=2048) batch elements / Transitions
     # and out of that 2048/256 = 8 mini batches can be drawn
     parser.add_argument("--batch-size", type=int, default=256,
-                        help="batch size for dqn (default: ppo 256, dqn 128)")
+                        help="batch size for dqn (default: ppo 256, dqn 64)")
 
     # gamma = discount range(0.88,0.99) most common is 0.99
     parser.add_argument("--gamma", type=float, default=0.99,

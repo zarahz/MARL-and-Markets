@@ -18,6 +18,10 @@ eggs/
 
 Coloring/storage/*
 !Coloring/storage/easy
+!Coloring/storage/23-10-21-steps-15-tf-0.1
+!Coloring/storage/25-10-21-steps-8-tf-0.1
+!Coloring/storage/25-10-21-steps-8-tf-0.2
+!Coloring/storage/25-10-21-steps-8-tf-0.05
 
 # generated latex files that can be ignored 
 Thesis/text/indent.log

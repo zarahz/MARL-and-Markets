@@ -480,7 +480,7 @@ class GridEnv(gym.Env):
         grid_size=None,
         width=None,
         height=None,
-        max_steps=100,
+        max_steps=None,
         see_through_walls=True,
         seed=1337,
         agent_view_size=5,
@@ -542,7 +542,7 @@ class GridEnv(gym.Env):
         # Environment configuration
         self.width = width
         self.height = height
-        self.max_steps = max_steps
+        self.max_steps = max_steps if max_steps else width*height
         print("---------> max steps: ", self.max_steps)
         self.see_through_walls = see_through_walls
 

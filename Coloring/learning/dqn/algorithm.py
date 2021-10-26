@@ -186,7 +186,7 @@ class DQN(BaseAlgo):
 
         # Compute Huber loss
         # huber loss combines errors with condition to value big errors while preventing drastic changes
-        loss = F.smooth_l1_loss(state_action_values.float(),
+        loss = F.smooth_l1_loss(state_action_values,  # .float(),
                                 expected_state_action_values)  # .unsqueeze(1)
 
         # Optimize the model
