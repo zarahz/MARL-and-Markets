@@ -13,6 +13,7 @@ jupyter = "*"
 seaborn = "*"
 torchvision = "*"
 array2gif = "*"
+prettytable = "*"
 
 [dev-packages]
 
