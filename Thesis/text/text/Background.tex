@@ -17,12 +17,14 @@ When multiple agents act in the same environment the Markov decision process is 
 \end{figure}
 
 \marginpar{sets and values}
-The state $S_t$ is part of a set $S$ containing all possible environment states. Since it is possible that not all actions are valid in each environment state the agents action selection is based on a restricted set $A_t\in A(S_t)$. In a multiagent environment however, every agent chooses its action and adds it into a joint action set, which is executed collectively on the environment \cite{buba10}. The reward $R_t$ is element of a set of possible rewards $R$, which is a subset of real numbers $R \subset \mathbb{R}$. Therefore, the reward can potentially be negative or very low to emphasize a bad action. The general concept of RL, as defined by Sutton and Barto, is to maximize rewards. Thus, unlike machine learning approaches the agent starts with no knowledge about good or bad actions and enhances the decision-making by aiming to improve the reward.
+One environment state $S_t$ is part of a set $S$ containing all possible states. During each point in time $t$ the agent can interact with the environment by executing an action $A_t$. Since it is possible that not all actions are valid in each environment state the agents action selection is based on a restricted set $A_t\in A(S_t)$. In a multiagent environment, every agent chooses its action and adds it into a joint action set, which is executed collectively during $t$ \cite{buba10}.
+
+The reward $R_t$ is element of a set of possible rewards $R$, which is a subset of real numbers $R \subset \mathbb{R}$. Therefore, the reward can potentially be negative or very low. Depending on the environment, that value can act as immediate feedback to the agents action. The general concept of RL, as defined by Sutton and Barto, is for agents to maximize rewards. Unlike machine learning approaches, the agent starts with no knowledge about good or bad actions and enhances the decision-making over time.
 
 \marginpar{policy}
 Sutton and Barto continue by defining the agents action selection with respect to the current state as a policy $\pi$. They explain further that a policy could be as simple as a lookup table, mapping states to actions or it could contain a complicated search process for the best decision.
-In most cases however, policies return actions with assigned percentages for the current state.
-During environment interactions agents gain rewards, which then can be used to update the policy accordingly. For example, should the reward be low or negative it could be interpreted as a penalty. In return the policy $\pi(a \mid s)$ could then be adapted to change to a very low probability for that action in combination with that certain state. So next time the agent finds itself in that state the bad action is not very likely to be chosen again.
+In most cases however, policies map action-state pairs to a selection probability, with all actions of a state adding up to 100\%.
+During environment interactions agents receive rewards, which then can be used to update the policy accordingly. For a negative or low reward as an example, the probability of policy $\pi(a \mid s)$ decreases, reducing the chances of executing that same action in that specific state again.
 
 \marginpar{value function}
 While rewards only rate the immediate situation, a value function, i.e. the state-value function $v_{\pi}(s)$ for a policy $\pi$, can be used to estimate the long-term value of a state $s$. The result is the total accumulated reward an agent could get following that state and choosing actions based on the current policy. States that offer immediate high reward could end in
@@ -81,8 +83,11 @@ Finally, PPO is introduced with the following equation
 with $c_{1}$ and $c_{2}$ as coefficients. The authors point out that the loss function \\
 $L_{t}^{VF} = (V_{\theta}(s_{t})-V_{t}^{targ})^2$ combines the policy surrogate and the value function error term and is necessary once a neural network shares parameters between policy and value function. Additionally, an entropy bonus $S$ is added to ensure exploration.
 
+\marginpar{AC}
+Schulman et al. also showed an example of the Algorithm using PPO with an actor-critic approach, see Fig. \ref{fig:ppo_algo_code}. According to Konda and Tsitsiklis \cite{kots03}, A critic is responsible to approximate the value function of the policy, and the actor in turn improves the policy based on the approximation results of the critic.
+
 \marginpar{PPO pseudo}
-Schulman et al. also showed an example of the Algorithm using PPO with an actor-critic approach, see Fig. \ref{fig:ppo_algo_code}. Here, $N$ detonates actors collecting data in T timesteps in each Iteration. Meanwhile the critic computes the estimations of the advantage values. Afterwards, the policy is replaced with a new one in which the function \eqref{PPO Algorithm} is optimized during K epochs. For the optimization process a small random batch of the previous $NT$ timesteps is used.
+Here, $N$ detonates actors collecting data in T timesteps in each Iteration. Meanwhile the critic computes the estimations of the advantage values. Afterwards, the policy is replaced with a new one, in which the function $L_{t}^{CLIP+VF+S}(\theta)$ \eqref{PPO Algorithm} is optimized during K epochs. For the optimization process a small random batch of the previous $NT$ timesteps is used.
 \begin{figure}[hpbt]
     \centering
     \includegraphics[width=1\textwidth]{pictures/ppo_algo_code.png}\\
@@ -97,11 +102,30 @@ Another algorithm that is often compared with PPO is deep Q-Learning (DQN). This
 \end{equation}
 
 \marginpar{Bellmann}
-Here, the maximum sum of rewards is calculated, discounting the future rewards with the $\gamma$ coefficient. The discount factor is necessary, since the future rewards are estimations and may deviate from the actual values. The proceed by explaining that if all $Q^*(s',a')$ values of the next timestep are known then the action $a'$ resulting in the best value should be picked. They proceed to introduce the following Bellman equation:
+Here, the maximum sum of rewards is calculated. By using a $\gamma$ coefficient, future rewards are discounted, putting greater importance on the next few values. They proceed by explaining that if all $Q^*(s',a')$ values of the next timestep are known then the following Bellman equation can be calculated:
 \begin{equation}\label{opt_qvalue}
     Q^*(s,a) = \mathbb{E}_{s'\sim \epsilon} \left[ r + \gamma \max_{a'} Q^*(s',a') | s,a \right]
 \end{equation}
-The gamma $\gamma$ acts as a discount factor, reducing the importance of values in the future, since .
-% for the optimal $Q^*(s',a')$ where all descending states $s'$ for actions $a'$ are known, naturally the best $a'$ should be picked. This in turn maximizes the expected value of $r+ \gamma Q^*(s',a')$.
-% Essentially, equation \ref{qvalue} is maximized. 
-% 
+However, in reality the optimal $Q^*(s',a')$ values are not known, thus Mnih et al. continue with the basic idea of RL - iteratively updating this $Q$ function:
+\begin{equation}\label{qvalue_i}
+    Q_{i+1}(s,a)= \mathbb{E} \left[ r + \gamma \max_{a'} Q_i(s',a') | s,a \right]
+\end{equation}
+They conclude that an increasing $i\rightarrow \infty$ will allow the functions to converge, resulting in $Q_i\rightarrow Q^*$.
+
+\marginpar{Q network}
+Nonetheless, Mnih et al. argue, that this iterative approach is impractical and suggest using a neural network to approximate the action-value function instead. Hence, the new $Q$ function is $Q(s,a,\theta)\approx Q^*(s,a)$, with $\theta$ representing all network weights \cite{jaja19}. They refer to this network as a Q-network, which can be trained using the following loss function:
+\begin{equation}\label{q_loss}
+    L_i(\theta_i) = \mathbb{E}_{s,a \sim p(\cdot)} \left[ (y_i - Q(s,a;\theta_i))^2 \right]
+\end{equation}
+\begin{equation}\label{q_y}
+    y_i = \mathbb{E}_{s' \sim \varepsilon } \left[ r + \gamma \max_{a'} Q(s',a'; \theta_{i-1}) | s,a \right]
+\end{equation}
+Jafari et al. \cite{jaja19} explain that the loss function shows how much the estimated values deviate from the target values $y_i$ (\ref{q_y}). Mnih et al. emphasize that $y_i$ holds the network parameters of the previous iteration, due to $\theta_{i-1}$, and therefore it depends on the network weights. Finally, the differentiation of the loss function with respect to $\theta$ results in the gradient function below.
+\begin{equation}\label{q_gradient}
+    \nabla_{\theta_i} L_i(\theta_i) = \mathbb{E}_{s,a \sim p(\cdot);s' \sim \varepsilon } \left[\left( r + \gamma \max_{a'} Q(s',a'; \theta_{i-1}) - Q(s,a;\theta_i) \right) \nabla_{\theta_i} Q(s,a;\theta_i) \right]
+\end{equation}
+\begin{figure}[hpbt]
+    \centering
+    \includegraphics[width=1\textwidth]{pictures/dqn_algo_code.png}\\
+    \caption[DQN with Experience Replay]{DQN with Experience Replay, as shown in ``Playing atari with deep reinforcement learning''\cite{mnka13}}\label{fig:dqn_algo_code}
+\end{figure}
