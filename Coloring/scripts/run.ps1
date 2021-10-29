@@ -5,29 +5,28 @@ Set-Location -Path "C:\Users\Zarah\Documents\workspace\MA\"
 
 #EASY
 # & .\Coloring\scripts\powershell\easy\1-ppo.ps1
-& .\Coloring\scripts\powershell\easy\2-ppo.ps1
-& .\Coloring\scripts\powershell\easy\2-ppo-mixed.ps1
-& .\Coloring\scripts\powershell\easy\2-ppo-mixed-competitive.ps1
+# & .\Coloring\scripts\powershell\easy\2-ppo.ps1
+# & .\Coloring\scripts\powershell\easy\2-ppo-mixed.ps1
+# & .\Coloring\scripts\powershell\easy\2-ppo-mixed-competitive.ps1
 
-& .\Coloring\scripts\powershell\easy\deleteme.ps1
-
-# #TODO
 # & .\Coloring\scripts\powershell\easy\1-dqn.ps1
-& .\Coloring\scripts\powershell\easy\2-dqn.ps1
-& .\Coloring\scripts\powershell\easy\2-dqn-mixed.ps1
-& .\Coloring\scripts\powershell\easy\2-dqn-mixed-competitive.ps1
+# & .\Coloring\scripts\powershell\easy\2-dqn.ps1
+# & .\Coloring\scripts\powershell\easy\2-dqn-mixed.ps1
+# & .\Coloring\scripts\powershell\easy\2-dqn-mixed-competitive.ps1
 
 #other scripts
 # & .\Coloring\scripts\powershell\easy\dqn_comparisons.ps1
 
-
 # HARD
 # & .\Coloring\scripts\powershell\hard\1-ppo.ps1
-# & .\Coloring\scripts\powershell\hard\1-dqn.ps1
 # & .\Coloring\scripts\powershell\hard\3-ppo.ps1
 # & .\Coloring\scripts\powershell\hard\3-ppo-mixed.ps1
 # & .\Coloring\scripts\powershell\hard\3-ppo-mixed-competitive.ps1
 
+& .\Coloring\scripts\powershell\hard\1-dqn.ps1
+# & .\Coloring\scripts\powershell\hard\3-dqn.ps1
+# & .\Coloring\scripts\powershell\hard\3-dqn-mixed.ps1
+# & .\Coloring\scripts\powershell\hard\3-dqn-mixed-competitive.ps1
 
 Set-Location -Path "C:\Users\Zarah\Documents\workspace\MA\Coloring\scripts\"
 

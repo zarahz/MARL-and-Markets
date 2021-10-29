@@ -27,7 +27,7 @@ def base_args():
                         help="grid size the agent can see, while standing in the middle (default: 5, so agent sees the 5x5 grid around him)")
     parser.add_argument("--grid-size", default=5, type=int,
                         help="size of the playing area (default: 9)")
-    parser.add_argument("--max-steps", default=8, type=int,
+    parser.add_argument("--max-steps", default=None, type=int,
                         help="max steps in environment to reach a goal")
     parser.add_argument("--setting", default="",
                         help="If set to mixed-motive the reward is not shared which enables a competitive environment (one vs. all). Another setting is percentage-reward, where the reward is shared (coop) and is based on the percanted of the grid coloration. The last option is mixed-motive-competitive which extends the normal mixed-motive setting by removing the field reset option. When agents run over already colored fields the field immidiatly change the color the one of the agent instead of resetting the color. (default: empty string - coop reward of one if the whole grid is colored)")

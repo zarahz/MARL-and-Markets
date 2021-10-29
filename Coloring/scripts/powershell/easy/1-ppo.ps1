@@ -2,9 +2,10 @@
 # 1 PPO Settings
 #----------------------------------------------------------------------------------------
 pipenv run python -m Coloring.scripts.train --algo ppo --agents 1 --model easy\\1-ppo `
-    --grid-size 5 `
-    --frames-per-proc 128 `
-    --frames 100000
+    --max-steps 10
+# --grid-size 5 `
+# --frames-per-proc 128 `
+# --frames 100000
 
 
 #----------------------------------------------------------------------------------------

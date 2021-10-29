@@ -997,7 +997,7 @@ class GridEnv(gym.Env):
     def toggle_is_colored(self, grid, obj, color, new_pos, old_pos):
         field_reset = False
         is_colored = 1
-        if obj is not None and obj.is_colored and not self.competitive:
+        if obj is not None and obj.is_colored and (not self.competitive or (self.competitive and obj.color == color)):
             is_colored = 0
             field_reset = True
 

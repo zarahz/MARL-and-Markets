@@ -21,58 +21,6 @@ pipenv run python -m Coloring.scripts.train --algo ppo --model easy\\2-ppo-mixed
     --market sm-goal `
     --trading-fee 0.05
 
-# pipenv run python -m Coloring.scripts.train --algo ppo --agents 2 --model easy\\2-ppo-mixed-competitive-sm-no-reset `
-#     --setting mixed-motive-competitive `
-#     --market sm-no-reset `
-#     --trading-fee 0.2 `
-#     --max-steps 8  `
-#     --grid-size 5 `
-#     --frames-per-proc 128 `
-#     --frames 80000
-
-# pipenv run python -m Coloring.scripts.train --algo ppo --agents 2 --model easy\\2-ppo-mixed-competitive-sm-goal-no-reset `
-#     --setting mixed-motive-competitive `
-#     --market sm-goal-no-reset `
-#     --trading-fee 0.2 `
-#     --max-steps 8  `
-#     --grid-size 5 `
-#     --frames-per-proc 128 `
-#     --frames 80000
-
-# pipenv run python -m Coloring.scripts.train --algo ppo --agents 2 --model easy\\2-ppo-mixed-competitive-sm-no-debt `
-#     --setting mixed-motive-competitive `
-#     --market sm-no-debt `
-#     --trading-fee 0.2 `
-#     --max-steps 8  `
-#     --grid-size 5 `
-#     --frames-per-proc 128 `
-#     --frames 80000
-
-# pipenv run python -m Coloring.scripts.train --algo ppo --agents 2 --model easy\\2-ppo-mixed-competitive-sm-goal-no-debt `
-#     --setting mixed-motive-competitive `
-#     --market sm-goal-no-debt `
-#     --trading-fee 0.2 `
-#     --max-steps 8  `
-#     --grid-size 5 `
-#     --frames-per-proc 128 `
-#     --frames 80000
-
-# pipenv run python -m Coloring.scripts.train --algo ppo --agents 2 --model easy\\2-ppo-mixed-competitive-sm-goal-no-reset-no-debt `
-#     --setting mixed-motive-competitive `
-#     --market sm-goal-no-reset-no-debt `
-#     --max-steps 15  `
-#     --grid-size 5 `
-#     --frames-per-proc 128 `
-#     --frames 100000
-
-# pipenv run python -m Coloring.scripts.train --algo ppo --agents 2 --model easy\\2-ppo-mixed-competitive-sm-no-reset-no-debt `
-#     --setting mixed-motive-competitive `
-#     --market sm-no-reset-no-debt `
-#     --max-steps 15  `
-#     --grid-size 5 `
-#     --frames-per-proc 128 `
-#     --frames 100000
-
 #----------------------------------------------------------------------------------------
 # 3 PPO Settings with ACTION Market
 #----------------------------------------------------------------------------------------
@@ -85,7 +33,50 @@ pipenv run python -m Coloring.scripts.train --algo ppo --model easy\\2-ppo-mixed
     --setting mixed-motive-competitive `
     --market am-goal `
     --trading-fee 0.05
-    
+
+pipenv run python -m Coloring.scripts.train --algo ppo --model easy\\2-ppo-mixed-competitive-am-no-debt `
+    --setting mixed-motive-competitive `
+    --market am-no-debt `
+    --trading-fee 0.05
+
+pipenv run python -m Coloring.scripts.train --algo ppo --model easy\\2-ppo-mixed-competitive-am-goal-no-debt `
+    --setting mixed-motive-competitive `
+    --market am-goal-no-debt `
+    --trading-fee 0.05
+
+#----------------------------------------------------------------------------------------
+# Optional settings
+#----------------------------------------------------------------------------------------
+
+# competitive mode does not enable reset of fields
+
+# SHAREHOLDER MARKET
+# pipenv run python -m Coloring.scripts.train --algo ppo --agents 2 --model easy\\2-ppo-mixed-competitive-sm-no-reset `
+#     --setting mixed-motive-competitive `
+#     --market sm-no-reset `
+#     --trading-fee 0.2 `
+#     --max-steps 8  `
+#     --grid-size 5 `
+#     --frames-per-proc 128 `
+#     --frames 80000
+# pipenv run python -m Coloring.scripts.train --algo ppo --agents 2 --model easy\\2-ppo-mixed-competitive-sm-goal-no-reset `
+#     --setting mixed-motive-competitive `
+#     --market sm-goal-no-reset `
+#     --trading-fee 0.2 `
+#     --max-steps 8  `
+#     --grid-size 5 `
+#     --frames-per-proc 128 `
+#     --frames 80000
+
+# ACTION MARKET
+# pipenv run python -m Coloring.scripts.train --algo ppo --agents 2 --model easy\\2-ppo-mixed-competitive-am-goal-no-reset `
+#     --setting mixed-motive-competitive `
+#     --market am-goal-no-reset `
+#     --trading-fee 0.2 `
+#     --max-steps 8  `
+#     --grid-size 5 `
+#     --frames-per-proc 128 `
+#     --frames 80000
 # pipenv run python -m Coloring.scripts.train --algo ppo --agents 2 --model easy\\2-ppo-mixed-competitive-am-no-reset `
 #     --setting mixed-motive-competitive `
 #     --market am-no-reset `
@@ -95,25 +86,41 @@ pipenv run python -m Coloring.scripts.train --algo ppo --model easy\\2-ppo-mixed
 #     --frames-per-proc 128 `
 #     --frames 80000
 
-pipenv run python -m Coloring.scripts.train --algo ppo --model easy\\2-ppo-mixed-competitive-am-no-debt `
-    --setting mixed-motive-competitive `
-    --market am-no-debt `
-    --trading-fee 0.05
+# shares do not have prices in this implementation - no debt possible
 
-# pipenv run python -m Coloring.scripts.train --algo ppo --agents 2 --model easy\\2-ppo-mixed-competitive-am-goal-no-reset `
+# SHAREHOLDER MARKET
+# pipenv run python -m Coloring.scripts.train --algo ppo --agents 2 --model easy\\2-ppo-mixed-competitive-sm-no-debt `
 #     --setting mixed-motive-competitive `
-#     --market am-goal-no-reset `
+#     --market sm-no-debt `
 #     --trading-fee 0.2 `
 #     --max-steps 8  `
 #     --grid-size 5 `
 #     --frames-per-proc 128 `
 #     --frames 80000
+# pipenv run python -m Coloring.scripts.train --algo ppo --agents 2 --model easy\\2-ppo-mixed-competitive-sm-goal-no-debt `
+#     --setting mixed-motive-competitive `
+#     --market sm-goal-no-debt `
+#     --trading-fee 0.2 `
+#     --max-steps 8  `
+#     --grid-size 5 `
+#     --frames-per-proc 128 `
+#     --frames 80000
+# pipenv run python -m Coloring.scripts.train --algo ppo --agents 2 --model easy\\2-ppo-mixed-competitive-sm-goal-no-reset-no-debt `
+#     --setting mixed-motive-competitive `
+#     --market sm-goal-no-reset-no-debt `
+#     --max-steps 15  `
+#     --grid-size 5 `
+#     --frames-per-proc 128 `
+#     --frames 100000
+# pipenv run python -m Coloring.scripts.train --algo ppo --agents 2 --model easy\\2-ppo-mixed-competitive-sm-no-reset-no-debt `
+#     --setting mixed-motive-competitive `
+#     --market sm-no-reset-no-debt `
+#     --max-steps 15  `
+#     --grid-size 5 `
+#     --frames-per-proc 128 `
+#     --frames 100000
 
-pipenv run python -m Coloring.scripts.train --algo ppo --model easy\\2-ppo-mixed-competitive-am-goal-no-debt `
-    --setting mixed-motive-competitive `
-    --market am-goal-no-debt `
-    --trading-fee 0.05
-
+# ACTION MARKET
 # pipenv run python -m Coloring.scripts.train --algo ppo --agents 2 --model easy\\2-ppo-mixed-competitive-am-goal-no-reset-no-debt `
 #     --setting mixed-motive-competitive `
 #     --market am-goal-no-reset-no-debt `
@@ -121,7 +128,6 @@ pipenv run python -m Coloring.scripts.train --algo ppo --model easy\\2-ppo-mixed
 #     --grid-size 5 `
 #     --frames-per-proc 128 `
 #     --frames 100000
-
 # pipenv run python -m Coloring.scripts.train --algo ppo --agents 2 --model easy\\2-ppo-mixed-competitive-am-no-reset-no-debt `
 #     --setting mixed-motive-competitive `
 #     --market am-no-reset-no-debt `
