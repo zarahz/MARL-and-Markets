@@ -1,7 +1,7 @@
 #----------------------------------------------------------------------------------------
 # 1 DQN Settings
 #----------------------------------------------------------------------------------------
-# pipenv run python -m Coloring.scripts.train --algo dqn --agents 1 --model comparisons\\1-dqn-1 `
+# python -m scripts.train --algo dqn --agents 1 --model comparisons/1-dqn-1 `
 #     --grid-size 5 `
 #     --frames-per-proc 128 `
 #     --frames 100000 `
@@ -11,7 +11,7 @@
 #     --replay-size 40000 `
 #     --epsilon-decay 30000
 
-# pipenv run python -m Coloring.scripts.train --algo dqn --agents 1 --model comparisons\\1-dqn-2 `
+# python -m scripts.train --algo dqn --agents 1 --model comparisons/1-dqn-2 `
 #     --grid-size 5 `
 #     --frames-per-proc 128 `
 #     --frames 100000 `
@@ -21,7 +21,7 @@
 #     --replay-size 40000 `
 #     --epsilon-decay 20000
 
-# pipenv run python -m Coloring.scripts.train --algo dqn --agents 1 --model comparisons\\1-dqn-3 `
+# python -m scripts.train --algo dqn --agents 1 --model comparisons/1-dqn-3 `
 #     --grid-size 5 `
 #     --frames-per-proc 128 `
 #     --frames 100000 `
@@ -31,7 +31,7 @@
 #     --replay-size 40000 `
 #     --epsilon-decay 30000
 
-# pipenv run python -m Coloring.scripts.train --algo dqn --agents 1 --model comparisons\\1-dqn-4 `
+# python -m scripts.train --algo dqn --agents 1 --model comparisons/1-dqn-4 `
 #     --grid-size 5 `
 #     --frames-per-proc 128 `
 #     --frames 100000 `
@@ -41,7 +41,7 @@
 #     --replay-size 40000 `
 #     --epsilon-decay 30000
 
-# pipenv run python -m Coloring.scripts.train --algo dqn --agents 1 --model comparisons\\1-dqn-5 `
+# python -m scripts.train --algo dqn --agents 1 --model comparisons/1-dqn-5 `
 #     --grid-size 5 `
 #     --frames-per-proc 128 `
 #     --frames 100000 `
@@ -51,7 +51,7 @@
 #     --replay-size 40000 `
 #     --epsilon-decay 30000
 
-# pipenv run python -m Coloring.scripts.train --algo dqn --agents 1 --model comparisons\\1-dqn-6 `
+# python -m scripts.train --algo dqn --agents 1 --model comparisons/1-dqn-6 `
 #     --grid-size 5 `
 #     --frames-per-proc 128 `
 #     --frames 100000 `
@@ -61,7 +61,7 @@
 #     --replay-size 30000 `
 #     --epsilon-decay 30000
 
-# pipenv run python -m Coloring.scripts.train --algo dqn --agents 1 --model comparisons\\1-dqn-7 `
+# python -m scripts.train --algo dqn --agents 1 --model comparisons/1-dqn-7 `
 #     --grid-size 5 `
 #     --frames-per-proc 128 `
 #     --frames 100000 `
@@ -71,7 +71,7 @@
 #     --replay-size 30000 `
 #     --epsilon-decay 30000
 
-# pipenv run python -m Coloring.scripts.train --algo dqn --agents 1 --model comparisons\\1-dqn-8 `
+# python -m scripts.train --algo dqn --agents 1 --model comparisons/1-dqn-8 `
 #     --grid-size 5 `
 #     --frames-per-proc 128 `
 #     --frames 100000 `
@@ -81,7 +81,7 @@
 #     --replay-size 40000 `
 #     --epsilon-decay 20000
 
-# pipenv run python -m Coloring.scripts.train --algo dqn --agents 1 --model comparisons\\1-dqn-9 `
+# python -m scripts.train --algo dqn --agents 1 --model comparisons/1-dqn-9 `
 #     --grid-size 5 `
 #     --frames-per-proc 128 `
 #     --frames 100000 `
@@ -91,7 +91,7 @@
 #     --replay-size 60000 `
 #     --epsilon-decay 20000
 
-# pipenv run python -m Coloring.scripts.train --algo dqn --agents 1 --model comparisons\\1-dqn-10 `
+# python -m scripts.train --algo dqn --agents 1 --model comparisons/1-dqn-10 `
 #     --grid-size 5 `
 #     --frames-per-proc 128 `
 #     --frames 100000 `
@@ -101,7 +101,7 @@
 #     --replay-size 20000 `
 #     --epsilon-decay 20000
 
-# pipenv run python -m Coloring.scripts.train --algo dqn --agents 1 --model comparisons\\1-dqn-11 `
+# python -m scripts.train --algo dqn --agents 1 --model comparisons/1-dqn-11 `
 #     --grid-size 5 `
 #     --frames-per-proc 128 `
 #     --frames 100000 `
@@ -111,7 +111,7 @@
 #     --replay-size 40000 `
 #     --epsilon-decay 10000
 
-# pipenv run python -m Coloring.scripts.train --algo dqn --agents 1 --model comparisons\\1-dqn-12 `
+# python -m scripts.train --algo dqn --agents 1 --model comparisons/1-dqn-12 `
 #     --grid-size 5 `
 #     --frames-per-proc 128 `
 #     --frames 100000 `
@@ -121,7 +121,7 @@
 #     --replay-size 40000 `
 #     --epsilon-decay 5000
 
-pipenv run python -m Coloring.scripts.train --algo dqn --agents 2 --model comparisons\\2-dqn-12 `
+python -m scripts.train --algo dqn --agents 2 --model comparisons/2-dqn-12 `
     --grid-size 5 `
     --frames-per-proc 128 `
     --frames 100000 `
@@ -131,7 +131,7 @@ pipenv run python -m Coloring.scripts.train --algo dqn --agents 2 --model compar
     --replay-size 40000 `
     --epsilon-decay 5000
 
-# pipenv run python -m Coloring.scripts.train --algo dqn --agents 1 --model comparisons\\1-dqn-13 `
+# python -m scripts.train --algo dqn --agents 1 --model comparisons/1-dqn-13 `
 #     --grid-size 5 `
 #     --frames-per-proc 128 `
 #     --frames 50000 `
@@ -142,7 +142,7 @@ pipenv run python -m Coloring.scripts.train --algo dqn --agents 2 --model compar
 #     --epsilon-decay 30000 `
 
 
-# pipenv run python -m Coloring.scripts.train --algo dqn --agents 1 --model comparisons\\1-dqn-14 `
+# python -m scripts.train --algo dqn --agents 1 --model comparisons/1-dqn-14 `
 #     --grid-size 5 `
 #     --frames-per-proc 128 `
 #     --frames 50000 `
@@ -152,7 +152,7 @@ pipenv run python -m Coloring.scripts.train --algo dqn --agents 2 --model compar
 #     --replay-size 20000 `
 #     --epsilon-decay 30000 `
 
-# pipenv run python -m Coloring.scripts.train --algo dqn --agents 1 --model comparisons\\1-dqn-15 `
+# python -m scripts.train --algo dqn --agents 1 --model comparisons/1-dqn-15 `
 #     --grid-size 5 `
 #     --frames-per-proc 128 `
 #     --frames 50000 `
@@ -163,7 +163,7 @@ pipenv run python -m Coloring.scripts.train --algo dqn --agents 2 --model compar
 #     --epsilon-decay 30000 `
 
 
-# pipenv run python -m Coloring.scripts.train --algo dqn --agents 1 --model comparisons\\1-dqn-16 `
+# python -m scripts.train --algo dqn --agents 1 --model comparisons/1-dqn-16 `
 #     --grid-size 5 `
 #     --frames-per-proc 128 `
 #     --frames 100000 `
@@ -173,7 +173,7 @@ pipenv run python -m Coloring.scripts.train --algo dqn --agents 2 --model compar
 #     --replay-size 60000 `
 #     --epsilon-decay 40000 `
 
-# pipenv run python -m Coloring.scripts.train --algo dqn --agents 1 --model comparisons\\1-dqn-17 `
+# python -m scripts.train --algo dqn --agents 1 --model comparisons/1-dqn-17 `
 #     --grid-size 5 `
 #     --frames-per-proc 128 `
 #     --frames 100000 `
@@ -183,7 +183,7 @@ pipenv run python -m Coloring.scripts.train --algo dqn --agents 2 --model compar
 #     --replay-size 60000 `
 #     --epsilon-decay 30000 `
 
-# pipenv run python -m Coloring.scripts.train --algo dqn --agents 1 --model comparisons\\1-dqn-18 `
+# python -m scripts.train --algo dqn --agents 1 --model comparisons/1-dqn-18 `
 #     --grid-size 5 `
 #     --frames-per-proc 128 `
 #     --frames 100000 `
@@ -196,7 +196,7 @@ pipenv run python -m Coloring.scripts.train --algo dqn --agents 2 --model compar
 #----------------------------------------------------------------------------------------
 # 1 DQN Room Settings
 #----------------------------------------------------------------------------------------
-# pipenv run python -m Coloring.scripts.train --algo dqn --agents 1 --model comparisons\\1-dqn-rooms `
+# python -m scripts.train --algo dqn --agents 1 --model comparisons/1-dqn-rooms `
 #     --env FourRooms-Grid-v0 `
 #     --max-steps 400 `
 #     --capture-interval 20 `

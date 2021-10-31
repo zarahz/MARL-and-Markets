@@ -18,7 +18,8 @@ def create_folders_if_necessary(path):
 
 
 def get_storage_dir():
-    return "Coloring\\" + get_storage_folder()
+    # return "Coloring\\" + get_storage_folder()
+    return get_storage_folder()
 
 
 def get_storage_folder():
@@ -51,7 +52,8 @@ def save_status(status, model_dir):
 
 
 def save_capture(model_dir, name, frames):
-    path = os.path.join(model_dir, "captures\\"+name)
+    # path = os.path.join(model_dir, "captures\\"+name)
+    path = os.path.join(model_dir, "captures/"+name)
     create_folders_if_necessary(path)
     print("Saving gif... ", end="")
     write_gif(frames, path, fps=1)

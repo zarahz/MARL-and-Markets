@@ -1,12 +1,12 @@
 #----------------------------------------------------------------------------------------
 # 1 DQN Settings
 #----------------------------------------------------------------------------------------
-# pipenv run python -m Coloring.scripts.train --algo dqn --agents 1 --model hard\\1-dqn-1 `
-#     --batch-size 64 `
-#     --epsilon-decay 10000 `
-#     --grid-size 7 `
-#     --frames-per-proc 512 `
-#     --frames 250000
+pipenv run python -m Coloring.scripts.train --algo dqn --agents 1 --model hard\\1-dqn-1 `
+    --batch-size 64 `
+    --epsilon-decay 10000 `
+    --grid-size 7 `
+    --frames-per-proc 512 `
+    --frames 250000
 
 #     pipenv run python -m Coloring.scripts.train --algo dqn --agents 1 --model hard\\1-dqn-2 `
 #     --batch-size 128 `

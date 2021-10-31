@@ -101,8 +101,9 @@
             "name": "Test",
             "type": "python",
             "request": "launch",
-            "program": "Coloring\\scripts\\test.py",
+            "program": "scripts/test.py",
             "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/Coloring",
             "args": [
                 "--algo",
                 "ppo",

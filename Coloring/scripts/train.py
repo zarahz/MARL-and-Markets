@@ -6,21 +6,21 @@ import tensorboardX
 import torch
 
 # general imports
-from Coloring.learning.utils.env import make_env
-from Coloring.learning.utils.format import get_obss_preprocessor
-from Coloring.learning.utils.other import seed
-from Coloring.learning.utils.storage import *
+from learning.utils.env import make_env
+from learning.utils.format import get_obss_preprocessor
+from learning.utils.other import seed
+from learning.utils.storage import *
 
 # ppo
-from Coloring.learning.ppo.algorithm import PPO
-from Coloring.learning.ppo.model import ACModel
+from learning.ppo.algorithm import PPO
+from learning.ppo.model import ACModel
 
 # dqn
-from Coloring.learning.dqn.algorithm import DQN
-from Coloring.learning.dqn.model import DQNModel
-from Coloring.learning.dqn.utils.replay import ReplayMemory
+from learning.dqn.algorithm import DQN
+from learning.dqn.model import DQNModel
+from learning.dqn.utils.replay import ReplayMemory
 
-from Coloring.learning.utils.arguments import training_args
+from learning.utils.arguments import training_args
 
 args = training_args()
 agents = args.agents
