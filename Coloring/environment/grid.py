@@ -486,7 +486,6 @@ class GridEnv(gym.Env):
         agent_view_size=5,
         competitive=False,
         market="",
-        trading_fee=0.05,
         agents=2
     ):
         generate_colors(agents)
@@ -500,7 +499,6 @@ class GridEnv(gym.Env):
         # Action enumeration for this environment
         self.actions = GridEnv.Actions
         self.market = market
-        self.trading_fee = trading_fee
         self.competitive = competitive
         if market:
             if "sm" in market:

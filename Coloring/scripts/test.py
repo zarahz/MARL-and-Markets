@@ -68,9 +68,9 @@ competitive = "competitive" in args.setting
 # env = gym.make(id=args.env, agents=args.agents,
 #                agent_view_size=args.agent_view_size, max_steps=args.max_steps, competitive=competitive, market=market, trading_fee=trading_fee, size=args.size)
 env = gym.make(id=args.env, agents=args.agents, size=args.grid_size, competitive=competitive, agent_view_size=args.agent_view_size,
-               market=args.market, trading_fee=args.trading_fee, max_steps=args.max_steps)
+               market=args.market, max_steps=args.max_steps)
 # wrapper for environment adjustments
-env = MultiagentWrapper(env, args.setting)
+env = MultiagentWrapper(env, args.setting, args.trading_fee)
 env.seed(args.seed)
 
 window = Window(args.env)

@@ -9,13 +9,13 @@ class MultiagentWrapper(gym.core.ObservationWrapper):
     This can be used to have the agent to solve the gridworld in pixel space.
     """
 
-    def __init__(self, env, setting="", tile_size=8):
+    def __init__(self, env, setting="", trading_fee=0.1, tile_size=8):
         super().__init__(env)
         self.tile_size = tile_size
         self.setting = setting
         if self.env.market:
             self.market = market.Market(
-                self.env.market, self.env.trading_fee, len(self.env.agents))
+                self.env.market, trading_fee, len(self.env.agents))
 
     def reset(self):
         if self.market:

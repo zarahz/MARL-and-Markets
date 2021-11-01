@@ -14,7 +14,6 @@ class EmptyEnv(GridEnv):
         max_steps=None,
         competitive=False,
         market="",
-        trading_fee=0.05,
         size=5
     ):
         # if not max_steps and agents <= 1:
@@ -30,8 +29,7 @@ class EmptyEnv(GridEnv):
             max_steps=max_steps,
             agent_view_size=agent_view_size,
             competitive=competitive,
-            market=market,
-            trading_fee=trading_fee
+            market=market
             # Set this to True for maximum speed
             # see_through_walls=True
         )
