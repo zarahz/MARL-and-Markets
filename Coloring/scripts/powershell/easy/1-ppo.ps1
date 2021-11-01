@@ -1,7 +1,7 @@
 #----------------------------------------------------------------------------------------
 # 1 PPO Settings
 #----------------------------------------------------------------------------------------
-python -m scripts.train --algo ppo --agents 1 --model easy/1-ppo `
+python -m scripts.train --algo ppo --agents 1 --model easy/ppo/1-ppo `
     --max-steps 10
 # --grid-size 5 `
 # --frames-per-proc 128 `
@@ -11,7 +11,7 @@ python -m scripts.train --algo ppo --agents 1 --model easy/1-ppo `
 #----------------------------------------------------------------------------------------
 # 1 PPO Room Settings
 #----------------------------------------------------------------------------------------
-# python -m scripts.train --algo ppo --agents 1 --model easy/1-ppo-rooms `
+# python -m scripts.train --algo ppo --agents 1 --model easy/ppo/1-ppo-rooms `
 #     --env FourRooms-Grid-v0 `
 #     --grid-size 5 `
 #     --frames-per-proc 128 `
