@@ -1,0 +1,2 @@
+{"rule":"MORFOLOGIK_RULE_EN_US","sentence":"^\\Q[DQN with Experience Replay]DQN with Experience Replay, as shown in “Playing atari with deep reinforcement learning” \\E(?:Dummy|Ina|Jimmy-)[0-9]+$"}
+{"rule":"EN_A_VS_AN","sentence":"^\\QA stochastic game becomes a SMG if two conditions are met.\\E$"}

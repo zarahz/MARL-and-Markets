@@ -5,7 +5,7 @@
 \section{Reinforcement Learning}\label{reinforcement_learning}
 %https://lilianweng.github.io/lil-log/2018/02/19/a-long-peek-into-reinforcement-learning.html#key-concepts
 \marginpar{rl components}
-Sutton and Barto wrote in ``Reinforcement learning: An introduction''\cite{suba18} that Reinforcement learning (RL) is based on two components that interact with each other: an environment and an agent, see Figure \ref{fig:rl_cycle}. Those interactions take part during a time period with discrete timesteps $t\in\mathbb{N}_0$ until a goal is reached or the ending condition applies. Formally the journey of the agent finding the goal state is described as the Markov Decision Process (MDP).
+Sutton and Barto wrote in ``Reinforcement learning: An introduction'' \cite{suba18} that Reinforcement learning (RL) is based on two components that interact with each other: an environment and an agent, see Figure \ref{fig:rl_cycle}. Those interactions take part during a time period with discrete time steps $t\in\mathbb{N}_0$ until a goal is reached or the ending condition applies. Formally, the journey of the agent finding the goal state is described as the Markov Decision Process (MDP).
 % and every decision on the way is part of a reinforcement learning method. 
 When multiple agents act in the same environment the Markov decision process is called a stochastic game \cite{buba10}.
 % Initially the agent gets a starting environment state $S_0$, and can processes it to choose and execute an action $A_0$. This concludes the first time step. The environment changes based on the action and transitions into the next state $S_{1}$. In return the the agent receives the new state with a reward $R_{1}$ rating the action $A_0$. Afterwards the agent proceeds to execute actions which leads to the displayed cycle of Figure \ref{fig:rl_cycle}.
@@ -13,28 +13,28 @@ When multiple agents act in the same environment the Markov decision process is 
     \centering
     \includegraphics[width=0.6\textwidth]{pictures/RLInteractionSB}\\
     \caption[Reinforcement Learning Cycle]{The cycle of agent-environment interaction as
-        shown in ``Reinforcement learning: An introduction''\cite{suba18}}\label{fig:rl_cycle}
+        shown in ``Reinforcement learning: An introduction'' \cite{suba18}}\label{fig:rl_cycle}
 \end{figure}
 
 \marginpar{sets and values}
-One environment state $S_t$ is part of a set $S$ containing all possible states. During each point in time $t$ the agent can interact with the environment by executing an action $A_t$. Since it is possible that not all actions are valid in each environment state the agents action selection is based on a restricted set $A_t\in A(S_t)$. In a multiagent environment, every agent chooses its action and adds it into a joint action set, which is executed collectively during $t$ \cite{buba10}.
+One environment state $S_t$ is part of a set $S$ containing all possible states. During each point in time $t$ the agent can interact with the environment by executing an action $A_t$, which in turn changes the environment state. Since it is possible that not all actions are valid in each state the agents action selection is based on a restricted set $A_t\in A(S_t)$. In a multiagent environment, every agent chooses its action and adds it into a joint action set, which is executed collectively during $t$ \cite{buba10}.
 
 The reward $R_t$ is element of a set of possible rewards $R$, which is a subset of real numbers $R \subset \mathbb{R}$. Therefore, the reward can potentially be negative or very low. Depending on the environment, that value can act as immediate feedback to the agents action. The general concept of RL, as defined by Sutton and Barto, is for agents to maximize rewards. Unlike machine learning approaches, the agent starts with no knowledge about good or bad actions and enhances the decision-making over time.
 
 \marginpar{policy}
-Sutton and Barto continue by defining the agents action selection with respect to the current state as a policy $\pi$. They explain further that a policy could be as simple as a lookup table, mapping states to actions or it could contain a complicated search process for the best decision.
+Sutton and Barto continue by defining the agents action selection with respect to the current state as a policy $\pi$. They explain further that a policy could be as simple as a lookup table, mapping states to actions, or it could contain a complicated search process for the best decision.
 In most cases however, policies map action-state pairs to a selection probability, with all actions of a state adding up to 100\%.
 During environment interactions agents receive rewards, which then can be used to update the policy accordingly. For a negative or low reward as an example, the probability of policy $\pi(a \mid s)$ decreases, reducing the chances of executing that same action in that specific state again.
 
 \marginpar{value function}
-While rewards only rate the immediate situation, a value function, i.e. the state-value function $v_{\pi}(s)$ for a policy $\pi$, can be used to estimate the long-term value of a state $s$. The result is the total accumulated reward an agent could get following that state and choosing actions based on the current policy. States that offer immediate high reward could end in
+While rewards only rate the immediate situation, a value function, i.e. the state-value function $v_{\pi}(s)$ for a policy $\pi$, can be used to estimate the long-term value of a state $s$. The result is the total accumulated reward an agent could get following that state and choosing actions based on the current policy. States that offer immediate high rewards could end in a 
 % The value function is of importance, due to states bringing high rewards could end in
-low reward streaks. In the opposite case, a low reward state could subsequently yield high rewards. Therefore, value functions are of great use to achieve the maximum reward.
+low reward streak. In the opposite case, a low reward state could subsequently yield high rewards. Therefore, value functions are of great use to achieve the maximum reward.
 % Other value functions can also take the executed
 % action into account to reach the state from which the rewards are estimated.
 
 \marginpar{exploration vs exploitation}
-The last part to note about RL is that it entails the problem of balancing exploration and exploitation. On one hand, an agent has to explore the options given in order to learn and expand its knowledge. On the other hand, agents strive to maximize the reward which can lead to greediness. An agent could start exploiting its knowledge too early,  choosing actions of which it knows to result in positive rewards. However, if an agent does not explore enough the best action sequence will stay hidden and the agents knowledge will not improve.
+The last part to note about RL is that it entails the problem of balancing exploration and exploitation. On one hand, an agent has to explore the options given in order to learn and expand its knowledge. On the other hand, agents strive to maximize the reward which can lead to greediness. An agent could start exploiting its knowledge too early,  choosing actions of which it knows to result in positive rewards. However, if an agent does not explore enough the best action sequence will stay hidden and the agents' knowledge will not improve.
 %  In the opposite case, when an agent always explores without exploiting its knowledge, it is very likely that the reward will not be optimal. Finding the trade off between the two strategies is a common RL challenge.
 
 \section{Proximal Policy Optimization}
@@ -42,7 +42,7 @@ The last part to note about RL is that it entails the problem of balancing explo
 In 2017 Schulman et al. introduced the concept of Proximal Policy Optimization (PPO) in
 the article ``Proximal Policy Optimization Algorithms'' \cite{scwo17}.
 This section is solely based on that article in order to explain the Algorithm.
-Policy optimization is the improvement of the action selection strategy $\pi$ based on the current state $s_{t}$. This is achieved by rotating two steps: 1. sampling data from the policy and 2. optimizing that data through several epochs.
+Policy optimization is the improvement of the action selection strategy $\pi$ based on the current state $s_{t}$. This is achieved by rotating two steps: 1. Sampling data from the policy and 2. Optimizing that data through several epochs.
 
 \marginpar{TRPO, Advantage func}
 The origin of PPO lies in a similar approach called Trust Region Policy Optimization (TRPO). TRPO strives to maximize the following function:
@@ -50,15 +50,12 @@ The origin of PPO lies in a similar approach called Trust Region Policy Optimiza
     \underset{\theta}{maximize}\,\hat{\mathbb{E}}_{t} \left[ \frac{\pi_{\theta}(a_{t} \mid s_{t})}{\pi_{\theta_{old}}(a_{t} \mid s_{t})}
         \hat{A}_{t}-\beta \, KL[\pi_{\theta_{old}}(\cdot \mid s_{t}),\pi_{\theta}(\cdot \mid s_{t})] \right]
 \end{equation}
-with $\hat{A}_{t}$ as an estimator of the advantage function. The advantage function is often calculated with the state-value function $V(s)$, a reward $r$ and a discount coefficient $\lambda$ over a period of Time $t$
-\begin{equation}\label{advantage}
-    \hat{A}_{t} = -V(s_{t})+r_{t}+\lambda r_{t+1}+ \ldots + \lambda^{T-t+1} r_{T-1} + \lambda^{T-t} V(s_{T})
-\end{equation}
+with $\hat{A}_{t}$ as an estimator of the advantage function. The advantage function is often calculated with the state-value function $V(s)$, a cumulative return $R_t=\sum_{k=0}^{\inf} \lambda^{k}r_{t+k}$ \cite{mnba16} and a discount coefficient $\lambda \in (0,1]$ \cite{mnba16} over a period of Time $t$. The factor $\lambda$ in the context of RL is mostly used to increase the importance of the near future and reduce the relevance of unsure future rewards or values. A positive result of the advantage function shows that the executed action is profitable.
 
 \marginpar{r(theta)}
-The fraction in the Minuend of \eqref{TRPO} can be replaced by $r(\theta)$
+The fraction $\frac{\pi_{\theta}(a_{t} \mid s_{t})}{\pi_{\theta_{old}}(a_{t} \mid s_{t})}$ in the Minuend of \eqref{TRPO} can be replaced by $r(\theta)$
 %= \frac{\pi_{\theta}(a_{t} \mid s_{t})}{\pi_{\theta_{old}}(a_{t} \mid s_{t})}$
-and represents the probability ratio of an action in the current policy in comparison to the old policy, with $\theta$ being a policy parameter. The result of $r(\theta)$ is greater than one, if an action is very probable in the current policy. Otherwise the outcome lies between zero and one. Schulman et al. further describe that TRPO maximizes the "surrogate" objective
+and represents the probability ratio of an action in the current policy in comparison to the old policy. Here,  $\theta$ represents a policy parameter. The result of $r(\theta)$ is greater than one, if an action is very probable in the current policy. Otherwise, the outcome lies between zero and one. Schulman et al. further describe that TRPO maximizes the "surrogate" objective
 \begin{equation}\label{TRPO surrogate}
     L^{CPI}(\theta) = \hat{\mathbb{E}}_{t} \left[ \frac{\pi_{\theta}(a_{t} \mid s_{t})}{\pi_{\theta_{old}}(a_{t} \mid s_{t})} \hat{A}_{t} \right]
     = \hat{\mathbb{E}}_{t} \left[ r(\theta)\hat{A}_{t} \right]
@@ -71,7 +68,7 @@ In order to stay in a trust region, as the name suggests, a penalty is subtracte
 \marginpar{PPO}
 Therefore Schulman et al. introduced
 \begin{equation}\label{PPO}
-    L^{CLIP}(\theta) = \hat{\mathbb{E}}_{t} \left[ \min(r(\theta)\hat{A}_{t},clip(r(\theta), 1-\epsilon, 1+\epsilon)\hat{A}_{t}) \right]
+    L^{CLIP}(\theta) = \hat{\mathbb{E}}_{t} \left[ \min \left( r(\theta)\hat{A}_{t},clip(r(\theta), 1-\epsilon, 1+\epsilon)\hat{A}_{t} \right) \right]
 \end{equation}
 which is very similar to equation \eqref{TRPO} but does not require coefficients. The first $\min$ entry contains $L^{CPI}$ \eqref{TRPO surrogate}. The second part contains a $clip$ function which narrows the space of policy mutation with the small hyperparameter $\epsilon$. After applying the clip function $r(\theta)$ lies between $[1-\epsilon,1+\epsilon]$. Calculating the minimum of the clipped and unclipped probability ratio produces the lower bound of the unclipped $r(\theta)$, preventing the policy to change drastically.
 
@@ -87,22 +84,24 @@ $L_{t}^{VF} = (V_{\theta}(s_{t})-V_{t}^{targ})^2$ combines the policy surrogate 
 Schulman et al. also showed an example of the Algorithm using PPO with an actor-critic approach, see Fig. \ref{fig:ppo_algo_code}. According to Konda and Tsitsiklis \cite{kots03}, A critic is responsible to approximate the value function of the policy, and the actor in turn improves the policy based on the approximation results of the critic.
 
 \marginpar{PPO pseudo}
-Here, $N$ detonates actors collecting data in T timesteps in each Iteration. Meanwhile the critic computes the estimations of the advantage values. Afterwards, the policy is replaced with a new one, in which the function $L_{t}^{CLIP+VF+S}(\theta)$ \eqref{PPO Algorithm} is optimized during K epochs. For the optimization process a small random batch of the previous $NT$ timesteps is used.
+Here, $N$ detonates actors collecting data in T time steps in each Iteration. Meanwhile, the critic computes the estimations of the advantage values. Afterwards, the policy is replaced with a new one, in which the function $L_{t}^{CLIP+VF+S}(\theta)$ \eqref{PPO Algorithm} is optimized during K epochs. For the optimization process a small random batch of the previous time steps is used.
 \begin{figure}[hpbt]
     \centering
     \includegraphics[width=1\textwidth]{pictures/ppo_algo_code.png}\\
-    \caption[Exemplary Use Of PPO]{Exemplary use of PPO, as shown in ``Proximal Policy Optimization Algorithms''\cite{scwo17}}\label{fig:ppo_algo_code}
+    \caption[Exemplary Use Of PPO]{Exemplary use of PPO, as shown in ``Proximal Policy Optimization Algorithms'' \cite{scwo17}}\label{fig:ppo_algo_code}
 \end{figure}
 
 \section{Deep Q-Learning}
 \marginpar{q value function}
-Another algorithm that is often compared with PPO is deep Q-Learning (DQN). This Algorithm originated from a simple equation called Q-value \cite{jaja19}, expanding the common value function of chapter \ref{reinforcement_learning} with an action. Therefore the expected reward is calculated starting at a state $s$, executing a specific action $a$ and following the next states by using a policy $\pi$. Mnih et al. \cite{mnka13} define the optimal action-value with the following:
+Another algorithm often compared with PPO is the training of a deep Q-Network (DQN) with Q-learning. This Algorithm originated from a simple equation called Q-value \cite{jaja19}, expanding the common value function $v_\pi(s)$ of chapter \ref{reinforcement_learning} with an action. The overall goal here is to maximize the possible future rewards. 
+
+The expected reward is calculated starting at a state $s$, executing a specific action $a$ and following the next states by using a policy $\pi$. Mnih et al. \cite{mnka13} define the optimal action-value with the following:
 \begin{equation}\label{qvalue}
     Q^*(s,a) = \max_{\pi} \mathbb{E}\left[ r_{t} + \gamma r_{t+1} + \gamma^2 r_{t+2} + \ldots | s_t = s, a_t = a, \pi \right]
 \end{equation}
 
 \marginpar{Bellmann}
-Here, the maximum sum of rewards is calculated. By using a $\gamma$ coefficient, future rewards are discounted, putting greater importance on the next few values. They proceed by explaining that if all $Q^*(s',a')$ values of the next timestep are known then the following Bellman equation can be calculated:
+Here, the maximum sum of rewards is calculated. By using a $\gamma$ coefficient, future rewards are discounted, putting greater importance on the next few values. They proceed by explaining that if all $Q^*(s',a')$ values of the next time step are known then the following Bellman equation can be calculated:
 \begin{equation}\label{opt_qvalue}
     Q^*(s,a) = \mathbb{E}_{s'\sim \epsilon} \left[ r + \gamma \max_{a'} Q^*(s',a') | s,a \right]
 \end{equation}
@@ -120,12 +119,26 @@ Nonetheless, Mnih et al. argue, that this iterative approach is impractical and 
 \begin{equation}\label{q_y}
     y_i = \mathbb{E}_{s' \sim \varepsilon } \left[ r + \gamma \max_{a'} Q(s',a'; \theta_{i-1}) | s,a \right]
 \end{equation}
-Jafari et al. \cite{jaja19} explain that the loss function shows how much the estimated values deviate from the target values $y_i$ (\ref{q_y}). Mnih et al. emphasize that $y_i$ holds the network parameters of the previous iteration, due to $\theta_{i-1}$, and therefore it depends on the network weights. Finally, the differentiation of the loss function with respect to $\theta$ results in the gradient function below.
+Jafari et al. \cite{jaja19} explain that the loss function shows how much the estimated values deviate from the target values $y_i$ (\ref{q_y}). Mnih et al. emphasize that $y_i$ holds the network parameters of the previous iteration, due to $\theta_{i-1}$. Finally, the differentiation of the loss function with respect to $\theta$ results in the gradient function below.
 \begin{equation}\label{q_gradient}
     \nabla_{\theta_i} L_i(\theta_i) = \mathbb{E}_{s,a \sim p(\cdot);s' \sim \varepsilon } \left[\left( r + \gamma \max_{a'} Q(s',a'; \theta_{i-1}) - Q(s,a;\theta_i) \right) \nabla_{\theta_i} Q(s,a;\theta_i) \right]
 \end{equation}
+Nevertheless, in most cases it is sufficient to optimize the loss function through stochastic gradient descent.
+
+\marginpar{experience replay}
+In Figure \ref{fig:dqn_algo_code} a deep Q-learning approach with an experience replay is shown. The experience replay contains the acquired agent knowledge of each time step in form of a quadruple: (old state, action, reward, new state). The experience values are then stored into the replay memory across multiple episodes. 
+
+\marginpar{action selection}
+In order to fill the memory the agent first selects actions and acts in the environment. The action selection here is based on the $\epsilon$-greedy policy, meaning that with a probability of $\epsilon$ a random action is chosen. Otherwise, the best action according to the Q-value is selected.
+
 \begin{figure}[hpbt]
     \centering
     \includegraphics[width=1\textwidth]{pictures/dqn_algo_code.png}\\
-    \caption[DQN with Experience Replay]{DQN with Experience Replay, as shown in ``Playing atari with deep reinforcement learning''\cite{mnka13}}\label{fig:dqn_algo_code}
+    \caption[DQN with Experience Replay]{DQN with Experience Replay, as shown in ``Playing atari with deep reinforcement learning'' \cite{mnka13}}\label{fig:dqn_algo_code}
 \end{figure}
+
+\marginpar{action selection}
+Executing the selected action results in a memory entry in form of the earlier described quadruple. Afterwards a  minibatch of the replay memory is randomly sampled and used to perform a gradient descent step. The reference to ``equation 3'' in the figure \ref{fig:dqn_algo_code} points to formula \ref{q_gradient} here.
+
+\marginpar{minibatch advantages}
+The suggested process offers several advantages. The replay memory for instance, leads to a smaller deviation or fluctuation in the parameters. The random samples of minibatches can proof to be efficient, since an experience might be used multiple times to update the network weights. Furthermore, through the randomness in the samples the correlation of steps is interrupted, leading to a decrease of variance in between updates. 

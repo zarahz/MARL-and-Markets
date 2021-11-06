@@ -1,0 +1,15 @@
+Agogino
+Tumer
+Schmid
+Barto
+TRPO
+Konda
+Tsitsiklis
+Mnih
+Jafari
+minibatch
+minibatches
+Barto
+CAPs
+Gridworld
+openAI
