@@ -61,11 +61,11 @@ In mixed-motive settings the colors are of importance. Agents only gain rewards 
 In a fully competitive mixed-motive scenario the reward calculations stay the same, only disabling the bit switching for opponent colors. Therefore, agents can directly capture already colored cells when they walk over them. However, if the captured cell contains the same color as the agent the cell is reset instead. Hence, taking over the cells of the opponents is beneficial, since it increases the color presence of the own color, leading to a higher reward.
 
 \marginpar{comparison multiagents}
-In comparison, the basic mixed-motive composition shows no advantages resetting colored cells. In this implementation resetting cells is punished with a small negative reward. Here, the cell is not captured, and the agent won't receive more reward. Rather the opposite applies, and the agent would be punished for doing that. Hence, it is not likely that the agents work against each other yielding in an agent composition with neutral behavior.
+In comparison, the basic mixed-motive composition shows no advantages resetting colored cells. This implementation punishes the resetting of cells with a small negative reward. Since the cell is not captured, the agent won't receive more reward. Hence, it is not likely that the agents work against each other yielding an agent composition with neutral or independent behavior.
 
 \subsection{Observation}
 \marginpar{what the agent sees}
-The observations agents receive from the environment are always generated from their individual point of view and only contain a restricted area around them. In large environments this feature increases the difficulty but at the same time reflects the reality. An example for a proper observation of an agent is shown in \ref{fig:agent_obs}. This observation represents the internal state of the human representation of image \ref{fig:env}.
+The observations agents receive from the environment are always generated from their individual point of view and only contain a restricted area around them, making it a partially observable MDP. In large environments this feature increases the difficulty but at the same time reflects the reality. An example for a proper observation of an agent is shown in \ref{fig:agent_obs}. This observation represents the internal state of the human representation of image \ref{fig:env}.
 
 \begin{figure}[hpbt]
     \centering
@@ -108,24 +108,26 @@ With \verb|--model| the destination path is defined, in which all logs, recordin
 The amount of agents that act in the environment is set through the argument \verb|--agents| and the maximum quantity of steps they can execute is defined with \verb|--max-steps|. To gain the highest reward, the agents need to color the whole field before they run out of steps. Lastly, the argument \verb|--setting| specifies the composition of the agents. If no setting is set the agents work cooperatively. In the example of \ref{lst:command} the setting ``mixed-motive'' is chosen. The last two options here are ``mixed-motive-competitive'' and ``difference-reward''. % and ``percentage''.
 
 \marginpar{environment reward}
-Regardless of the composition, agents initially get separate rewards in each step based on their environment change contribution. For instance, agents that color a field receive a positive reward of 0.1, whereas agents that reset a field get a penalty of negative 0.1. Agents that just wait get a reward of 0. The only exception is the setting ``mixed-motive-competitive'', since agents can capture opponent cells. If that is the case they get a positive reward of 0.1 otherwise the rules stay the same. 
+Regardless of the composition, agents initially generate separate rewards in each step based on their individual environment change. For instance, agents that color a field produce a positive reward of 0.1, whereas agents that reset a field contribute a penalty of negative 0.1. Agents that just wait generate a reward of 0. The only exception is the setting ``mixed-motive-competitive'', since agents can capture opponent cells. If that is the case they get a positive reward of 0.1 otherwise the rules stay the same. 
 
-All rewards are written into a list and returned by the environment, see algorithm \ref{algo:step_reward}, line 1. The position in the list indicates the receiving agent. In algorithm \ref{algo:step_reward} the process of adapting the initial environment rewards each step is summarized. Here, the specified training arguments are taken into account, leading to the four conditions below.
+Rewards are always written into a list, which is initially returned by the environment, see algorithm \ref{algo:step_reward}, line 1. The position in the list indicates the accountable agent, i.e. a reward list of $[0.1, 0, \cdots ]$ shows that agent 0 is responsible for a reward of 0.1 and so forth. In algorithm \ref{algo:step_reward} the adaptation process of the initial environment rewards during each step is summarized. Here, the specified training arguments are taken into account, leading to the four conditions below.
 
 \begin{algorithm}[H]
     \DontPrintSemicolon
     observations, rewards, done, info = environment.step(actions)\;
-    \If{cooperative setting}{
+
+    \uIf{difference reward setting} {
+        rewards = calculate difference reward for each agent
+    }
+    \uElseIf{cooperative setting}{
         rewards = calculate one cooperative reward
     }
+
     \If{market specified}{
         rewards = execute market actions and return transaction rewards\;
     }
-    \uIf{done}{
+    \If{done}{
         rewards = calculate final rewards
-    }
-    \uElseIf {difference reward setting} {
-        rewards = calculate difference rewards
     }
     \textbf{return} observations, rewards, done, info\;
     \caption{Reward calculation each step}\label{algo:step_reward}
