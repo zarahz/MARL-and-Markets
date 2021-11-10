@@ -925,31 +925,28 @@ class GridEnv(gym.Env):
             done = True
             # reward = [1]*len(self.agents)
 
-        if calc_difference_reward:
+        if calc_difference_reward and done:
+            # only needed to calculate the DR when env is done, 
+            # since then the percentage are of importance.
+            # Otherwise the dr is rather simple and executed in the wrapper 
             dr_info = self.calculate_difference_rewards(
                 dr_agent_grids, all_old_pos)
-            info.update({"difference_reward": dr_info})
+            info.update({"difference_rewards": dr_info})
 
         return obs, reward, done, info
 
     def calculate_difference_rewards(self, grids, all_old_pos):
-        info = []
+        dr = [0]*len(self.agents)
         for agent in self.agents:
-            reward = [0]*len(self.agents)
             for moving_agent, old_pos in enumerate(all_old_pos):
                 if old_pos is not None:
                     # the current agent executes default "waiting" action -> stays in old position
                     new_pos = old_pos if moving_agent == agent else self.agents[moving_agent]["pos"]
                     if tuple(new_pos) == old_pos:
                         continue
-                    reset_field, cell_status_changed = self.move_agent(grids[agent],
-                                                                       moving_agent, old_pos, new_pos, calc_difference_reward=True)
-                    reward, _ = self._reward(moving_agent, cell_status_changed, reward,
-                                             reset_field, [])
-                    reward[agent] = 0
-            grid_done = self.whole_grid_colored(grids[agent])
-            info.append({"fully_colored": grid_done, "reward": reward})
-        return info
+                    _, _ = self.move_agent(grids[agent], moving_agent, old_pos, new_pos, calc_difference_reward=True)
+            dr[agent] = self.grid_colored_percentage(grids[agent])
+        return dr
 
     def move_agent(self, grid, agent, old_pos, new_pos, calc_difference_reward=False):
         new_pos_cell = grid.get(*new_pos)
@@ -970,10 +967,10 @@ class GridEnv(gym.Env):
     def whole_grid_colored(self, grid):
         return all(grid.encode_grid_objects()[:, :, 1].ravel())
 
-    def grid_colored_percentage(self):
+    def grid_colored_percentage(self, grid=None):
         # walkable_cells include agent and floor objects
         walkable_cells = len(self.walkable_cells())
-        colored_cells = len(self.colored_cells())
+        colored_cells = len(self.colored_cells(grid))
         return colored_cells/walkable_cells
 
     def walkable_cells(self):
@@ -983,9 +980,9 @@ class GridEnv(gym.Env):
         agent_cells = encoded_grid[encoded_grid[:, :, 0] == 4]
         return np.concatenate((floor_cells, agent_cells))
 
-    def colored_cells(self):
+    def colored_cells(self, grid=None):
         """ Returns 2d array of all cells containing floor tiles or agents with status is colored """
-        encoded_grid = self.grid.encode_grid_objects()
+        encoded_grid = self.grid.encode_grid_objects() if grid is None else grid.encode_grid_objects() 
         colored_floor_cells = encoded_grid[(
             (encoded_grid[:, :, 0] == 3) & (encoded_grid[:, :, 1] == 1))]
         colored_agent_cells = encoded_grid[(

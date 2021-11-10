@@ -53,7 +53,7 @@ class Market:
                 if not selling_row[seller] or seller == buyer:
                     continue
 
-                if self.no_reset_fields(reset_fields_by, buyer) or self.no_debt(price, env_reward[buyer]):
+                if self.reset_fields(reset_fields_by, buyer) or self.debt(price, env_reward[buyer]):
                     continue
 
                 # TODO shuffel buying_agents for fairness
@@ -74,7 +74,7 @@ class Market:
         for buyer, offer in enumerate(market_actions):
             buy_from = offer[0]
 
-            if self.no_reset_fields(reset_fields_by, buy_from) or self.no_debt(self.trading_fee, env_reward[buyer]):
+            if self.reset_fields(reset_fields_by, buy_from) or self.debt(self.trading_fee, env_reward[buyer]):
                 continue
 
             if self.not_waiting_or_acting_on_self(buy_from, buyer) and env_actions[buy_from] == offer[1]:
@@ -99,14 +99,14 @@ class Market:
         self.trading_matrix[reciever][buyer] += self.trading_fee
         self.trading_matrix[buyer][buyer] -= self.trading_fee
 
-    def no_reset_fields(self, agents_that_reset_fields, reciever):
+    def reset_fields(self, agents_that_reset_fields, reciever):
         '''
         prevent agents to be rewarded/traded with if it reset fields in the current step
         (only applied when market type contains setting "no-reset")
         '''
         return "no-reset" in self.type and reciever in agents_that_reset_fields
 
-    def no_debt(self, price, balance):
+    def debt(self, price, balance):
         '''
         checks market setting and returns boolean  
         False -> the price is in the budget otherwise true for debt!

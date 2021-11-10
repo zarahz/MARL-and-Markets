@@ -3,5 +3,8 @@
         "Agogino",
         "Barto",
         "Tumer"
+    ],
+    "spellchecker.ignoreWordsList": [
+        "Games'"
     ]
 }

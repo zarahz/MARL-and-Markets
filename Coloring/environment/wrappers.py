@@ -1,3 +1,4 @@
+import copy
 import gym
 import numpy as np
 import environment.market as market
@@ -13,6 +14,8 @@ class MultiagentWrapper(gym.core.ObservationWrapper):
         super().__init__(env)
         self.tile_size = tile_size
         self.setting = setting
+        self.upper_step_reward_bound = 0.1
+        self.lower_step_reward_bound = -0.1
         if self.env.market:
             self.market = market.Market(
                 self.env.market, trading_fee, len(self.env.agents))
@@ -36,18 +39,20 @@ class MultiagentWrapper(gym.core.ObservationWrapper):
         observation, reward, done, info = self.env.step(
             actions, "difference-reward" in self.setting)
 
-        if not "mixed" in self.setting:
+        if "difference-reward" in self.setting:
+            reward_sum = sum(reward)
+            for agent in range(len(self.env.agents)):
+                temp_reward = copy.deepcopy(reward)
+                temp_reward[agent] = 0 # zero since dr is calculated with waiting action
+                temp_reward_sum = sum(temp_reward)
+                dr = reward_sum - temp_reward_sum
+
+                reward[agent] = self.clip_coop_rewards(dr)[agent]
+        elif not "mixed" in self.setting: # normal coop mode
             # assign all agents the same reward since here the reward is containig positive values for agents
             # that have colored a field!
             coop_reward = sum(reward)
-
-            # in coop case prevent reward getting too big/small
-            if coop_reward >= 0.1:
-                reward = [0.1]*len(self.env.agents)
-            elif coop_reward <= -0.1:
-                reward = [-0.1]*len(self.env.agents)
-            else:
-                reward = [coop_reward]*len(self.env.agents)
+            reward = self.clip_coop_rewards(coop_reward)
 
         if(self.market):
             # is_last_step = (self.env.step_count+1 >= self.env.max_steps)
@@ -57,9 +62,6 @@ class MultiagentWrapper(gym.core.ObservationWrapper):
 
         if done:
             reward = self.calculate_reward(reward, info)
-        else:
-            # prevent applying dr twice
-            self.calculate_difference_reward(reward, info)
 
         return observation, reward, done, info
 
@@ -82,33 +84,29 @@ class MultiagentWrapper(gym.core.ObservationWrapper):
                     len(self.env.walkable_cells())
                 reward[agent] += color_percentage
         else:
-            # coop reward based on completed coloring
-            # if env_goal_reached:
-            #     reward = [r + one for r, one in zip(reward, [1]*len(agents))]
-
             percentage_reward = [
                 1 * self.env.grid_colored_percentage()]*len(agents)
             reward = [r + percentage for r,
                       percentage in zip(reward, percentage_reward)]
 
             # coop reward with difference calculation to solve CAP
-            reward = self.calculate_difference_reward(
-                reward, info)
+            if "difference-reward" in self.setting:
+                for agent in range(len(agents)):
+                    reward[agent] = reward[agent] - info["difference_rewards"][agent]
 
         # execute market calculations too
         if self.market:
             reward = self.market.calculate_traded_reward(
                 reward, env_goal_reached)
         return reward
-
-    def calculate_difference_reward(self, reward, info):
-        if "difference-reward" in self.setting:
-            for agent, agent_reward in enumerate(reward):
-                default_action_reward = info['difference_reward'][agent]['reward']
-                if info['difference_reward'][agent]["fully_colored"]:
-                    # harsh penalty if environment would have been colored! otherwise just subtract a smaller value
-                    goal_reward = 1  # if env_colored == False else 0.5
-                    default_action_reward = [r + goal_r for r,
-                                             goal_r in zip(default_action_reward, [goal_reward]*len(reward))]
-                reward[agent] = agent_reward - default_action_reward[agent]
+    
+    def clip_coop_rewards(self, rewards):
+        # in coop case prevent reward getting too big/small since the reward 
+        # sum is taken 
+        if rewards >= self.upper_step_reward_bound:
+            reward = [self.upper_step_reward_bound]*len(self.env.agents)
+        elif rewards <= self.lower_step_reward_bound:
+            reward = [self.lower_step_reward_bound]*len(self.env.agents)
+        else:
+            reward = [rewards]*len(self.env.agents)
         return reward
