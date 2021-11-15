@@ -193,15 +193,17 @@ Depending on the learning algorithm the corresponding class is instantiated by t
 \end{figure}
 
 \marginpar{training setup}
-First, the training of agents begins by generating n environments based on the \verb|--procs| setting of the training command, see Appendix \ref{ax:training_params} for the parameter list. Each environment has the same configurations, for example \verb|--grid-size|, \verb|--agents| and \verb|--agent-view-size|. Second, the amount of \verb|--frames| is taken from the parameters, defining a loop until that number is reached. In this case frames are equivalent to agent steps. During the loop, the defined training algorithm \verb|--algo| is executed.
+First, the training of agents begins by generating n environments based on the \verb|--procs| setting of the training command, see Appendix \ref{ax:training_params} for the parameter list. Each environment has the same configurations, for example \verb|--grid-size|, \verb|--agents| and \verb|--agent-view-size|. Second, the amount of \verb|--frames| is taken from the parameters, defining a general training loop, which ends once this number is reached or suceeded. During the loop, the defined training algorithm \verb|--algo| is executed.
 
 \marginpar{base class}
-Since both algorithms have similar procedures, they share the base class. In it experiences are gathered through a certain amount of actions which are executed on parallel environments. The action amount is set with \verb|--frames-per-procs|. During that period details like gained rewards, observations, actions and more are stored in base class variables that are accessible by the learning algorithms. When all experience actions are executed, the base variables are reset and log values are returned, as shown in Figure \ref{fig:training}. Afterwards the frame counter in the training script is updated with the amount of \verb|--frames-per-procs|. The training loop ends when the frames counter is greater or equal \verb|--frames|. Otherwise, more experience batches are gathered.
+Since both algorithms have similar procedures, they share the base class. In it experiences are gathered by iterating over \verb|--frames-per-procs| and executing actions on the parallel environments. Therefore, each step in the \verb|--frames-per-procs| iteration produces a frame for every environment. The action selection of the learning algorithms generate different decisions based on each state of those parallel environments.
+
+During the iteration data like rewards, observations, actions and more are stored in base class variables that are accessible by the learning algorithms. When the iteration is done, the base variables are reset and log values of all episodes that reached the done state are returned to be logged, as shown in Figure \ref{fig:training}. The training loop keeps track of a frames counter, which sums up all frames that were produces by the parallel environments. The overall training loop ends when the frames counter is greater or equal to \verb|--frames|. Otherwise, more experience batches are gathered.
 
 \marginpar{action selection}
 Both learning algorithms include their own action selection methods. The PPO implementation relies on an actor-critic neural network, with an action space containing a probability distribution. In case of the DQN implementation the target network assigns Q values to actions, and agents choose one based on the maximum value with an epsilon greedy probability. In both variants the action selection results in one action for each agent and for each environment.
 
-\subsection{DQN}
+% \subsection{DQN}
 \marginpar{replay memory}
 Unlike the PPO algorithm, in the DQN approach a quadruple of information is saved each frame into a replay memory. The four parts of the quadruple consist of the executed actions during that time step, the returned rewards and both the previous and new observation of the parallel environments. Until the frame amount of \verb|--initial-target-update| is reached, DQN agents only gather the quadruples but do not use them yet.
 
@@ -210,7 +212,7 @@ After exceeding the \verb|--initial-target-update|, the DQN learning starts. Eac
 
 The action selection itself is also improved during the training, by decreasing the $\epsilon$ gradually through $\epsilon = \epsilon_{end}+(\epsilon_{start}-\epsilon_{end})*e^{-\frac{frames}{decay}}$. This ensures exploration in the early phase. A high $\epsilon$ leads to actions that are picked at random. In the later course as the amount of frames increase, the $\epsilon$ gets smaller. In this case, the chance to select actions based on their Q values rises, which exploits the gathered experiences. Through \verb|--epsilon-start| and \verb|--epsilon-end| min and max values are set, and \verb|--epsilon-decay| defines the speed of reduction.
 
-\subsection{PPO}
+% \subsection{PPO}
 \marginpar{fill and reshape experiences}
 In the DQN implementation learning happens during the base class batch creation, whereas in the PPO algorithm the learning process is triggered after the creation of each base class experience batch. The gathered values are reshaped and saved into a PPO experience buffer. Additionally, the advantage values are calculated here and added to the buffer.
 

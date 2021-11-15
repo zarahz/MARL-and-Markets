@@ -13,109 +13,134 @@
 %
 \chapter{Training Parameters}\label{ax:training_params}
 \small{
-    % \begin{python}
-    % train.py [-h] [--seed SEED] [--agents AGENTS] [--model MODEL] [--capture CAPTURE]
-    % [--env ENV] [--agent-view-size AGENT_VIEW_SIZE] [--grid-size GRID_SIZE]
-    % [--max-steps MAX_STEPS] [--setting SETTING] [--market MARKET]
-    % [--trading-fee TRADING_FEE] --algo ALGO [--frames FRAMES]
-    %     [--frames-per-proc FRAMES_PER_PROC] [--procs PROCS] [--recurrence RECURRENCE]
-    %     [--batch-size BATCH_SIZE] [--gamma GAMMA] [--log-interval LOG_INTERVAL]
-    %     [--save-interval SAVE_INTERVAL] [--capture-interval CAPTURE_INTERVAL]
-    %     [--capture-frames CAPTURE_FRAMES] [--lr LR] [--optim-eps OPTIM_EPS]
-    %     [--epochs EPOCHS] [--gae-lambda GAE_LAMBDA] [--entropy-coef ENTROPY_COEF]
-    %     [--value-loss-coef VALUE_LOSS_COEF] [--max-grad-norm MAX_GRAD_NORM]
-    %     [--clip-eps CLIP_EPS] [--epsilon-start EPSILON_START] [--epsilon-end EPSILON_END]
-    %     [--epsilon-decay EPSILON_DECAY] [--replay-size REPLAY_SIZE]
-    %     [--initial-target-update INITIAL_TARGET_UPDATE] [--target-update TARGET_UPDATE]
-
     \begin{verbatim}
 required arguments:
---algo ALGO           Algorithm to use for training. Choose between 'ppo' and 'dqn'.
+  --algo ALGO           Algorithm to use for training. Choose between 'ppo'
+                        and 'dqn'.
 
 optional arguments:
--h, --help            show this help message and exit
---seed SEED           random seed (default: 1)
---agents AGENTS       amount of agents
---model MODEL         Name of the (trained) model, if none is given then a name is 
-                      generated. (default: None)
---capture CAPTURE     Boolean to enable capturing of environment and save as gif 
-                      (default: True)
---env ENV             name of the environment to train on (default: empty grid)
---agent-view-size AGENT_VIEW_SIZE
-                      grid size the agent can see, while standing in the middle (default: 
-                      5, so agent sees the 5x5 grid around him)
---grid-size GRID_SIZE
-                      size of the playing area (default: 9)
---max-steps MAX_STEPS
-                      max steps in environment to reach a goal
---setting SETTING     If set to mixed-motive the reward is not shared which enables a
-                      competitive environment (one vs. all). Another setting is 
-                      percentage-reward, where the reward is shared (coop) and is based 
-                      on the percanted of the grid coloration. The last option is 
-                      mixed-motive-competitive which extends the normal mixed-motive 
-                      setting by removing the field reset
-                      option. When agents run over already colored fields the field 
-                      immidiatly change the color the one of the agent instead of 
-                      resetting the color. (default: empty string - coop reward of one if 
-                      the whole grid is colored)
---market MARKET       There are three options 'sm', 'am' and '' for none. SM =       
-                      Shareholder Market where agents can auction actions similar to 
-                      stocks. AM = Action Market where agents can buy specific actions 
-                      from others. (Default = '')
---trading-fee TRADING_FEE
-                      If a trade is executed, this value determens the price (market type 
-                      am) / share (market type sm) the agents exchange (Default: 0.05)
---frames FRAMES       number of frames of training (default: 1.000.000)
---frames-per-proc FRAMES_PER_PROC
-                      number of frames per process before update (default: 1024)
---procs PROCS         Number of processes/environments running parallel (default: 16)
---recurrence RECURRENCE
-                      number of time-steps gradient is backpropagated (default: 1). If > 
-                      1, a LSTM is added to the model to have memory.
---batch-size BATCH_SIZE
-                      batch size for dqn (default: ppo 256, dqn 128)
---gamma GAMMA         discount factor (default: 0.99)
---log-interval LOG_INTERVAL
-                      number of frames between two logs (default: 1)
---save-interval SAVE_INTERVAL
-                      number of updates between two saves (default: 10, 0 means no saving)
---capture-interval CAPTURE_INTERVAL
-                      number of gif caputures of episodes (default: 10, 0 means no 
-                      capturing)
---capture-frames CAPTURE_FRAMES
-                      number of frames in caputure (default: 50, 0 means no capturing)
---lr LR               learning rate (default: 0.001)
---optim-eps OPTIM_EPS
-                      Adam and RMSprop optimizer epsilon (default: 1e-8)
---epochs EPOCHS       number of epochs for PPO (default: 4)
---gae-lambda GAE_LAMBDA
-                      lambda coefficient in GAE formula (default: 0.95, 1 means no gae)
---entropy-coef ENTROPY_COEF
-                      entropy term coefficient (default: 0.01)
---value-loss-coef VALUE_LOSS_COEF
-                      value loss term coefficient (default: 0.5)
---max-grad-norm MAX_GRAD_NORM
-                      maximum norm of gradient (default: 0.5)
---clip-eps CLIP_EPS   clipping epsilon for PPO (default: 0.2)
---epsilon-start EPSILON_START
-                      starting value of epsilon, used for action selection (default: 0.9 
-                      -> high exploration)
---epsilon-end EPSILON_END
-                      ending value of epsilon, used for action selection (default: 0.05 
-                      -> high exploitation)
---epsilon-decay EPSILON_DECAY
-                      Controls the rate of the epsilon decay in order to shift from 
-                      exploration to exploitation. The higher the value the slower 
-                      epsilon decays. (default: 1000)
---replay-size REPLAY_SIZE
-                      Size of the replay memory (default: 100000)
---initial-target-update INITIAL_TARGET_UPDATE
-                      Frames until the target network is updated, Needs to be smaller 
-                      than target update! (default: 10000)
---target-update TARGET_UPDATE
-                      Frames between updating the target network, Needs to be smaller or 
-                      equal to frames-per-proc and bigger than initial target update! 
-                      (default: 100000 - 10 times the initial memory!)
+  -h, --help            show this help message and exit
+  --seed SEED           Generate the same set of pseudo random constellations,
+                        colors, positions, etc. every time the algorithm is
+                        executed. (default: 1)
+  --agents AGENTS       Amount of agents. (default: 2)
+  --model MODEL         Path of the model inside the storage folder, if none
+                        is given then a random name is generated. (default:
+                        None)
+  --capture CAPTURE     Boolean to enable capturing of the environment. The
+                        outcome are in form of gifs. (default: True)
+  --env ENV             Environment ID, choose between Empty-Grid-v0 for an
+                        empty environment and FourRooms-Grid-v0 for an
+                        environment divided into equal sized rooms. (default:
+                        Empty-Grid-v0)
+  --agent-view-size AGENT_VIEW_SIZE
+                        Grid size the agent can see. Agent Observation is
+                        based on that field of view. For example, 7x7 grid
+                        size means agent can see three tiles in each
+                        direction. (default: 7)
+  --grid-size GRID_SIZE
+                        Size of the environment grid. (default: 5)
+  --max-steps MAX_STEPS
+                        Maximum amount of steps an agent has to reach a goal.
+                        If none is given then this max count is set to: grid
+                        size * grid size. (default: None)
+  --setting SETTING     Setting can be either: '' for cooperation, 'mixed-
+                        motive' for a mixed motive environment, 'mixed-motive-
+                        competitive' for a competitive composition or
+                        'difference-reward' for a setting that calculates
+                        difference rewards. Cooperation means all agents get
+                        the same reward. If set to mixed-motive or mixed-
+                        motive-competitve the reward is not shared and each
+                        agent is responsible for its own success. In
+                        competitive mode, agents can take over opponent
+                        coloration without resetting the cells, otherwise
+                        cells are always reset when colored and walked over.
+                        The last option 'difference-reward' is a cooperation
+                        setting but calculates the reward for each agent by
+                        subtracting a new reward from the total reward. The
+                        new reward just excludes the action of this one agent.
+                        A high difference reward means, that the action of
+                        that agent was good. (default: '' for cooperation)
+  --market MARKET       There are three options: 'sm', 'am' and '' for none.
+                        SM = Shareholder Market where agents can sell or buy
+                        shares on the market. AM = Action Market where agents
+                        can buy specific actions from others. (default = '')
+  --trading-fee TRADING_FEE
+                        If a market transaction is executed, this value
+                        determines the price, i.e. in an action market this
+                        defines the price the buyer pays. In a shareholder
+                        market this value defines the share value. (default:
+                        0.1)
+  --frames FRAMES       Number of frames of training. (default: 80.000)
+  --frames-per-proc FRAMES_PER_PROC
+                        Number of frames per process. In case of PPO this is
+                        the number of steps, before the model is optimized.
+                        (default: 128)
+  --procs PROCS         Number of processes/environments running parallel.
+                        (default: 16)
+  --recurrence RECURRENCE
+                        Number of time-steps the gradient is back propagated.
+                        If it is greater than one, a LSTM is added to the
+                        model to have memory. (default: 1)
+  --batch-size BATCH_SIZE
+                        Batch size that is used for sampling. Different values
+                        required as default between the two algorithms. The
+                        default value here is specific to PPO. For DQN use 64!
+                        (default: 256)
+  --gamma GAMMA         Discount factor with 0 <= gamma < 1, specify how
+                        important future estimated rewards are. High value
+                        means high importance. (default: 0.99)
+  --log-interval LOG_INTERVAL
+                        Number of frames between two logs (default: 1)
+  --save-interval SAVE_INTERVAL
+                        Number of times the --frames-per-proc amount of frames
+                        needs to be reached, to log the current training
+                        values, i.e. rewards, into a csv file. (default: 10, 0
+                        means no saving)
+  --capture-interval CAPTURE_INTERVAL
+                        Number of times --frames-per-proc amount of frames
+                        needs to be reached, to capture the last --capture-
+                        frames amount of steps into a gif. Warning: --capture
+                        needs to be set to True as well. (default: 10, 0 means
+                        no capturing)
+  --capture-frames CAPTURE_FRAMES
+                        Number of frames that are captured. (default: 50, 0
+                        means no capturing)
+  --lr LR               Learning rate. (default: 0.001)
+  --optim-eps OPTIM_EPS
+                        Epsilon value for the Adam optimizer. (default: 1e-8)
+  --epochs EPOCHS       [PPO] Number of epochs for PPO optimization. (default:
+                        4)
+  --gae-lambda GAE_LAMBDA
+                        [PPO] Lambda coefficient in GAE formula, used for
+                        calculation of the advantage values. (default: 0.95, 1
+                        means no gae)
+  --entropy-coef ENTROPY_COEF
+                        [PPO] Entropy term coefficient. (default: 0.01)
+  --value-loss-coef VALUE_LOSS_COEF
+                        [PPO] Value loss term coefficient. (default: 0.5)
+  --max-grad-norm MAX_GRAD_NORM
+                        [PPO] Maximum norm of gradient. (default: 0.5)
+  --clip-eps CLIP_EPS   [PPO] Clipping epsilon for PPO. (default: 0.2)
+  --epsilon-start EPSILON_START
+                        [DQN] Starting value of epsilon, used for action
+                        selection. (default: 1.0 -> high exploration)
+  --epsilon-end EPSILON_END
+                        [DQN] Ending value of epsilon, used for action
+                        selection. (default: 0.01 -> high exploitation)
+  --epsilon-decay EPSILON_DECAY
+                        [DQN] Controls the rate of the epsilon decay in order
+                        to shift from exploration to exploitation. The higher
+                        the value the slower epsilon decays. (default: 5.000)
+  --replay-size REPLAY_SIZE
+                        [DQN] Size of the replay memory. (default: 40.000)
+  --initial-target-update INITIAL_TARGET_UPDATE
+                        [DQN] Frames until the target network is updated,
+                        Needs to be smaller than --target-update! (default:
+                        1.000)
+  --target-update TARGET_UPDATE
+                        [DQN] Frames between updating the target network,
+                        Needs to be smaller or equal to --frames-per-proc and
+                        bigger than --initial-target-update! (default: 15.000)
     \end{verbatim}
-    % \end{python}
 }
