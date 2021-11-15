@@ -92,7 +92,7 @@ class MultiagentWrapper(gym.core.ObservationWrapper):
             # coop reward with difference calculation to solve CAP
             if "difference-reward" in self.setting:
                 for agent in range(len(agents)):
-                    reward[agent] = reward[agent] - info["difference_rewards"][agent]
+                    reward[agent] = self.env.grid_colored_percentage() - info["difference_rewards"][agent]
 
         # execute market calculations too
         if self.market:
