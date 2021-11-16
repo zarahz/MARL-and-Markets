@@ -71,8 +71,8 @@ def training_args():
 
     # i.e. batch_size = 256: overall one run contains frames-per-proc*procs (128*16=2048) batch elements / Transitions
     # and out of that 2048/256 = 8 mini batches can be drawn
-    parser.add_argument("--batch-size", type=int, default=256,
-                        help="Batch size that is used for sampling. Different values required as default between the two algorithms. The default value here is specific to PPO. For DQN use 64! (default: 256)")
+    parser.add_argument("--batch-size", type=int, default=64,
+                        help="Batch size that is used for sampling.(default: 64)")
 
     # gamma = discount range(0.88,0.99) most common is 0.99
     parser.add_argument("--gamma", type=float, default=0.99,

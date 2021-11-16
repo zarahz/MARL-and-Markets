@@ -83,15 +83,12 @@ optional arguments:
                         If it is greater than one, a LSTM is added to the
                         model to have memory. (default: 1)
   --batch-size BATCH_SIZE
-                        Batch size that is used for sampling. Different values
-                        required as default between the two algorithms. The
-                        default value here is specific to PPO. For DQN use 64!
-                        (default: 256)
+                        Batch size that is used for sampling. (default: 64)
   --gamma GAMMA         Discount factor with 0 <= gamma < 1, specify how
                         important future estimated rewards are. High value
                         means high importance. (default: 0.99)
   --log-interval LOG_INTERVAL
-                        Number of frames between two logs (default: 1)
+                        Number of frames between two logs. (default: 1)
   --save-interval SAVE_INTERVAL
                         Number of times the --frames-per-proc amount of frames
                         needs to be reached, to log the current training
@@ -144,3 +141,52 @@ optional arguments:
                         bigger than --initial-target-update! (default: 15.000)
     \end{verbatim}
 }
+
+
+\chapter{Detailed Results}\label{ax:plots}
+
+\subsection{Small Environment}
+The following plots show all details of the best training results in a small 5x5 grid. The default parameters of Appendix \ref{ax:training_params} are used for all executions. Only the agent amount, setting and market value change. In the first Figure \ref{fig:ax-easy-1}, one agent is acting in the environment, all other trainings are executed with two agents. For details see chapter \ref{sec:Results}.
+
+\begin{figure}[hpbt]
+    \centering
+    \includegraphics[width=1\textwidth]{AX-easy-1.png}\\
+    \caption[PPO and DQN Training Details with One Agent]{Details of the training with one agent using PPO and DQN}\label{fig:ax-easy-1}
+\end{figure}
+
+\begin{figure}[hpbt]
+    \centering
+    \includegraphics[width=1\textwidth]{AX-easy-2-ppo-coop.png}\\
+    \caption[Training Details of Top PPO Cooperation Executions]{Details of the training for the top scores in cooperation executions using PPO}\label{fig:ax-easy-2-ppo-coop}
+\end{figure}
+
+\begin{figure}[hpbt]
+    \centering
+    \includegraphics[width=1\textwidth]{AX-easy-2-dqn-coop.png}\\
+    \caption[Training Details of Top DQN Cooperation Executions]{Details of the training for the top scores in cooperation executions using DQN}\label{fig:ax-easy-2-dqn-coop}
+\end{figure}
+
+\begin{figure}[hpbt]
+    \centering
+    \includegraphics[width=1\textwidth]{AX-easy-2-ppo-mixed.png}\\
+    \caption[Training Details of Top PPO Mixed-Motive Executions]{Details of the training for the top scores in mixed-motive executions using PPO}\label{fig:ax-easy-2-ppo-mixed}
+\end{figure}
+
+\begin{figure}[hpbt]
+    \centering
+    \includegraphics[width=1\textwidth]{AX-easy-2-dqn-mixed.png}\\
+    \caption[Training Details of Top DQN Mixed-Motive Executions]{Details of the training for the top scores in mixed-motive executions using DQN}\label{fig:ax-easy-2-dqn-mixed}
+\end{figure}
+
+\begin{figure}[hpbt]
+    \centering
+    \includegraphics[width=1\textwidth]{AX-easy-2-ppo-comp.png}\\
+    \caption[Training Details of Top PPO Competitive Executions]{Details of the training for the top scores in competitive executions using PPO}\label{fig:ax-easy-2-ppo-comp}
+\end{figure}
+
+\begin{figure}[hpbt]
+    \centering
+    \includegraphics[width=1\textwidth]{AX-easy-2-dqn-comp.png}\\
+    \caption[Training Details of Top DQN Competitive Executions]{Details of the training for the top scores in competitive executions using DQN}\label{fig:ax-easy-2-dqn-comp}
+\end{figure}
+
