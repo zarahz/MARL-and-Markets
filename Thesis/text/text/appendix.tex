@@ -145,48 +145,230 @@ optional arguments:
 
 \chapter{Detailed Results}\label{ax:plots}
 
-\subsection{Small Environment}
-The following plots show all details of the best training results in a small 5x5 grid. The default parameters of Appendix \ref{ax:training_params} are used for all executions. Only the agent amount, setting and market value change. In the first Figure \ref{fig:ax-easy-1}, one agent is acting in the environment, all other trainings are executed with two agents. For details see chapter \ref{sec:Results}.
+\subsection{Easy Environment}
+The following plots show all details of the best training results in a small 5x5 grid. The default parameters of Appendix \ref{ax:training_params} are used for all executions. Only the agent amount, setting and market value change. In the first Figure \ref{fig:ax-easy-1}, one agent is acting in the environment, all other trainings are executed with two agents. For details see Chapter \ref{sec:Results}. An example to run a training process is shown below.
 
-\begin{figure}[hpbt]
+\begin{lstlisting}[float=htp,language=bash, escapeinside={//@}{@//},xleftmargin=3ex,xrightmargin=1ex]
+$ python -m scripts.train
+    --algo ppo
+    --model ppo-easy
+    --agents 2
+\end{lstlisting}
+
+\newpage
+\vfill
+% [!hpbt]
+\begin{figure}
     \centering
     \includegraphics[width=1\textwidth]{AX-easy-1.png}\\
     \caption[PPO and DQN Training Details with One Agent]{Details of the training with one agent using PPO and DQN}\label{fig:ax-easy-1}
 \end{figure}
+\vfill
+\clearpage
 
-\begin{figure}[hpbt]
+
+\newpage
+\vfill
+\begin{figure}
     \centering
     \includegraphics[width=1\textwidth]{AX-easy-2-ppo-coop.png}\\
-    \caption[Training Details of Top PPO Cooperation Executions]{Details of the training for the top scores in cooperation executions using PPO}\label{fig:ax-easy-2-ppo-coop}
+    \caption[Training Details of Top PPO Cooperation Executions]{Top cooperation score details of two PPO agents}\label{fig:ax-easy-2-ppo-coop}
 \end{figure}
+\vfill
+\clearpage
 
-\begin{figure}[hpbt]
+
+\newpage
+\vfill
+\begin{figure}
     \centering
     \includegraphics[width=1\textwidth]{AX-easy-2-dqn-coop.png}\\
-    \caption[Training Details of Top DQN Cooperation Executions]{Details of the training for the top scores in cooperation executions using DQN}\label{fig:ax-easy-2-dqn-coop}
+    \caption[Training Details of Top DQN Cooperation Executions]{Top cooperation score details of two DQN agents}\label{fig:ax-easy-2-dqn-coop}
 \end{figure}
+\vfill
+\clearpage
 
-\begin{figure}[hpbt]
+
+\newpage
+\vfill
+\begin{figure}
     \centering
     \includegraphics[width=1\textwidth]{AX-easy-2-ppo-mixed.png}\\
-    \caption[Training Details of Top PPO Mixed-Motive Executions]{Details of the training for the top scores in mixed-motive executions using PPO}\label{fig:ax-easy-2-ppo-mixed}
+    \caption[Training Details of Top PPO Mixed-Motive Executions]{Top mixed-motive score details of two PPO agents}\label{fig:ax-easy-2-ppo-mixed}
 \end{figure}
+\vfill
+\clearpage
 
-\begin{figure}[hpbt]
+
+\newpage
+\vfill
+\begin{figure}
     \centering
     \includegraphics[width=1\textwidth]{AX-easy-2-dqn-mixed.png}\\
-    \caption[Training Details of Top DQN Mixed-Motive Executions]{Details of the training for the top scores in mixed-motive executions using DQN}\label{fig:ax-easy-2-dqn-mixed}
+    \caption[Training Details of Top DQN Mixed-Motive Executions]{Top mixed-motive score details of two DQN agents}\label{fig:ax-easy-2-dqn-mixed}
 \end{figure}
+\vfill
+\clearpage
 
-\begin{figure}[hpbt]
+
+\newpage
+\vfill
+\begin{figure}
     \centering
     \includegraphics[width=1\textwidth]{AX-easy-2-ppo-comp.png}\\
-    \caption[Training Details of Top PPO Competitive Executions]{Details of the training for the top scores in competitive executions using PPO}\label{fig:ax-easy-2-ppo-comp}
+    \caption[Training Details of Top PPO Competitive Executions]{Top competitive score details of two PPO agents}\label{fig:ax-easy-2-ppo-comp}
 \end{figure}
+\vfill
+\clearpage
 
-\begin{figure}[hpbt]
+
+\newpage
+\vfill
+\begin{figure}
     \centering
     \includegraphics[width=1\textwidth]{AX-easy-2-dqn-comp.png}\\
-    \caption[Training Details of Top DQN Competitive Executions]{Details of the training for the top scores in competitive executions using DQN}\label{fig:ax-easy-2-dqn-comp}
+    \caption[Training Details of Top DQN Competitive Executions]{Top competitive score details of two DQN agents}\label{fig:ax-easy-2-dqn-comp}
 \end{figure}
+\vfill
+\clearpage
 
+\subsection{Difficult Environment}
+An example to run a training process in a seven by seven environment is shown below.
+
+\begin{lstlisting}[float=htp,language=bash, escapeinside={//@}{@//},xleftmargin=3ex,xrightmargin=1ex]
+$ python -m scripts.train 
+    --algo dqn 
+    --model dqn-difficult
+    --agents 3
+    --target-update 10000 
+    --replay-size 700000 
+    --epsilon-decay 20000
+    --grid-size 7 
+    --max-steps 20 
+    --frames-per-proc 256
+    --frames 200000
+\end{lstlisting}
+
+\newpage
+\vfill
+\begin{figure}
+    \centering
+    \includegraphics[width=1\textwidth]{AX-hard-1.png}\\
+    \caption[PPO and DQN Training Details with One Agent in a 7x7 Environment]{Details of the training  in a 7x7 Environment with one agent using PPO and DQN}\label{fig:ax-hard-1}
+\end{figure}
+\vfill
+\clearpage
+
+
+\newpage
+\vfill
+\begin{figure}
+    \centering
+    \includegraphics[width=1\textwidth]{AX-hard-3-ppo-coop.png}\\
+    \caption[Training Details of Top PPO Cooperation Executions in a 7x7 Environment]{Top cooperation score details of three PPO agents in a 7x7 Environment}\label{fig:ax-hard-2-ppo-coop}
+\end{figure}
+\vfill
+\clearpage
+
+
+\newpage
+\vfill
+\begin{figure}
+    \centering
+    \includegraphics[width=1\textwidth]{AX-hard-3-dqn-coop.png}\\
+    \caption[Training Details of Top DQN Cooperation Executions in a 7x7 Environment]{Top cooperation score details of three DQN agents in a 7x7 Environment}\label{fig:ax-hard-2-dqn-coop}
+\end{figure}
+\vfill
+\clearpage
+
+
+\newpage
+\vfill
+\begin{figure}
+    \centering
+    \includegraphics[width=1\textwidth]{AX-hard-3-ppo-mixed.png}\\
+    \caption[Training Details of Top PPO Mixed-Motive Executions in a 7x7 Environment]{Top mixed-motive score details of three PPO agents in a 7x7 Environment}\label{fig:ax-hard-2-ppo-mixed}
+\end{figure}
+\vfill
+\clearpage
+
+
+\newpage
+\vfill
+\begin{figure}
+    \centering
+    \includegraphics[width=1\textwidth]{AX-hard-3-dqn-mixed.png}\\
+    \caption[Training Details of Top DQN Mixed-Motive Executions in a 7x7 Environment]{Top mixed-motive score details of three DQN agents in a 7x7 Environment}\label{fig:ax-hard-2-dqn-mixed}
+\end{figure}
+\vfill
+\clearpage
+
+
+\newpage
+\vfill
+\begin{figure}
+    \centering
+    \includegraphics[width=1\textwidth]{AX-hard-3-ppo-comp.png}\\
+    \caption[Training Details of Top PPO Competitive Executions in a 7x7 Environment]{Top competitive score details of three PPO agents in a 7x7 Environment}\label{fig:ax-hard-2-ppo-comp}
+\end{figure}
+\vfill
+\clearpage
+
+
+\newpage
+\vfill
+\begin{figure}
+    \centering
+    \includegraphics[width=1\textwidth]{AX-hard-3-dqn-comp.png}\\
+    \caption[Training Details of Top DQN Competitive Executions in a 7x7 Environment]{Top competitive score details of three DQN agents in a 7x7 Environment}\label{fig:ax-hard-2-dqn-comp}
+\end{figure}
+\vfill
+\clearpage
+
+
+\subsection{Rooms Environment}
+An example to run a training process in a nine by nine room divided environment is shown below.
+
+\begin{lstlisting}[float=htp,language=bash, escapeinside={//@}{@//},xleftmargin=3ex,xrightmargin=1ex]
+$ python -m scripts.train 
+    --algo ppo 
+    --agents 3 
+    --model ppo-rooms
+    --env FourRooms-Grid-v0 
+    --grid-size 9 
+    --max-steps 30 
+    --frames-per-proc 256 
+    --frames 200000 
+\end{lstlisting}
+
+\newpage
+\vfill
+\begin{figure}
+    \centering
+    \includegraphics[width=1\textwidth]{AX-rooms-1.png}\\
+    \caption[PPO and DQN Training Details with One Agent in a Rooms Environment]{Details of the training  in a 9x9 Rooms Environment with one agent using PPO and DQN}\label{fig:ax-rooms-1}
+\end{figure}
+\vfill
+\clearpage
+
+
+\newpage
+\vfill
+\begin{figure}
+    \centering
+    \includegraphics[width=1\textwidth]{AX-rooms-3-ppo.png}\\
+    \caption[Training Details of Top PPO Competitive Executions in a Rooms Environment]{Top score details of three PPO agents in a 9x9 Rooms Environment}\label{fig:ax-rooms-3-ppo}
+\end{figure}
+\vfill
+\clearpage
+
+
+\newpage
+\vfill
+\begin{figure}
+    \centering
+    \includegraphics[width=1\textwidth]{AX-rooms-3-dqn.png}\\
+    \caption[Training Details of Top DQN Competitive Executions in a Rooms Environment]{Top score details of three DQN agents in a 9x9 Rooms Environment}\label{fig:ax-rooms-3-dqn}
+\end{figure}
+\vfill
+\clearpage
