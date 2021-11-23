@@ -11,50 +11,63 @@
 % -------------------------------------------------------------------------------------------------
 %
 \chapter{Approach}\label{sec:Concept}
-This Chapter introduces the RL components of this research, namely the coloring environment and its agents. Since, the aim here is to execute learning with markets in various multiagent scenarios, the implementation of the three agent compositions: cooperation, mixed-motive and competitive is shown in Section \ref{env}. The compositions are tightly coupled with reward distribution, which is why Section \ref{reward_calculations} covers the detailed implementation of reward calculations. Furthermore, the process of learning and how the two algorithms PPO and DQN were implemented is the topic of Section \ref{learning_process}. Lastly, the two market implementations and their influence on the rewards are discussed in Section \ref{market_settings}.
+This Chapter introduces the functionality and calculations of the ``Coloring Environment''. The first Section focuses the key components: the environment itself and its agents. The agent compositions, which defines how they behave towards each other, is also part of the first Section \ref{env}. Section \ref{reward_calculations} presents the reward calculations, which is tightly coupled with the behavior of the agents. Subsequently, the process of learning and how PPO and DQN are implemented is the topic of Section \ref{learning_process}. Lastly, the two market implementations and their influence on the rewards are presented.
 
 \section{Coloring Environment}\label{env}
 % Introduce Gridworld, Agent actions, goal etc.
 A RL environment is a versatile and unbiased instance, that can in this case visualize changes and agent behavior.
 % Although a human visualization is optional, agents need to have some sort of understanding what state they are acting in. 
-In figure \ref{fig:env}, the environment used in this work is presented. It originated from an openAI project called ``Minimalistic Gridworld Environment'' \cite{chwi18}, which is designed for one agent whose main goal is to solve labyrinth puzzles. However, for the purpose of this research, the environment is changed heavily, becoming the ``Coloring Environment''. Multiple agents can act in the new instance to try and achieve a common goal - to color all walkable cells.
+In Figure \ref{fig:env}, the environment used in this work is presented. It originated from an openAI project called ``Minimalistic Gridworld Environment'' \cite{chwi18}, which is designed for one agent whose main goal is to solve labyrinth puzzles. However, for the purpose of this research, the environment is changed heavily, becoming the ``Coloring Environment''. Multiple agents can act in the new instance to try and achieve a common goal - to color all walkable cells.
+
+% \begin{figure}[hpbt]
+%     \centering
+%     %%----start of first subfigure----
+%     \subfloat[Visualization of the coloring environment. A dot represents one agent. Cells change their color when agents move on them.]{
+%         \label{fig:env} %% label for first subfigure
+%         \includegraphics[width=0.35\linewidth]{pictures/Gridworld}}
+%     \hspace{0.01\textwidth}
+%     %%----start of second subfigure----
+%     \subfloat[Simplified agent observation of the current environment state. The number one represents a colored cell.]{
+%         \label{fig:bin_env} %% label for second subfigure
+%         \includegraphics[width=0.35\linewidth]{pictures/binary_gridworld}}
+%     \caption[Coloring Environment]{Representations of the coloring environment}
+%     \label{fig:multipic_env} %% label for entire figure
+% \end{figure}
+
 
 \begin{figure}[hpbt]
     \centering
-    %%----start of first subfigure----
-    \subfloat[Human visualization of the coloring environment. A dot represents one agent. Cells change their color when agents move on them.]{
-        \label{fig:env} %% label for first subfigure
-        \includegraphics[width=0.35\linewidth]{pictures/Gridworld}}
-    \hspace{0.01\textwidth}
-    %%----start of second subfigure----
-    \subfloat[Simplified agent observation of the current environment state. The number one represents a colored cell.]{
-        \label{fig:bin_env} %% label for second subfigure
-        \includegraphics[width=0.35\linewidth]{pictures/binary_gridworld}}
-    \caption[Coloring Environment]{Representations of the coloring environment}
-    \label{fig:multipic_env} %% label for entire figure
+    \includegraphics[width=0.3\textwidth]{pictures/Gridworld}\\
+    \caption[Coloring Environment]{Visualization of the coloring environment. A dot represents one agent. Cells change their color when agents move on them.}\label{fig:env}
 \end{figure}
 
-In the visualization \ref{fig:env} the outer dark cells show walls and the white cells are floors. The agent is represented with the red dot and the cell on which it is located is marked with the same color. By moving on the available space the agent can color more cells.  Every environment cell holds information about the object type it represents, being either walls, floors or agents. Furthermore, each object class contains information about its current color, whether it is accessible for an agent and, in case of a floor tile, if it is colored. Figure \ref{fig:bin_env} shows a simplified environment observation an agent processes each time step.
+In the visualization \ref{fig:env} the outer dark cells show walls and the white cells are floors. The agent is represented with the red dot and the cell on which it is located is marked with the same color. By moving around the agent can color more cells. The environment is successfully solved once all fields are colored. Otherwise, agents lose by completing a limited amount of steps. If a cell is already colored and the agent walks over it again, the color is removed. Therefore, the cell is reset and ready to be colored again. 
 
-Floor cells manage the coloration state in binary form, as displayed in \ref{fig:bin_env}, with a one signalizing that the cell is colored. The environment reacts to agent movements by coloring the cells they visit. The environment is successfully solved, once all fields are colored. Otherwise, agents loose by using up a limited amount of steps. If a cell is already in coloration state one and an agent walks over it again the bit is switched, and the cell is reset to zero, removing its color. Besides moving up, down, left and right an agent can also execute the action wait, to stay in place.
+Besides moving up, down, left and right, an agent can also execute the action wait to stay in place. Agents can not walk onto walls and if they try they stay in place instead. In a multiagent setting each agent has a different random color. Cells adopt the color of the agent that walks over it. Multiple agents can occupy on one cell, however the cell can only contain one color at a time. In such a case, the color is decided by the order of the agents. 
+
+The coloration status of the cell is internally just managed with a bit switching function. This status changes from zero to one and vice versa every time an agent moves onto it. Theoretically, Figure \ref{fig:env} could also hide a blue agent underneath the red dot. Should an agent move away from the cell, its color would not change, regardless if another agent is still standing on it. If an agent moves on a colored cell however, it is always reset, also regardless of other agents being there. When two agents move on the same cell the bit is just switched twice.
+
+% \\\\ TODOOOOOO vielleicht raus und später benutzen \\\\Every environment cell holds information about the object type it represents, being either walls, floors or agents. Furthermore, each object class contains information about its current color, whether it is accessible for an agent and, in case of a floor tile, if it is colored. Figure \ref{fig:bin_env} shows a simplified environment observation an agent processes each time step.
+
+% Floor cells manage the coloration state in binary form, as displayed in \ref{fig:bin_env}, with a one signalizing that the cell is colored. The environment reacts to agent movements by coloring the cells they visit. 
 
 \subsection{Compositions}
 
 When multiple agents are placed in the coloring environment together, there are several ways how they will behave towards each other. Depending on the setting, even the environment distinguishes how certain actions affect the state. Per default agents will try to work together, to reach the environment goal. Alternatively, they could work independently or even compete with each other.
 
-Each agent has a different random color. Cells adopt the color of the agent that walks over it. The primary focus in cooperative agent compositions however, is only the binary state. The agents always receive the same reward, regardless of the colors on the grid. An extreme example here would be one agent that colors the whole environment on its own. Naturally, this would result in a high reward and for cooperation this means that all other agents would get the same amount. 
+The primary focus in cooperative agent compositions is only the overall coloration. The agents always receive the same reward, regardless of the specific colors on the grid. An extreme example would be one agent that colors the whole environment blue. Naturally, this would result in a high reward and in cooperation this means that all other agents would get the same amount. 
 
 In a DR setting however, agents are able to estimate their contribution, in order to improve their actions. This implementation executes the default action wait to find $G(z_{-i})$, see equation \eqref{eq:dr}. By choosing wait as the default action, agents can learn what the environment outcome and general coloration percentage would be if they had not participated in the current step. It is important to note here, that DR settings are always an extension of the cooperation mode and are never used together with other compositions and markets.
 
 % The opposite is the case in competitive scenarios. 
-In mixed-motive settings the colors are of importance. Agents only gain rewards based on their individual contributions. Thus, the rewards are generated by looking up each percentage a color is present and assigning that value to the same colored agent as reward. For example if a red agent colored 60\% of the grid red the reward for that agent would be 0.60. 
+In mixed-motive settings the colors are of importance. Agents only gain rewards based on their individual contributions. Thus, the rewards are generated by looking up each percentage a color is present and assigning that value to the same colored agent as reward. For example, if a red agent colored 60\% of the grid red, the reward for that agent would be 0.60. A blue agent, that did not color any cells would get a reward of zero.
 
-In a fully competitive mixed-motive scenario the reward calculations stay the same, only disabling the bit switching for opponent colors. Therefore, agents can directly capture already colored cells when they walk over them. However, if the cell contains the same color as the agent that moved on it, it is reset instead. Therefore, taking over the cells of the opponents is beneficial, since it increases the presence of the own color, leading to a higher reward.
+In a fully competitive mixed-motive scenario, the reward calculations stay the same. The difference here is the reset behavior of colored cells. In this mode, agents can capture already colored cells when they walk over them. However, one condition applies: the color of the cell in the new position can not match the agent color. If they match the cell is reset instead. Hence, Taking over the cells of the opponents is beneficial, since it increases the presence of the own color, leading to a higher reward.
 
-In comparison, the basic mixed-motive composition shows no advantages resetting colored opponent cells. Instead, cell resets are always punished with a small negative reward, regardless of the composition. Hence, it is not likely that the agents work against each other in mixed-motive compositions, yielding a neutral or independent behavior between agents.
+In comparison, the basic mixed-motive composition shows no advantages of resetting the opponent cells. Resetting cells is always punished with a small negative reward, regardless of the composition. Therefore, mixed-motive agents gain no benefit of doing so. This should lead to a neutral or independent behavior between the agents.
 
 \subsection{Observation}
-The observations agents receive from the environment are always generated from their individual point of view, with them in the center. The observation only contains a restricted area around them, making the environment a partially observable MDP. In large environments this feature increases the difficulty.
+The observations agents receive from the environment are always generated individually and from their own point of view, with them in the center. The observation only contains a restricted area around them, making the environment a partially observable MDP. In large environments this feature increases the difficulty.
 %but at the same time reflects the reality. 
 An example for an observation of an agent is shown in \ref{fig:agent_obs}. This observation depicts the internal state of the environment visualization of image \ref{fig:env}.
 
@@ -64,11 +77,15 @@ An example for an observation of an agent is shown in \ref{fig:agent_obs}. This 
     \caption[Agent Observation]{The internal agent observation}\label{fig:agent_obs}
 \end{figure}
 
-Per default the agent has a view size of a seven by seven grid, represented in a three-dimensional array, similar to a picture with RGB information. Here, all highlighted entries are part of the grid that is shown in Figure \ref{fig:env} and the red array shows the agent. The first dimension of the observation array contains the whole internal observation of an agent. The second array dimension represents the environment grid. Since the view size of the agent exceeds the dimension of the 5x5 visual grid, the additional rows and columns are filled with placeholders, in this case walls. All highlighted row entries can be mapped to the columns of \ref{fig:env}, starting from the top left of the visualization. The last dimension contains cell information, which is always composed of three elements. 
+Per default the agent has a view size of a seven by seven grid, represented in a three-dimensional array, similar to a RGB picture. Here, all highlighted entries are part of the grid that is shown in Figure \ref{fig:env} and the red array shows the agent. The row entries of the observation can be mapped to the columns of \ref{fig:env}, starting from the top left of the visualization. 
+
+The first dimension of the observation array contains the whole internal observation of an agent. The second array dimension represents the environment grid. Since the view size of the agent exceeds the dimension of the 5x5 visual grid, the additional rows and columns are filled with placeholders, in this case walls.
 
 % This also reduces the complexity of checking for a fully colored grid by just looking at all coloration states, regardless of the object type.
 
-The first cell element defines the object type with one being just an empty cell, two shows a wall, three a floor tile and four an agent. The second element stores the coloration status, showing whether a cell is colored, with zero signalizing an uncolored cell. Since agents can not walk onto walls, represented as $[\;2\;1\;0\;]$, that object type always has a coloration state of one. The third cell encoding describes the color of a cell. To better distinguish the types in the visual representation, walls are zero for the color black and floors are initially white with encoding one. Each agent is assigned a number from two upwards which in turn stands for a randomly generated RGB color. The Floor color encoding is overwritten with the agents color code when the cell is captured. For example, should the agent move to the left, the cell of the previous position is now a colored Floor cell $[\;3\;1\;2\;]$. The new position of the agent is row three and column four with cell encoding $[\;4\;1\;2\;]$.
+The last array dimension contains cell information, which is always composed of three elements. The first cell element defines the object type with one being just an empty cell, two shows a wall, three a floor tile and four an agent. The second element stores the coloration status as a bit. This defines whether a cell is colored, with zero signalizing an uncolored cell. Since agents can not walk onto walls, represented as $[\;2\;1\;0\;]$, that object type always has a coloration state of one. The third cell encoding describes the color of a cell. 
+
+To better distinguish the object types in the visual representation, walls are zero for the color black and floors are initially white with encoding one. Each agent is assigned a number from two upwards which in turn stands for a randomly generated RGB color. The Floor color encoding is overwritten with the agents color code when the cell is captured. For example, should the agent move to the left, the cell of the previous position is now a colored Floor cell $[\;3\;1\;2\;]$. The new position of the agent is row three and column four with cell encoding $[\;4\;1\;2\;]$.
 
 \section{Reward Calculations}\label{reward_calculations}
 The allocation of rewards is closely related to the composition of the agents, which can be specified by the user in training or visualization runs. In addition, the environment shape can be set, a number of agents placed and more. A basic example command for a training run is shown in listing \ref{lst:command}.
@@ -85,8 +102,10 @@ $ python -m scripts.train
 \end{lstlisting}
 
 The \verb|--algo| parameter can be either ``ppo'' or ``dqn'' to choose a learning algorithm. This argument is the only required setting for training. All other configurations, including those not listed in \ref{lst:command}, have default values and are shown in Appendix \ref{ax:training_params}.
-%  discussed in the Sections \ref{learning_process} and \ref{market_settings}. An overview of all training parameters and their default values is listed in .
-With \verb|--model| the destination path is defined, in which all logs, recordings and status updates are stored. Line 4 and 5 configures the environment. In alternative to the empty grid option of \verb|--env|, as shown in figure \ref{fig:env}, four homogeneous rooms can be generated with ``FourRooms-Grid-v0'' to increase the difficulty. The rooms are always of the same size and each room is accessible to all adjoining neighbors by one wall opening, which is random and changes in each episode. The overall size of the grid is set in Line 5. However, all grids in every layout option have outer walls that narrow the area in which agents can move. Hence, in a grid of size seven the agents can only move in a five by five field, due to the surrounding walls.
+
+With \verb|--model| the destination path is defined, in which all logs, recordings and status updates are stored. Line 4 and 5 configures the environment. In alternative to the empty grid option of \verb|--env|, as shown in figure \ref{fig:env}, four homogeneous rooms can be generated with ``FourRooms-Grid-v0'' to increase the difficulty. 
+
+The rooms are always of the same size and each room is accessible to all adjoining neighbors by one wall opening, which is random and changes in each episode. The overall size of the grid is set in Line 5. However, all grids in every layout option have outer walls that narrow the area in which agents can move. Hence, in a grid of size seven the agents can only move in a five by five field, due to the surrounding walls.
 
 The amount of agents that act in the environment is set through the argument \verb|--agents| and the maximum quantity of steps they can execute is defined with \verb|--max-steps|. To gain the highest reward, the agents need to color the whole field before they run out of steps. Lastly, the argument \verb|--setting| specifies the composition of the agents. If no setting is set the agents work cooperatively. In the example of \ref{lst:command} the setting ``mixed-motive'' is chosen. The last two options here are ``mixed-motive-competitive'' and ``difference-reward''. % and ``percentage''.
 
@@ -121,7 +140,7 @@ The first condition checks for a ``difference-reward'' setting. In this case, th
 
 The last step of the DR reward update is checking, whether any value exceeds an upper or lower bound. If that is the case then the value  is set to the corresponding limit. Otherwise, the reward stays as is. The upper and lower bounds are necessary, due to more participating agents possibly leading to a really big or very small sum. For example, very large sums without bounds could in turn decrease the importance of the final reward for reaching the environment goal. The other extreme are high negative sums demotivating agents to move. The bounds in this implementation are set to 0.1 and -0.1.
 
-If the setting is set to the standard cooperation, the reward needs to be changed to a new homogeneous value for each agent, since they share the outcome. Again, the sum of the initial environment reward is calculated and reassigned to each agent position in the rewards array. The values must be clipped again in the same procedure as for the DR values. Here however, all rewards of the array are changed to the same clipped value, should the bounds be exceeded. Settings that contain ``mixed-motive'' skip all previous reward updates, since in this case each agent keeps their individual value.
+If the setting is set to the standard cooperation, the reward needs to be changed to a new homogeneous value for each agent, since they share the outcome. Again, the sum of the initial environment reward is calculated and reassigned to each agent position in the rewards array. The values must be clamped again in the same procedure as for the DR values. However, all rewards of the array are changed to the same value, should the bounds be exceeded. Settings that contain ``mixed-motive'' skip all previous reward updates, since in this case each agent keeps their individual value.
 
 As third condition the market argument is checked for a SM or AM. In this case the market transactions changes the rewards. Details of the market process are discussed in Section \ref{market_settings}. One thing to note here is, that agents can execute market transactions in each step. For example, they can spend their current reward on actions or shares that are for sale or receive the purchase price from buyers, which in turn modifies the rewards.
 
@@ -149,9 +168,9 @@ The last condition depends on the done flag which signalizes the end of an episo
     \caption{Final reward calculation}\label{algo:final_reward}
 \end{algorithm}
 
-During the final reward calculations, the different agent compositions are checked again. In a ``mixed-motive'' or ``mixed-motive-competitive'' setting, each agents' grid coloration percentage, based on their color presence, is added to the individual reward. Otherwise, the composition is based on cooperation and the general grid coloration, regardless of the colors, is looked up and added to each reward value. 
+During the final reward calculations, the different agent compositions are checked again. In a ``mixed-motive'' or ``mixed-motive-competitive'' setting, each grid color percentage is extracted. A percentage is then added to the reward of the agent with the same color. Otherwise, the composition is based on cooperation and the general grid coloration, regardless of the colors, is looked up and added to each reward value. 
 
-Additionally, the presence of a DR setting needs to be checked here. For the final DR calculations the environment supplies information in the \verb|info| variable of algorithm \ref{algo:step_reward} Line 1. Namely, what the general coloration percentage of the environment would be for each agent, if this agent had executed action wait. Those percentages are subtracted from the cooperative coloration percentage to generate the DRs. Finally, the last market calculations are taken into account, see Chapter \ref{market_settings} for details.
+Additionally, the presence of a DR setting needs to be checked. For the final DR calculations the environment supplies information in the \verb|info| variable of algorithm \ref{algo:step_reward} Line 1. Namely, what the general coloration percentage of the environment would be for each agent, if this agent had executed action wait. Those percentages are subtracted from the cooperative coloration percentage to generate the DRs. Finally, the last market calculations are taken into account, see Chapter \ref{market_settings} for details.
 
 \section{Learning Process}\label{learning_process}
 In order to compare different settings and agent compositions easily, each agent manages its own learning improvement, observation and action selection. Therefore, all calculations and estimations are executed independently, for instance policy updates and value estimations. They also set up their own neural networks and optimizers and update them only with their own values. However, the environment still connects the agent experiences, by reacting to all agent actions simultaneously in each step and including visible agents in the observation.
@@ -164,7 +183,7 @@ Depending on the learning algorithm the corresponding class is instantiated by t
     \caption[The Training Structure]{The training structure}\label{fig:training}
 \end{figure}
 
-First, the training of agents begins by generating n environments based on the \verb|--procs| setting of the training command, see Appendix \ref{ax:training_params} for the parameter list. Each environment has the same configurations, for example \verb|--grid-size|, \verb|--agents| and \verb|--agent-view-size|. Second, the amount of \verb|--frames| is taken from the parameters, defining a general training loop, which ends once this number is reached or suceeded. During the loop, the defined training algorithm \verb|--algo| is executed.
+First, the training of agents begins by generating n environments based on the \verb|--procs| setting of the training command, see Appendix \ref{ax:training_params} for the parameter list. Each environment has the same configurations, for example \verb|--grid-size|, \verb|--agents| and \verb|--agent-view-size|. Second, the amount of \verb|--frames| is taken from the parameters, defining a general training loop, which ends once this number is reached or exceeded. During the loop, the defined training algorithm \verb|--algo| is executed.
 
 Since both algorithms have similar procedures, they share the base class. In it a second iteration is triggered, that iterates over the amount set for \verb|--frames-per-procs|. During each step here, the agents execute actions in all parallel environments. Therefore, each step in the \verb|--frames-per-procs| iteration produces a frame in every environment. The action selection of the learning algorithms generate different decisions based on the state of each environment.
 
@@ -180,15 +199,15 @@ The action selection itself is also improved during the training, by decreasing 
 
 In the DQN implementation learning happens during the base class batch creation, whereas in the PPO algorithm the learning process is triggered after the creation of each base class experience batch. Basically, every time the inner loop finished, the gathered values are reshaped and saved into a PPO experience buffer. Additionally, the advantage values are calculated here and added to the buffer.
 
-With that buffer the PPO model is now optimized. A small number of \verb|--epochs| are iterated and during each iteration random batch entries are selected. With those entries the entropies, values and losses are calculated. Afterwards, the calculation results are used to update the policy and network, as suggested in the code of \ref{fig:ppo_algo_code}.
+With that buffer the PPO model is now optimized. A small number of \verb|--epochs| are iterated and during each iteration random batch entries are selected. With those entries the entropies, values and losses are calculated. Afterwards, the calculation results are used to update the policy and network, as suggested in the code of \ref{algo:ppo_algo_code}.
 
 \section{Market Settings}\label{market_settings}
 To include a market into the training process, the \verb|--market| parameter can be set accordingly. The user has a choice to include an AM through the string ``am'' or a SM with ``sm''. In either case, the environment needs to adjust the action space, since agents now have the option to conduct market transactions.
 
 Per default, the environment action space is discrete and only contains one element with five options: moving up, down, left, right or wait. Adding a market expands that discrete space into a multi discrete space. Hence, both markets require actions in form of arrays that contain three elements. However, they use different information in the action array slots. This and further distinctions and detailed procedures of each market are explained separately in the following.
 
-\subsection{Shareholder Market}
-A coloring environment that includes a SM constrains the first position of the action array to one of the five environment actions. The next position contains an agent index, towards which a buying offer will be made. Although, if this number is higher than the amount of agents in the game, the action intends no buying transaction. The last array position contains either a zero or a one, with one signalizing that the agent wants to sell its share. An abstract representation of a shareholder action array is: \verb|[environment_action, agent_index, sell_share]|.
+\subsection{Shareholder Market}\label{shareholder_market}
+A coloring environment that includes a SM constrains the first element of the action array to one of the five environment actions. The next position contains an agent index, towards which a buying offer will be made. Although, if this number is higher than the amount of agents in the game, the action intends no buying transaction. The last array position contains either a zero or a one, with one signalizing that the agent wants to sell its share. An abstract representation of a shareholder action array is: \verb|[environment_action, agent_index, sell_share]|.
 
 \begin{figure}[hpbt]
     \centering
@@ -237,7 +256,7 @@ trading\_matrix =
 \end{pmatrix} 
 \end{equation*}
 
-Additionally, the rewards of the current step calculation, would be updated here, if a price for the shares are set. In this implementation however, the shares have no price since agents are willing to give them away for free. Otherwise, the price would be subtracted from the buying agents' reward and that value would be added to the reward of the selling agent. 
+Additionally, the rewards of the current step calculation, would be updated here, if a price for the shares are set. In this implementation however, the shares have no price since agents are willing to give them away for free. Otherwise, the price would be subtracted from the buying agents reward and that value would be added to the reward of the selling agent. 
 
 In any case, the SM triggers a reward calculation according to the trading matrix in every step. This means, that for the example above, agent two will receive 10\% of the rewards from agent one in every step, until the episode ends. However, this is only the case in the steps in which agent one is not in dept.
 
@@ -248,13 +267,13 @@ The agent action shape of an AM environment is similar to the shareholder action
 
 The market elements and general process of visualization \ref{fig:market} also apply to an AM setting. Here however, the trading matrix is initially filled with zeros. 
 % Furthermore, the AM function needs all parameters, including the environment actions. This information is crucial to the transaction conditions, which are:
-To establish a transaction the market actions are examined, and the following conditions checked:
+To establish a transaction, the market actions are examined and the following conditions checked:
 \begin{itemize}
     \item the buyer differs from the receiving agent
     \item the environment action of the receiving agent matches the expected action
 \end{itemize}
 
-When the two conditions apply a market transaction takes place. The \verb|--trading-fee| parameter decides the price the buyer pays the receiving agent. Both the rewards and trading matrix are altered here, by subtracting the price from the buyer and adding it to the receiver. An example of the trading matrix update in this market setup is shown below. Here again agent two is purchasing from agent one.
+When the two conditions are met a market transaction takes place. The \verb|--trading-fee| parameter decides the price the buyer pays the receiving agent. Both the rewards and trading matrix are altered here, by subtracting the price from the buyer and adding it to the receiver. An example of the trading matrix update in this market setup is shown below. Here again agent two is purchasing from agent one.
 \begin{equation*}
 trading\_matrix = 
 \begin{pmatrix}
@@ -271,7 +290,7 @@ trading\_matrix =
 The trading matrix stores the market balance of both agents in each row. For agent two this means that the negative value was spent. The first row shows that agent one still has a neutral balance and gained the \verb|--trading-fee| of 0.1 from agent two. To conclude, the market returns the number of transactions that took place in this step and the new rewards.
 
 \subsection{Reward Calculations}\label{market_reward_calc}
-During each step agents can update the trading matrix by acting on the market. With each update the rewards are also changed. In Figure \ref{fig:market_rewards} a detailed example of the reward update in a market is shown. It is worth mentioning that it is not possible to execute both markets simultaneously, but rather one or none must be set for a training process. This illustration shows both calculations in one image for convenience. Equal to the previous examples, the red agent two buys a share or action from the blue agent one. For both market scenarios the \verb|--trading-fee| is set to the default value and both agent rewards start at 0.1. On the top half of the image the internal market calculation of a SM is shown, and the bottom half illustrates the calculation of an AM.
+During each step agents can update the trading matrix by acting on the market. With each update the rewards are also changed. In Figure \ref{fig:market_rewards} a detailed example of the reward update in a market is shown. It is worth mentioning that it is not possible to execute both markets simultaneously, but rather at maximum one can be set for a training process. This illustration shows both calculations in one image for convenience. Equal to the previous examples, the red agent two buys a share or action from the blue agent one. For both market scenarios the \verb|--trading-fee| is set to the default value and both agent rewards start at 0.1. On the top half of the image the internal market calculation of a SM is shown, and the bottom half illustrates the calculation of an AM.
 \begin{figure}[hpbt]
     \centering
     \includegraphics[width=0.9\textwidth]{pictures/new_market_rewards}\\
@@ -282,13 +301,13 @@ In a SM the trading matrix represents the distribution of agent shares. Each mat
 
 To generate the new rewards of the agents, the market multiplies all current rewards with each matrix rows. The resulting products of each row are then summed up to represent the new reward of the corresponding agent. For the example, agent one gets a new reward value of 0.09 and agent two claims 0.01 from agent one and adds that to its full value of 0.1, resulting in a new reward of 0.11. 
 
-In contrast to an AM in a SM the rewards are just reassigned based on the current shares of the trading matrix. An exception occurs, when agents have negative rewards. In this case their share will be skipped during the redistribution, since shares are used to participate in profits. 
+In contrast to an AM, the rewards in a SM are just reassigned based on the current shares of the trading matrix. An exceptional case is, when agents have negative rewards. Then, their share will be skipped during the redistribution, since shares are used to participate in profits. 
 
 Another difference to AMs is that the shown SM reward redistributions are executed in each step, and it is irrelevant whether market actions were executed. The only exception however is the last step, when the done flag is set to true. In this case the final rewards, see algorithm \ref{algo:final_reward}, need to be calculated first, before the shares are taken into account.
 
 AMs, in most cases, update the rewards directly and only once, when a transaction is executed. The trading fee is immediately subtracted from one agents' reward and added to the counterpart during the trade. If an agent can not afford the fee the process is completed anyway and the agent goes into debt. 
 
-Thus, this market type makes no use of the trading matrix. Nonetheless, the matrix is always updated, since a specific scenario requires the calculations to be executed at the end, see Section \ref{market_conditions}. In this case, the agents market balance, stored in the matrix rows, is summed up and added to the current reward. This procedure is illustrated in the bottom half of figure \ref{market_reward_calc}. Here, the fee of 0.1 is subtracted from agent two and added to the reward of agent one, leading to new rewards of 0.2 for agent one and zero for agent two.
+This market type makes does not use of the trading matrix. Nonetheless, the matrix is always updated, since a specific scenario requires the calculations to be executed at the end, see Section \ref{market_conditions}. In this case, the agents market balance, stored in the matrix rows, is summed up and added to the current reward. This procedure is illustrated in the bottom half of figure \ref{market_reward_calc}. Here, the fee of 0.1 is subtracted from agent two and added to the reward of agent one, leading to new rewards of 0.2 for agent one and zero for agent two.
 
 \subsection{Additional Conditions}\label{market_conditions}
 The \verb|--market| string for both types can be extended to add more conditions, namely with ``no-reset'', ``no-debt'' and ``goal''. The ``no-reset'' string enables the check whether the buyer has recently reset a cell. If that is the case, the corresponding buyers are ignored on the market for the current step. Hence, their market actions will not be applied. However, in a SM the penalized agent can still sell its shares. 
@@ -296,7 +315,7 @@ The \verb|--market| string for both types can be extended to add more conditions
 With the ``no-debt'' Flag, transactions only take place if buyers can afford to pay the price. In this implementation with AMs and the default fee, this is solely the case if agents have colored a cell in that step. Waiting or misbehaving agents are excluded as buyers, since their rewards result in 0 or -0.1, which does not meet the fee of 0.1. For SMs this depends on the presence of a share price. Per default the price is zero, similar to the approach of Schmid et al. \cite{scbe21}, making this condition irrelevant for the SM setting.
 % TODO kommt zu goal Both market conditions can be used simultaneously.
 
-The last addition, ``goal'', lets the market process run as usual, only removing the reward changes during the steps. Here, all transactions are just documented into the trading matrix during an episode. Eventually, the transactions are executed once the final rewards of algorithm \ref{algo:final_reward} is calculated. As shown on the right side of Figure \ref{fig:market}, the market obtains those rewards and a Boolean describing whether the environment goal was reached.
+The last addition, ``goal'', lets the market process run as usual, removing the reward changes during the steps. Here, all transactions are just documented into the trading matrix during an episode. Eventually, the transactions are executed once the final rewards of algorithm \ref{algo:final_reward} is calculated. As shown on the right side of Figure \ref{fig:market}, the market obtains those rewards and a Boolean describing whether the environment goal was reached.
 
 The rewards are updated with the trading matrix content when either of the two conditions is satisfied:
 \begin{itemize}
@@ -305,11 +324,11 @@ The rewards are updated with the trading matrix content when either of the two c
 \end{itemize}
 Otherwise the rewards are return as they are and will not be processed further. 
 
-For such goal oriented markets, regardless of the type, the final environment state needs to equal the overall aim. Thus, the whole grid has to be colored, to execute the final market transactions.
+For such goal oriented markets, regardless of the type, the final environment state needs to equal the overall aim. Thus the whole grid has to be colored, to execute the final market transactions.
 
 % Since the goods of a SM are shares, naturally the current reward values are of importance. During the step calculations of the rewards the done flag is  takes place at the end of an episode. In an AM however, each step is self-contained in regards to transactions and payouts. Nonetheless, with the ``goal'' addition, the payout also shifts to the end of episodes. 
 
-If the first condition applies and an AM is present the rewards are updated by using the trading matrix. For a SM either condition must be met in order to generate the final reward. The calculations for both cases are equal to the example of Chapter \ref{market_reward_calc}.
+If the first condition applies and an AM is present the rewards are updated by using the trading matrix. For a SM, either condition must be met in order to generate the final reward. The calculations for both cases are equal to the example of Chapter \ref{market_reward_calc}.
 % Again, the trading matrix rows and rewards are iterated here. Each row element is multiplied with the reward of the same index and added to the new reward of that agent. An example of both operations is shown in Figure \ref{fig:market_rewards}.
 
-After the final market updates to the rewards the new values are returned, as shown in Figure \ref{fig:market}. The last thing to point out is that the additional market conditions can be used in combination, making ``sm-goal-no-reset-no-debt'' for example a valid \verb|--market| setting.
+After the final market updates to the rewards the new values are returned, as shown in Figure \ref{fig:market}. The last thing to point out is, that the additional market conditions can be used in combination, making ``sm-goal-no-reset-no-debt'' for example a valid \verb|--market| setting.

@@ -53,7 +53,7 @@ class Market:
                 if not selling_row[seller] or seller == buyer:
                     continue
 
-                if self.reset_fields(reset_fields_by, buyer) or self.debt(price, env_reward[buyer]):
+                if self.reset_fields(reset_fields_by, buyer) or (price > 0 and self.debt(price, env_reward[buyer])):
                     continue
 
                 # TODO shuffel buying_agents for fairness

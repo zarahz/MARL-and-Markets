@@ -1,24 +1,81 @@
-% -------------------------------------------------------------------------------------------------
-%      MDSG Latex Framework
-%      ============================================================================================
-%      File:                  introduction-[UTF8,ISO8859-1].tex
-%      Author(s):             Michael Duerr
-%      Version:               1
-%      Creation Date:         30. Mai 2010
-%      Creation Date:         30. Mai 2010
-%
-%      Notes:                 - Example chapter
-% -------------------------------------------------------------------------------------------------
-%
 \chapter{Discussion}\label{sec:Discussion}
-- Are the findings as expected? \\
-- Why are the things as they were observed? \\
-- New experiments that provide further insights \\
-- Make your results more comprehensible
+Appendix \ref{ax:plots} shows all training plots of the settings covered in the previous chapter \ref{sec:Results}, which will be used to discuss the results. In general, increasing or decreasing lines can be interpreted as learning improvements of the agents, depending on the attribute. For example, an increase in the grid coloration plot shows, that agents learn to color more cells. A decrease in the mean number of reset fields signalize that they also understand that resetting fields is a bad choice in most cases. The plot titled ``mean num frames per episode'' shows how many frames a completed episode produces on average. If the agents for example are not able to solve the environment, the values of the plot equals the maximum amount of steps. 
 
-- challenges of markets (i.e. agents didn't need to sell shares/buy actions)
+Decreasing number of reset fields, but consistent high numbers of frames per episode and few if any fully colored grids point out, that agents often execute the waiting action. If they explore, more fields would be reset. On the contrary, would they often reach the goal, a number smaller than the maximum amount of steps can be expected as the average frames per episode. Furthermore, this plot can be used to see how efficient the agents solve the problem. Reaching the goal and simultaneously using many episode frames signalize inefficient step use, whereas less episode frames show the opposite.
 
-- final reward is not necessary easy to interpret (did agent do good actions or did he just pick good market actions that sold)?
+The plots that present the amount of fully colored grid achievements during training also often increase steadily. This can be interpreted as a learning curve for the trained agents, see Figure \ref{fig:ax-easy-2-ppo-mixed} as an example. Other times a global maximum can be observed where the amount decreases afterwards. This behavior could result from overtraining the networks, due to sampling of similar optimal experiences/batches \cite{zhvi18}, or overestimation \cite{hemo18}, or simply a growing disorganization between agents.
 
-- maybe markets need to be more specific (let agents know what others want to buy before choosing action!) and less based on chance
-- and/or more dynamic, i.e. instead of fixed prices agents can decide what to pay for actions/shares, so that they can for them self decide how important the trade is, and in case of shareholder market, maybe enable multi share purchase?
+The reward summary plots are very similar to the grid coloration percentages, due to the reward assignments, see chapter \ref{reward_calculations}. Most of the time the agents receive the coloration percentage as reward. Markets only adjust those values slightly. Besides, by calculating the reward summaries, market changes of the rewards are not traceable in this plot. The only setting that changes the reward summaries significantly is the DR condition, which result in very small values, due to the difference calculation.
+
+The following two Chapters focus on the results of each algorithm separately. First the DQN scoreboards and their corresponding plots are discussed. Subsequently, all PPO scores are analyzed. Additionally, the PPO Chapter \ref{ppo_results} briefly covers the differences between the two learning algorithms and the poor results of the most challenging setup.
+
+\section{DQN Results}
+A learning curve can often be observed in the results of the easy setup. However, In the plots of the one agent training \ref{fig:ax-easy-1}, the DQN setting does not show good results for the full coloration values. The agent reaches the goal but does not keep a steady amount. A drop back to zero is often the case in this plot. The reset fields decrease to around 0.3 but the number of frames per episode do not change much from the default 10. Another signal is the coloration coverage, which shows a general increase to 80\%. To interpret the behavior of that agent, one can assume, that the agent colors a big patch of the grid and might get stuck and would need to reset fields in order to achieve the goal. Instead, it seems to wait until the episode ends. To improve this behavior the epsilon decay could be slowed down to ensure more exploration.
+
+However, looking at the multiagent compositions with DQN in the easy setup it is obvious that in every case the plot lines of reset fields and number of frames per episode decrease. This means, that the DQN agents learn not to reset fields and instead color them. The parameters seem to be perfectly adjusted for the multiagent scenario, due to the enormous amount of goals. The only improvement possibility that remains, are the average frames per episode. Two organized agents would only need four to five steps to fully color the grid, which is never reached. Overall, the DQN agents reach the goal and learn to do so fairly quick. 
+
+Another interesting feature of the top DQN scoreboards shown in Chapter \ref{easy_env} is, that every table listed executions with market setting, the only exception is the cooperation board, with the DR execution on first place. A closer inspection reveals, that the DQN cooperation board only listed AMs beside the DR execution. The mixed-motive scores then included SMs but show one AM on second place. Finally, the competitive scoreboard placed an AM training on last place.
+
+The first interpretation that can be drawn from this is, that in each DQN composition trainings without a market never achieved better results than those listed in the tables. Second, AMs without additional conditions are also never listed in the score tables. The second and third placed cooperation trainings, for example, use AMs with the addition of ``goal''. The second placed execution also restricts the market with the ``no-debt'' addition. This means, that agents who bought actions during training did also color a step, otherwise their market action would be ignored. With the ``goal'' condition, all market actions were documented during training and the payout happened at each episode end.
+
+The DQN cooperation plot of the easy setup, see \ref{fig:ax-easy-2-dqn-coop}, shows very low average trading counts. For example, at the 80.000 frames point the debt restricted action market registered only around 0.5 trades. Hence, every second episode contained a trade. This assumption results from looking up the value of average frames per episode at 80.000 frames, which is approximately 7 here, and dividing that into the amount of mean trades. The result is 14 which is the double of the average episode duration. 
+
+Generally, all the trading plot lines of the easy setup using DQN and an AM tend to stay or at least develop to values below one. Therefore, it is clear that every other episode contained at best one AM trade. The most trades with AMs can be observed in the cooperative mode with only the goal restriction that shows one trade on average per episode. But this number is not steady and drops below one most of the time. The reason for that could be, that the default \verb|--trading-fee| of 0.1 for this market type is too high. Schmid et al. \cite{scbe18} pointed out, that another reason for decreasing AM trades is speculation of agents. Agents may withhold their offer in the anticipation that the other agents may still perform the expected action.
+
+Furthermore, a low chance of executing exactly that one action that other agents want to buy in the same step may cause the small amount of trades. One agent has an action set of 75 actions to choose from, with one action containing:
+\begin{itemize}
+    \item One of five possible environment actions (wait, left, right, up, and down) on first place.
+    \item On second place is the agent to whom an offer will be made to. In this case the option of two is given (1 and 2 - agents can make offers to themselves, but markets ignore such requests) and one additional choice (3) to not act on the market.
+    \item Finally, one of the five possible environment actions again, which is expected by the targeted agent.
+\end{itemize}
+Here, the probability, that a transaction between two agents is executed is only 1\%. 
+
+As an example, if agent two wants to buy from agent one the action ``wait'', then the probability for that action to be executed by agent one is $P([wait,X,X]_1) = \frac{15}{75}=0,2$. $X$ presents a placeholder for the action elements that are not of interest. The 15 results from 15 actions in the set with ``wait'' on the first place, i.e. $[wait,1,wait], [wait,2,wait], [wait,3,wait], [wait,1,left],$... Continuing with the probability of agent two directing the buying offer to agent one and expecting action ``wait'' is only $P([X,1,wait]_2)=\frac{5}{75}=0,066$, since here only the environment action of agent two is variable, leading to five possibilities for that constellation. 
+
+The actions of each agent do not affect the probabilities and actions of the other, which means that the two values 0,2 and 0,07 are stochastically independent. To calculate the overall percentage of those two agents executing one action each to achieve a transaction is:
+\begin{equation}\label{eq:TRPO}
+    P([wait,X,X]_1 \cap [X,1,wait]_2))=P([wait,X,X]_1) * P([X,1,wait]_2) = \frac{15}{75}*\frac{5}{75} \approx 0.01
+\end{equation}
+%However, if that is the case, then the question remains why a SM or the default cooperation execution did not rank among the top three cooperative executions.  
+With an increasing amount of agents the chances of establishing a transaction decreases.
+
+Proceeding with the difficult setup for the same one agent DQN execution it is evident, that the training has similar setbacks as in the easy setup. A decrease of reset fields is visible and the grid coloration percentages increase, but at the same time the number of frames do not drop as much. This can be interpreted with many waiting actions and a rather flat learning curve. Nonetheless, since episodes with 81 steps are longer in this training, the amount of goals increases slowly towards the end.
+
+The DQN cooperation results show, that the AM executions failed to reach the goal. Naturally, the ``goal'' condition never applied and with both executions containing this addition, the market was never properly executed. As a result the two AM trainings were plain cooperation executions. The only difference to the normal cooperation setting is the action shape which still contains three elements instead of one. In theory a market still applied, and the agents executed the market actions in the background, but the final reward of the AM calculations were never conducted. 
+
+Looking at the trades it is also visible that agents were more active on the market in comparison to the easy setup results. This might be, due to the missing consequences of actually giving up reward through transactions in combination with a higher amount of steps leaving room for more exploration. Comparing the cooperation results of the two setups it is clear that the DR execution is more stable, since the goal was still reached, whereas markets seem to struggle the more agents join the game and the bigger the environment gets. Still, the DR training did not result in many fully colored grids, since the agents still face coordination challenges.
+
+The SM executions of the DQN agents show clear signs, that the training without additional market conditions performed well. In the easy setup mixed-motive agents colored the most grids with only the SM and also the in the competitive mode this market scored the second place. The first place in the competitive scoreboard is reached with ``sm-goal-no-reset'' and the third placed SM in the mixed mode adds the ``goal'' condition. Hence, the only SM implementation never listed is the ``no-reset'' addition on its own.
+
+The longer episodes get, the better the SM with ``goal'' conditions in those two compositions using DQN performed. A reason would be the reward calculations of this market type. In every step the agents give away the percentage they sold off, which adds up after a while. Overall, the environment goal is reached in all DQN SM executions, regardless of the environment difficulty, and present a learning curve (excluding the rooms environment in this comparison).
+
+\section{PPO Results}\label{ppo_results}
+The PPO one agent executions of both difficulty setups showed steep learning curves and a high amount of fully colored grids. In both cases the reset fields dropped significantly and the amount of frames per episode also reduced. This generally means, that agents are able to learn with the parameters set.
+
+In contrast to DQN scores, all PPO scoreboards of multiagent scenarios included compositions without markets. The PPO cooperation and competitive scoreboards showed the corresponding plain setting on second place and in the mixed-motive board the mixed-motive setting placed first.
+
+Another observation is, that PPO scoreboards never listed AMs. Schmid et al. \cite{scbe21} explained, that the reason for that could be the bigger action space of markets in general, but especially of the AM. Instead of choosing between selling a share or not agents need to choose an expected action of five options. The authors state, that the DQN algorithm can handle the increased action spaces of both market types, whereas PPO showed performance loss in those executions. This would also explain why in the PPO scoreboards the default compositions performed better than those with market executions. 
+
+The average trade amount of all easy setup PPO executions with a SM  are around two shares per episode. Considering the odds of establishing a transaction it becomes obvious that this makes sense. The action space for this market type contains only 30 variations, with one action consisting of:
+\begin{itemize}
+    \item One of five possible environment actions.
+    \item On second place is the agent to whom an offer will be made to or the number three here, to not act on the market, equal to the AM definition.
+    \item Finally, the last place contains an option of two, to either sell the own shares in the current step or not.
+\end{itemize}
+A transaction only occurs if an agent decides to sell and another agent chooses the selling agent to direct its offer to. Hence, the probability of agent one for example selling its share is $P([X,X,1]_{1})=\frac{15}{30}=\frac{1}{2}$ and the probability of agent two to buy from agent one is $P([X,1,X]_{2})=\frac{10}{30}=\frac{1}{3}$. Calculating the overall stochastically independent probability of actions that result in a SM trade is therefore: 
+
+\begin{equation}\label{eq:TRPO}
+    P([X,X,1]_{1} \cap [X,1,X]_{2})=P([X,X,1]_{1}) * P([X,1,X]_{2}) = \frac{1}{2}*\frac{1}{3} \approx 0.166
+\end{equation}
+
+With a probability of about 17\% shares are traded, which also decreases further, the more agents participate on the market.
+
+However, the plot for competitive PPO trainings in the difficult setup, see \ref{fig:ax-hard-2-ppo-comp}, shows that a maximum of approximately 16 trades in the ``sm-goal'' execution was reached. The reason for that might again be the longer episodes that allows more exploration. Furthermore, the ``goal'' condition might encourage agents to sell, since rewards are redistributed only at the end. The maximum amount of trades per episode in a SM is 27 for training with three agents, since agents are prohibited to give away all their shares, see Chapter \ref{shareholder_market}.
+
+Another fact to point out for the PPO scores is, that the first placed ``competitive sm-goal-no-reset'' execution lose performance in the seven by seven environment setup and gets demoted. As a result, all PPO executions without markets are placed in the first ranks of the difficult setup scoreboards. Only in the cooperation board the DR still ranks before the plain cooperation setting. This shows, that the markets in combination with PPO do not perform well, let alone solve the CAP or organizational challenges.
+
+Furthermore, it is necessary to mention the major goal differences between the PPO and DQN scoreboard tables within a composition. For example, the cooperation table \ref{t:2-coop-easy} of the easy setup listed 1.683 coloration goals with the PPO DR training, whereas DQN DR reached nearly 6.000 completely colored grids. A speculation for those differences might emerge from the data efficiency of the DQN using a replay memory. A small environment together with two agents produces a relatively small variation of states and experiences. The results of the two learning algorithms become more similar as the environment increases in difficulty. 
+
+The most difficult setup, the environment divided into rooms, could not be solved by any PPO execution. Only one DQN training managed to reach the goal, but only 10 times in total during a duration of approximately 200.000 frames. All settings of both algorithms generally managed to color a good amount of the grid in this scenario, by reaching about 70\% average coloration at some point. However, through the layout of the rooms and a limited amount of 30 steps the agents need to organize efficiently. If a room still has some uncolored cells left, agents might need to reset a lot of fields on their way back to that spot. 
+
+A good example of uncolored patches in rooms can be seen in Figure \ref{fig:1-agent-rooms}. Here only one agent is placed on the grid, with three agents the amount field resets and organizational challenges increase. An exception is the competitive setting, which always achieve better results than the other compositions in the setups, due to the field resetting rules here. Agents can capture colored cells instead of resetting them, which simplifies the aim of coloring the grid. It is more likely that agents color the grid, especially if they have enough steps to explore with. This might also be the reason, why the competitive setting of DQN agents achieved the goal in the most challenging setup. 
