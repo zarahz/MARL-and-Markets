@@ -17,3 +17,5 @@ DRs
 subgoals
 AMs
 SMs
+disorganizational
+self-centerd

@@ -75,3 +75,6 @@ python -m scripts.train --algo ppo --agents 3 --setting difference-reward --grid
 ```
 python -m scripts.train --algo dqn --agents 3 3-dqn-competitive-sm-goal-no-reset --env FourRooms-Grid-v0 --setting mixed-motive-competitive --market sm-goal-no-reset --initial-target-update 1000 --target-update 10000 --replay-size 700000 --epsilon-decay 20000 --grid-size 9 --max-steps 30 --frames-per-proc 256 --frames 200000 --capture-interval 15
 ```
+
+Further command examples can be found in the powershell files located in Coloring/scripts/powershell/.
+To run all in sequence simply execute the run.ps1 script in a powershell terminal (can be found in Coloring/scripts/).

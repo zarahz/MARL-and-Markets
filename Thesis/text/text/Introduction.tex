@@ -1,17 +1,30 @@
-% -------------------------------------------------------------------------------------------------
-%      MDSG Latex Framework
-%      ============================================================================================
-%      File:                  introduction-[UTF8,ISO8859-1].tex
-%      Author(s):             Michael Duerr
-%      Version:               1
-%      Creation Date:         30. Mai 2010
-%      Creation Date:         30. Mai 2010
-%
-%      Notes:                 - Example chapter
-% -------------------------------------------------------------------------------------------------
-%
 \chapter{Introduction}\label{sec:Introduction}
-- Motivation \\
-- Goal \\
-- Research Question \\
-- Structure
+% - Motivation \\
+% - Goal \\
+% - Research Question \\
+% - Structure \\
+
+Reinforcement learning (RL) is a popular research topic with many successful and interesting applications. Some popular RL utilizations are in the gaming category, for example Go \cite{sihu16}\cite{sisc17}, chess \cite{batr01}\cite{sihu17}, poker \cite{da01}\cite{xuch21} or very complex player versus player games like Starcraft \cite{viba19} and Dota \cite{bebr19}. Most of the time such applications can be played by multiple agents, either in a team or against each other. 
+
+RL is unique in the fact, that agents learn to solve tasks without prior knowledge. However, having multiple agents try to learn in a shared environment poses several problems. An agent team, i.e. in a soccer game \cite{agtu04}, either score a goal or misses its chance. Retracing the game outcome onto the contributions of all agents and assigning credit accordingly is a common problem called the ``credit assignment problem'' (CAP). 
+
+Other game types, like racing games for example, place players in competitive situations. The common goal is to reach the finish line, the earlier, the better. By using items or strategies, one might start to sabotage others, in order to place first. Although, when time becomes a factor, the goal might shift to finishing as quickly as possible, instead of wasting time disrupting others. Players still compete but keep a neutral behavior towards each other, since the success of one does not affect the achievement of others. This composition is further called mixed-motive. Cooperative, competitive and mixed-motive agent constellations are referred to as compositions.
+
+Mixed-motive and competitive situations can be applied or recreated with RL. However, training competing agents often leads to disorder, since they get in each other's way or become greedy and self-centered. A new research showed, that adding incentives to mixed-motive agents enabled cooperative behavior and helped to align individual goals among each other. Schmid et al. \cite{scbe21} achieved this through a neutral market. A shareholder market (SM) allows agents to sell shares and let others participate in their success. Action market (AM) is the alternative option and lets agents buy specific actions from others. The following outline presents application details and the research question of this thesis. 
+
+\section{Research Question}
+
+Since markets were only applied and analyzed on mixed-motive agent compositions so far, it leaves the question open, how the problems of cooperation and competitive compositions would be affected by them. By using markets on cooperation settings one could assume, that agents with higher results contributed positively to the common goal. Therefore, the credit should already be assigned accordingly. In theory, markets in competitive compositions should also improve the results. Through the incentives, the individual goals of agents might be aligned, which should reduce the competitive behavior.
+
+This research therefore compares the effectiveness of each market applied on all three compositions. Furthermore, to get a bigger picture agents will be trained with two different learning algorithms and the results will be compared. To enable the research of different compositions, this thesis further introduces the coloring environment. Agents have unique colors and can stand or move in a grid. Agents that move around color the visited cells. However, moving on a colored cell removes the color instead. The different compositions are modeled through a reward schema, which signalizes how good or bad the coloration result is. 
+
+Cooperating agents always get the same reward among each other, based on the overall coloration. In mixed-motive compositions, agents only get reward based on their own contribution. Competitive settings are similar to mixed-motive, but the difference here is, that agents can take over colored cells of their opponents. The ending condition of the environment is a fully colored grid.
+
+The training of the agents is executed through the two most popular learning algorithms of RL: proximal policy optimization (PPO) and the training of a deep Q-Network (DQN). PPO is a policy gradient method, that allows agents to enhance their decision-making. DQN is an algorithm that utilizes a neural network together with Q-values. Q-values evaluate all possible actions of a situation and chooses the best option in regard to possible future outcomes.
+
+Comparing the affects of shareholder and AMs in three distinct compositions and using two different learning algorithms results in many executions. To get an overview, scoreboards will be presented that filter the three best trainings, with or without markets, of each composition and algorithm. Based on those scores the beset settings will be challenged in more difficult setups with more agents, to see how well they can scale.
+
+\section{Thesis Structure}
+The structure of the thesis begins by covering the background of this research question. First, the definition of RL is presented, and then the two learning algorithms PPO and DQN are introduced. Next comes the related works Chapter, which first analyzes the credit assignment problem in detail and introduces the most common solution for it. Markets are the second topic here, and entails all calculations and trading conditions. 
+
+Chapter \ref{sec:Approach} shows the implementation details of the coloring environment, its reward calculations and implementation details of the two learning algorithms and markets. The training results are displayed in the Chapter \ref{sec:Results} and discussed afterwards. To conclude this research the results are summarized and extensions or changes for future research are suggested.

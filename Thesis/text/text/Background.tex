@@ -1,12 +1,9 @@
 \chapter{Background}\label{sec:Background}
-Reinforcement learning (RL) is a process that requires, on one hand, interactive parts, and on the other hand, algorithms that improve interactions. The following Section \ref{reinforcement_learning} introduces the general concept of RL and its specifications. Afterwards, two popular learning algorithms for RL problems are presented: Proximal Policy Optimization (PPO) and the training approach of a deep Q-Network (DQN).
+Reinforcement learning (RL) is a process that requires, on one hand, interactive parts, and on the other hand, algorithms that improve interactions. The following Section \ref{reinforcement_learning} introduces the general concept of RL and its specifications. Afterwards, two popular learning algorithms for RL problems are presented: PPO and DQN.
 
 \section{Reinforcement Learning}\label{reinforcement_learning}
-%https://lilianweng.github.io/lil-log/2018/02/19/a-long-peek-into-reinforcement-learning.html#key-concepts
-Sutton and Barto wrote in ``Reinforcement learning: An introduction'' \cite{suba18} that RL is based on two components that interact with each other: an environment and an agent, see Figure \ref{fig:rl_cycle}. Those interactions take part during a time period with discrete time steps $t\in\mathbb{N}_0$ until a goal is reached or the ending condition applies. This process is called an episode. Formally, the journey of the agent to find the goal is described as a Markov Decision Process (MDP) \cite{suba18}. 
-% and every decision on the way is part of a reinforcement learning method. 
-When multiple agents act in the same environment, the Markov decision process is called a stochastic game \cite{buba10}.
-% Initially the agent gets a starting environment state $S_0$, and can processes it to choose and execute an action $A_0$. This concludes the first time step. The environment changes based on the action and transitions into the next state $S_{1}$. In return the the agent receives the new state with a reward $R_{1}$ rating the action $A_0$. Afterwards the agent proceeds to execute actions which leads to the displayed cycle of Figure \ref{fig:rl_cycle}.
+Sutton and Barto wrote in ``Reinforcement learning: An introduction'' \cite{suba18} that RL is based on two components that interact with each other: an environment and an agent, see Figure \ref{fig:rl_cycle}. Those interactions take part during a time period with discrete time steps $t\in\mathbb{N}_0$ until a goal is reached or the ending condition applies. This process is called an episode. Formally, the journey of the agent to find the goal is described as a Markov Decision Process (MDP) \cite{suba18}. When multiple agents act in the same environment, the Markov decision process is called a stochastic game \cite{buba10}.
+
 \begin{figure}[hpbt]
     \centering
     \includegraphics[width=0.6\textwidth]{pictures/RLInteractionSB}\\
@@ -22,27 +19,17 @@ Sutton and Barto defines the agents' action selection with respect to the curren
 During environment interactions, agents receive rewards, which can be used to update the policy accordingly. As an example, the probability of policy $\pi(a \mid s)$ decreases when receiving a negative or low reward, reducing the chances of executing the same action in that specific state again.
 
 While rewards only rate the immediate situation, a value function, i.e. the state-value function $V^\pi(s_t)$ for a policy $\pi$, can be used to estimate the long-term value of a state $s$ \cite{suba18}:
-% \begin{equation}\label{eq:value_func}
-%     V^\pi(s_t) = r_t + \gamma r_{t+1} + \gamma^2 r_{t+2} + \cdots = \sum^{\infty}_{i=0} \gamma^i r_{t+i}
-% \end{equation}
 \begin{equation}\label{eq:value_func}
     v_\pi(s) \doteq \mathbb{E}_\pi \left[ G_t \mid S_t = s \right] = \mathbb{E}_\pi \left[ \sum^{\infty}_{k=0} \gamma^k R_{t+k+1 \mid S_t = s}  \right]
 \end{equation}
 The result is the estimated discounted cumulative reward an agent could get following that state and choosing actions based on the current policy. The discount factor is defined by Sutton and Barto as $0 \le \gamma < 1$ and provides a constant that reduces the importance of future rewards. A high $\gamma$ symbolizes a greater interest in rewards that are far away, whereas a discount of zero only takes the current reward into account. By setting $\gamma$ smaller than one, it is ensured that the infinite sum results in a value.
 
-Generally, states that offer immediate high rewards could end in a 
-% The value function is of importance, due to states bringing high rewards could end in
-low reward streak. In the opposite case, a low reward state could subsequently yield high rewards. Therefore, value functions are of great use to achieve the maximum reward.
-% Other value functions can also take the executed
-% action into account to reach the state from which the rewards are estimated.
+Generally, states that offer immediate high rewards could end in a low reward streak. In the opposite case, a low reward state could subsequently yield high rewards. Therefore, value functions are of great use to achieve the maximum reward.
 
 The last part to note about RL is that it entails the problem of balancing exploration and exploitation \cite{suba18}. On one hand, an agent has to explore different options in order to learn and expand its knowledge. On the other hand, agents strive to maximize the reward, which can lead to greediness. An agent could start to exploit its knowledge too early, choosing actions of which it knows to result in positive rewards. However, if an agent does not explore enough, the best action sequence will stay hidden and the agents knowledge will not improve.
-%  In the opposite case, when an agent always explores without exploiting its knowledge, it is very likely that the reward will not be optimal. Finding the trade off between the two strategies is a common RL challenge.
 
 \section{Proximal Policy Optimization}
-In 2017 Schulman et al. introduced the concept of PPO in the article ``Proximal Policy Optimization Algorithms'' \cite{scwo17}.
-%This Section is solely based on that article in order to explain the Algorithm.
-Policy optimization is the improvement of the action selection strategy $\pi$ based on the current state $s_{t}$. This is achieved by rotating two steps: 1. Sampling data from the policy and 2. Optimizing the objective with that data through several epochs \cite{scwo17}.
+In 2017 Schulman et al. introduced the concept of PPO in the article ``Proximal Policy Optimization Algorithms'' \cite{scwo17}. Policy optimization is the improvement of the action selection strategy $\pi$ based on the current state $s_{t}$. This is achieved by rotating two steps: 1. Sampling data from the policy and 2. Optimizing the objective with that data through several epochs \cite{scwo17}.
 
 Using those steps results in the agent gathering a small batch of experiences while choosing actions with a policy $\pi$. Afterwards, this batch is used once to enhance the current policy. Then, the experiences are discarded, and the agent uses the updated policy to gather a new batch. By repeating those two steps the Agent can learn to choose better actions. PPO is used here, to prevent drastic policy changes to stabilize the learning process.
 
@@ -56,7 +43,6 @@ The expectation $\hat{\mathbb{E}}_{t}$ indicates, that an empirical average over
 The second part contains the state value function $V_\pi(s)$, which works very similarly by starting at state s and using the policy. However, the difference is that the agent always chooses actions according to the policy. The result of the advantage function $A_\pi(s,a)$ shows, whether a profit could be gained when deviating from the policy by specifically choosing action a.
 
 The fraction $\frac{\pi_{\theta}(a_{t} \mid s_{t})}{\pi_{\theta_{old}}(a_{t} \mid s_{t})}$ in the Minuend of function \eqref{eq:TRPO} can be replaced by $r(\theta)$
-%= \frac{\pi_{\theta}(a_{t} \mid s_{t})}{\pi_{\theta_{old}}(a_{t} \mid s_{t})}$
 and represents the probability ratio of an action in the current policy in comparison to the old policy \cite{scwo17}. Here, $\theta$ represents a policy parameter. The result of $r(\theta)$ is greater than one, if an action is very probable in the current policy. Otherwise, the outcome lies between zero and one. Schulman et al. \cite{scwo17} further extract the first part of function \eqref{eq:TRPO} as the surrogate objective:
 \begin{equation}\label{eq:TRPO_surrogate}
     L^{CPI}(\theta) = \hat{\mathbb{E}}_{t} \left[ \frac{\pi_{\theta}(a_{t} \mid s_{t})}{\pi_{\theta_{old}}(a_{t} \mid s_{t})} \hat{A}_{t} \right]
@@ -86,11 +72,6 @@ Furthermore, Schulman et al. point out that the policy is executed for $T$ time 
 \end{equation}
 
 Schulman et al. also showed an example of the PPO algorithm, see algorithm \ref{algo:ppo_algo_code}. The example uses an actor-critic approach, which means that a critic is responsible to approximate the value function of the policy and the actor in turn improves the policy based on the approximation results of the critic \cite{kots03}. $N$ detonates actors collecting data in T time steps in each Iteration. Meanwhile, the critic computes the estimations of the advantage values. Afterwards, the policy is replaced with a new one, in which the function $L_{t}^{CLIP+VF+S}(\theta)$ \eqref{eq:PPO_algo} is optimized during K epochs. For the optimization process, a small random batch of the previous time steps is used.
-% \begin{figure}[hpbt]
-%     \centering
-%     \includegraphics[width=1\textwidth]{pictures/ppo_algo_code.png}\\
-%     \caption[Exemplary PPO Algorithm]{Exemplary PPO Algorithm, as shown in ``Proximal Policy Optimization Algorithms'' \cite{scwo17}}\label{fig:ppo_algo_code}
-% \end{figure}
 
 \begin{algorithm}[H]
     \DontPrintSemicolon
@@ -126,12 +107,6 @@ However, the researchers argued that using a neural network in combination with 
 In algorithm \ref{algo:dqn_algo_code}, a deep Q-learning approach with an experience replay is shown. The experience replay contains the acquired agent knowledge of each time step in form of a quadruple: (old state, action, reward, new state). The experience values are then stored into the replay memory $D$ across multiple episodes. The states are parameters of $\Phi_{t}$ in the example, since they are preprocessed, to match the network input conditions.
 
 In addition to the action value function $Q$, the target action-value $\hat Q$ is initially defined with the same weights to enable iterative updates. In order to fill the memory, the agent first selects actions and acts in the environment. The action selection here is based on the $\epsilon$-greedy policy, meaning that with a probability of $\epsilon$ a random action is chosen \cite{mnka15}. Otherwise, the best option according to the Q-value is selected.
-
-% \begin{figure}[hpbt]
-%     \centering
-%     \includegraphics[width=0.8\textwidth]{pictures/dqn_algo_code.png}\\
-%     \caption[DQN with Experience Replay]{DQN with Experience Replay, as shown in ``Human-level control through deep reinforcement learning'' \cite{mnka15}}\label{fig:dqn_algo_code}
-% \end{figure}
 
 \begin{algorithm}[H]
     \DontPrintSemicolon
