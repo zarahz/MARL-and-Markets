@@ -51,17 +51,21 @@ def save_status(status, model_dir):
     torch.save(status, path)
 
 
-def save_capture(model_dir, name, frames):
-    # path = os.path.join(model_dir, "captures\\"+name)
-    path = os.path.join(model_dir, "captures/"+name)
+def save_capture(model_dir, name, frames, pause=1, training=True):
+    if training:
+        # path = os.path.join(model_dir, "captures\\"+name)
+        path = os.path.join(model_dir, "captures/"+name)
+    else:
+        # user is visualizig the trained model
+        path = os.path.join(model_dir, "visualization/"+name)
     create_folders_if_necessary(path)
     print("Saving gif... ", end="")
-    write_gif(frames, path, fps=1)
+    write_gif(frames, path, fps=1/pause)
     print("Done.")
 
 
-def get_model_state(model_dir):
-    return get_status(model_dir)["model_state"]
+def get_model_state(model_dir, state_name):
+    return get_status(model_dir)[state_name]
 
 
 def get_txt_logger(model_dir):

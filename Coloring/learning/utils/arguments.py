@@ -9,6 +9,9 @@ def base_args():
     '''
     parser = argparse.ArgumentParser()
 
+    parser.add_argument("--algo", required=True,
+                        help="Algorithm to use for training. Choose between 'ppo' and 'dqn'.")
+
     # General parameters
     parser.add_argument("--seed", type=int, default=1,
                         help="Generate the same set of pseudo random constellations, colors, positions, etc. every time the algorithm is executed. (default: 1)")
@@ -52,9 +55,6 @@ def training_args():
     # --------------------------------------------------
     # arguments needed by both learning algorithms
     # --------------------------------------------------
-    # TODO Move to base_args to be used for visualization as well!
-    parser.add_argument("--algo", required=True,
-                        help="Algorithm to use for training. Choose between 'ppo' and 'dqn'.")
 
     parser.add_argument("--frames", type=int, default=80000,
                         help="Number of frames of training. (default: 80.000)")
@@ -119,18 +119,11 @@ def vis_args():
     # --------------------------------------------------
     # arguments needed by both learning algorithms
     # --------------------------------------------------
-    # TODO Move to base_args to be used for visualization as well!
-    # parser.add_argument("--algo", required=True,
-    #                     help="Algorithm to use for training. Choose between 'ppo' and 'dqn'.")
 
     parser.add_argument("--shift", type=int, default=0,
                         help="number of times the environment is reset at the beginning (default: 0)")
-    parser.add_argument("--argmax", action="store_true", default=False,
-                        help="select the action with highest probability (default: False)")
     parser.add_argument("--pause", type=float, default=0.1,
                         help="pause duration between two consequent actions of the agent (default: 0.1)")
-    parser.add_argument("--gif", type=str, default=None,
-                        help="store output as gif with the given filename")
     parser.add_argument("--episodes", type=int, default=100,
                         help="number of episodes to visualize")
 

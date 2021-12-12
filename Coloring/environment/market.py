@@ -37,10 +37,7 @@ class Market:
         if not done and "sm" in self.type:
             reward = self.calculate_traded_reward(reward)
         return trading_info, reward
-        # matrix cols need to equal 1, since total share is 100%
-        # TODO float error 0.9999999999..
-        # assert all(total_shares == 1 for total_shares in torch.sum(self.trading_matrix, dim=0).tolist())
-
+        
     def execute_sm(self, market_actions, env_reward, reset_fields_by):
         shares = torch.diagonal(self.trading_matrix, 0)
         trades = 0

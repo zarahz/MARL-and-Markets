@@ -16,6 +16,8 @@ eggs/
 *.egg-info/
 *.egg
 
+
+storage/*
 Coloring/storage/*
 !Coloring/storage/easy
 !Coloring/storage/hard
