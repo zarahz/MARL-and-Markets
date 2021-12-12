@@ -68,7 +68,7 @@ To list all visualization parameters again just execute
 > python -m scripts.visualize -h
 ```
 
-## Examples of the coloring environment:
+## Examples of the Coloring Environment
 
 ![2 mixed-motive DQN agents with a SM and the "goal" addition](./assets/2-dqn-mixed-sm-goal.gif)
 
